@@ -54,7 +54,7 @@ pub const InitInfo = struct {
     Device: vk.Device,
     QueueFamily: u32,
     Queue: vk.Queue,
-    PipelineCache: vk.PipelineCache,
+    PipelineCache: ?vk.PipelineCache,
     DescriptorPool: vk.DescriptorPool,
     MinImageCount: u32, // >= 2
     ImageCount: u32, // >= MinImageCount
@@ -63,7 +63,7 @@ pub const InitInfo = struct {
     Allocator: *std.mem.Allocator,
 };
 
-const Frame = struct {
+pub const Frame = struct {
     CommandPool: vk.CommandPool = undefined,
     CommandBuffer: vk.CommandBuffer = undefined,
     Fence: vk.Fence = undefined,
@@ -72,7 +72,7 @@ const Frame = struct {
     Framebuffer: vk.Framebuffer = undefined,
 };
 
-const FrameSemaphores = struct {
+pub const FrameSemaphores = struct {
     ImageAcquiredSemaphore: vk.Semaphore = undefined,
     RenderCompleteSemaphore: vk.Semaphore = undefined,
 };
@@ -88,9 +88,7 @@ pub const Window = struct {
     SurfaceFormat: vk.SurfaceFormatKHR = undefined,
     PresentMode: vk.PresentModeKHR = undefined,
     RenderPass: ?vk.RenderPass = null,
-    FrameIndex: u32 = 0, // Current frame being rendered to (0 <= FrameIndex < FrameInFlightCount)
-    ImageCount: u32 = 0, // Number of simultaneous in-flight frames (returned by vk.GetSwapchainImagesKHR, usually derived from min_image_count)
-    SemaphoreIndex: u32 = 0, // Current set of swapchain wait semaphores we're using (needs to be distinct from per frame data)
+    ImageCount: u32 = 0,
     Frames: []Frame = undefined,
     FrameSemaphores: []FrameSemaphores = undefined,
 };
