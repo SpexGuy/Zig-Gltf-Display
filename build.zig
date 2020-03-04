@@ -14,6 +14,7 @@ pub fn build(b: *Builder) void {
     exe.addPackagePath("imgui", "include/imgui.zig");
     exe.addPackagePath("vk", "include/vk.zig");
     exe.addPackagePath("glfw", "include/glfw.zig");
+    exe.addPackagePath("cgltf", "include/cgltf.zig");
 
     if (std.os.windows.is_the_target) {
         exe.linkSystemLibrary("lib/win/cimguid");
@@ -26,6 +27,9 @@ pub fn build(b: *Builder) void {
         exe.linkSystemLibrary("vulkan");
         @compileError("TODO: Build and link cimgui for non-windows platforms");
     }
+
+    exe.addCSourceFile("c_src/cgltf.c", [_][]const u8{ "-std=c99", "-DCGLTF_IMPLEMENTATION", "-D_CRT_SECURE_NO_WARNINGS" });
+
     exe.install();
 
     const run_step = b.step("run", "Run the project");
