@@ -1,6 +1,3 @@
-//I'm having fun with the render abstraction layer.
-//The rendering backend implements a static interface for its class RenderBackend, and can specify data types for RenderFrame and RenderPass.  The render api wraps all that up into a common api.
-
 const std = @import("std");
 const imgui = @import("imgui");
 const glfw = @import("glfw");
