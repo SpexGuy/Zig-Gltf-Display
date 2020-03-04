@@ -234,7 +234,11 @@ pub const RenderBackend = struct {
     pub fn deinit(self: *Self) void {
         impl_vulkan.DestroyWindow(self.instance, self.device, &g_MainWindowData, self.vkAllocator) catch {};
 
-        vk.DestroySurfaceKHR(self.instance, self.surface, self.vkAllocator);
+        // GLFW says this call is necessary to clean up, but it crashes the program
+        // so leaving it commented out for now.  If deinit/reinit is a thing we
+        // want to support eventually, we should revisit this.
+        //vk.DestroySurfaceKHR(self.instance, self.surface, self.vkAllocator);
+
         vk.DestroyDescriptorPool(self.device, self.descriptorPool, self.vkAllocator);
 
         if (USE_VULKAN_DEBUG_REPORT) {
