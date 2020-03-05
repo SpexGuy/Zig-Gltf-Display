@@ -301,7 +301,7 @@ pub const Mesh = extern struct {
     primitives_count: usize,
     weights: [*]f32,
     weights_count: usize,
-    target_names: [*]MutCString, // TODO are entries nullable?
+    target_names: [*]MutCString,
     target_names_count: usize,
     extras: Extras,
 };
@@ -384,6 +384,7 @@ pub const Node = extern struct {
         return transform;
     }
 };
+
 pub const Scene = extern struct {
     name: ?MutCString,
     nodes: [*]*Node,
@@ -452,13 +453,13 @@ pub const Data = extern struct {
     nodes_count: usize,
     scenes: [*]Scene,
     scenes_count: usize,
-    scene: [*]Scene,
+    scene: ?*Scene,
     animations: [*]Animation,
     animations_count: usize,
     extras: Extras,
-    extensions_used: [*]MutCString, // TODO can elements be null?
+    extensions_used: [*]MutCString,
     extensions_used_count: usize,
-    extensions_required: [*]MutCString, // TODO can elements be null?
+    extensions_required: [*]MutCString,
     extensions_required_count: usize,
     json: [*]const u8,
     json_size: usize,
@@ -486,9 +487,9 @@ pub inline fn parse(options: *const Options, data: []const u8) !*Data {
     }
 }
 
-pub inline fn parseFile(options: *const Options, path: CString) !*Data {
+pub inline fn parseFile(options: Options, path: CString) !*Data {
     var out_data: ?*Data = undefined;
-    const result = cgltf_parse_file(options, path, &out_data);
+    const result = cgltf_parse_file(&options, path, &out_data);
     if (result == .success) return out_data.?;
     switch (result) {
         .data_too_short => return error.CgltfDataTooShort,
@@ -504,8 +505,8 @@ pub inline fn parseFile(options: *const Options, path: CString) !*Data {
     }
 }
 
-pub inline fn loadBuffers(options: *const Options, data: *Data, gltf_path: CString) !void {
-    const result = cgltf_load_buffers(options, data, gltf_path);
+pub inline fn loadBuffers(options: Options, data: *Data, gltf_path: CString) !void {
+    const result = cgltf_load_buffers(&options, data, gltf_path);
     if (result == .success) return;
     switch (result) {
         .data_too_short => return error.CgltfDataTooShort,
@@ -521,10 +522,10 @@ pub inline fn loadBuffers(options: *const Options, data: *Data, gltf_path: CStri
     }
 }
 
-pub inline fn loadBufferBase64(options: *const Options, size: usize, base64: []const u8) ![]u8 {
+pub inline fn loadBufferBase64(options: Options, size: usize, base64: []const u8) ![]u8 {
     assert(base64.len >= (size * 4 + 2) / 3);
     var out: ?*c_void = null;
-    const result = cgltf_load_buffer_base64(options, size, base64.ptr, &out);
+    const result = cgltf_load_buffer_base64(&options, size, base64.ptr, &out);
     if (result == .success)
         return @ptrCast([*]u8, out.?)[0..size];
     switch (result) {

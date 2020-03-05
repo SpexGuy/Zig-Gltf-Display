@@ -1,9 +1,55 @@
 const std = @import("std");
 const imgui = @import("imgui");
+const cgltf = @import("cgltf");
+const gltf = @import("gltf_wrap.zig");
 const Engine = @import("engine.zig").g_Engine;
 
+const allocator = std.heap.c_allocator;
+
+const models = [_]ModelPath{
+    makePath("TriangleWithoutIndices"),
+    makePath("Triangle"),
+    makePath("AnimatedTriangle"),
+    makePath("AnimatedMorphCube"),
+    makePath("AnimatedMorphSphere"),
+};
+
+const ModelPath = struct {
+    gltfFile: [*]const u8,
+    directory: [*]const u8,
+};
+
+fn makePath(comptime model: []const u8) ModelPath {
+    const gen = struct {
+        const path = "models/" ++ model ++ "/glTF/" ++ model ++ ".gltf" ++ [_]u8{0};
+        const dir = "models/" ++ model ++ "/glTF/" ++ [_]u8{0};
+    };
+    return ModelPath{ .gltfFile = &gen.path, .directory = &gen.dir };
+}
+
+var nextModelPath = usize(0);
+
+fn loadNextModel() !*gltf.Data {
+    const nextModel = &models[nextModelPath];
+    nextModelPath += 1;
+    if (nextModelPath >= models.len) nextModelPath = 0;
+
+    std.debug.warn("Loading {}\n", nextModel.gltfFile);
+
+    const options = cgltf.Options{};
+    const data = try cgltf.parseFile(options, nextModel.gltfFile);
+    errdefer cgltf.free(data);
+    try cgltf.loadBuffers(options, data, nextModel.directory);
+    const wrapped = try gltf.wrap(data, allocator);
+    return wrapped;
+}
+
+fn unloadModel(data: *gltf.Data) void {
+    cgltf.free(data.raw);
+    gltf.free(data);
+}
+
 pub fn main() !void {
-    const allocator = std.heap.c_allocator;
     try Engine.init(allocator);
     defer Engine.deinit();
 
@@ -14,40 +60,16 @@ pub fn main() !void {
     var counter: i32 = 0;
     var clearColor = imgui.Vec4{ .x = 0.5, .y = 0, .z = 1, .w = 1 };
 
+    var data = try loadNextModel();
+    defer unloadModel(data);
+
+    std.debug.warn("GLTF contents: {}\n", data);
+
     // Main loop
     while (try Engine.beginFrame()) : (Engine.endFrame()) {
         // 1. Show the big demo window (Most of the sample code is in imgui.ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
         if (show_demo_window)
             imgui.ShowDemoWindow(&show_demo_window);
-
-        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
-        {
-            _ = imgui.Begin(c"Hello, world!", null, 0); // Create a window called "Hello, world!" and append into it.
-
-            imgui.Text(c"This is some useful text."); // Display some text (you can use a format strings too)
-            _ = imgui.Checkbox(c"Demo Window", &show_demo_window); // Edit bools storing our window open/close state
-            _ = imgui.Checkbox(c"Another Window", &show_another_window);
-
-            _ = imgui.SliderFloat(c"float", &slider_value, 0.0, 1.0, null, 1); // Edit 1 float using a slider from 0.0 to 1.0
-            _ = imgui.ColorEdit3(c"clear color", @ptrCast(*[3]f32, &clearColor), 0); // Edit 3 floats representing a color
-
-            if (imgui.Button(c"Button", imgui.Vec2{ .x = 0, .y = 0 })) // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter += 1;
-            imgui.SameLine(0, -1);
-            imgui.Text(c"counter = %d", counter);
-
-            imgui.Text(c"Application average %.3f ms/frame (%.1f FPS)", 1000.0 / imgui.GetIO().Framerate, imgui.GetIO().Framerate);
-            imgui.End();
-        }
-
-        // 3. Show another simple window.
-        if (show_another_window) {
-            _ = imgui.Begin(c"Another Window", &show_another_window, 0); // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-            imgui.Text(c"Hello from another window!");
-            if (imgui.Button(c"Close Me", imgui.Vec2{ .x = 0, .y = 0 }))
-                show_another_window = false;
-            imgui.End();
-        }
 
         // waits on frame ready semaphore
         var frame = try Engine.render.beginRender();
