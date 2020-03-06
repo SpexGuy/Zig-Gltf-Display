@@ -3,6 +3,7 @@ const ig = @import("imgui");
 const cgltf = @import("cgltf");
 const gltf = @import("gltf_wrap.zig");
 const engine = @import("engine.zig");
+const vk = @import("vk");
 
 const Allocator = std.mem.Allocator;
 const warn = std.debug.warn;
@@ -18,7 +19,9 @@ const models = [_]ModelPath{
     makePath("AnimatedMorphSphere"),
 };
 
-var modelPathIndex = usize(0);
+const FIRST_MODEL = usize(0);
+var loadedModelIndex = FIRST_MODEL;
+var targetModelIndex = FIRST_MODEL;
 
 const ModelPath = struct {
     gltfFile: [*]const u8,
@@ -33,8 +36,8 @@ fn makePath(comptime model: []const u8) ModelPath {
     return ModelPath{ .gltfFile = &gen.path, .directory = &gen.dir };
 }
 
-fn loadModel() !*gltf.Data {
-    const nextModel = &models[modelPathIndex];
+fn loadModel(index: usize) !*gltf.Data {
+    const nextModel = &models[targetModelIndex];
 
     std.debug.warn("Loading {}\n", std.mem.toSliceConst(u8, nextModel.gltfFile));
 
@@ -52,6 +55,128 @@ fn loadModel() !*gltf.Data {
     return wrapped;
 }
 
+fn uploadRenderingData(data: *gltf.Data, frame: *engine.render.Frame) !void {
+    markUsageFlags(data);
+    try uploadBuffers(data, frame);
+}
+
+fn markUsageFlags(data: *gltf.Data) void {
+    for (data.buffer_views) |view| {
+        if (view.raw.type == .vertices) view.buffer.usageFlags |= vk.BufferUsageFlagBits.VERTEX_BUFFER_BIT;
+        if (view.raw.type == .indices) view.buffer.usageFlags |= vk.BufferUsageFlagBits.INDEX_BUFFER_BIT;
+    }
+}
+
+fn uploadBuffers(data: *gltf.Data, frame: *engine.render.Frame) !void {
+    assert(!data.renderingDataInitialized);
+
+    var upload = try frame.beginUpload();
+    errdefer upload.abort();
+
+    const cb = upload.backend.commandBuffer;
+    const backend = engine.render.backend;
+    const arrayPtr = backend.arrayPtr;
+
+    const UPLOAD_SOURCE_FLAGS = vk.MemoryPropertyFlagBits.HOST_VISIBLE_BIT | vk.MemoryPropertyFlagBits.HOST_COHERENT_BIT;
+    const UPLOAD_DEST_FLAGS = vk.MemoryPropertyFlagBits.DEVICE_LOCAL_BIT;
+
+    const deleteMem = try heap_allocator.alloc(?vk.DeviceMemory, data.buffers.len);
+    std.mem.set(?vk.DeviceMemory, deleteMem, null);
+    defer {
+        for (deleteMem) |item| if (item) |mem| vk.FreeMemory(backend.device, mem, backend.vkAllocator);
+        heap_allocator.free(deleteMem);
+    }
+
+    const deleteBuf = try heap_allocator.alloc(?vk.Buffer, data.buffers.len);
+    std.mem.set(?vk.Buffer, deleteBuf, null);
+    defer {
+        for (deleteBuf) |item| if (item) |buf| vk.DestroyBuffer(backend.device, buf, backend.vkAllocator);
+        heap_allocator.free(deleteBuf);
+    }
+
+    errdefer unloadRenderingData(data);
+
+    for (data.buffers) |*buffer, i| {
+        const stagingBufferInfo = vk.BufferCreateInfo{
+            .size = buffer.raw.size,
+            .usage = vk.BufferUsageFlagBits.TRANSFER_SRC_BIT,
+            .sharingMode = .EXCLUSIVE,
+        };
+
+        const stagingBuffer = try vk.CreateBuffer(backend.device, stagingBufferInfo, backend.vkAllocator);
+        deleteBuf[i] = stagingBuffer;
+
+        const stagingReqs = vk.GetBufferMemoryRequirements(backend.device, stagingBuffer);
+        const stagingAllocInfo = vk.MemoryAllocateInfo{
+            .allocationSize = stagingReqs.size,
+            .memoryTypeIndex = backend.getMemoryTypeIndex(stagingReqs.memoryTypeBits, UPLOAD_SOURCE_FLAGS),
+        };
+
+        // TODO VMA: better allocation management
+        const stagingBufferMemory = try vk.AllocateMemory(backend.device, stagingAllocInfo, backend.vkAllocator);
+        deleteMem[i] = stagingBufferMemory;
+        try vk.BindBufferMemory(backend.device, stagingBuffer, stagingBufferMemory, 0);
+
+        {
+            var mapped: [*]u8 = undefined;
+            try vk.MapMemory(backend.device, stagingBufferMemory, 0, buffer.raw.size, 0, @ptrCast(**c_void, &mapped));
+            defer vk.UnmapMemory(backend.device, stagingBufferMemory);
+            @memcpy(mapped, @ptrCast([*]u8, buffer.raw.data.?), buffer.raw.size);
+            const range = vk.MappedMemoryRange{
+                .memory = stagingBufferMemory,
+                .offset = 0,
+                .size = vk.WHOLE_SIZE,
+            };
+            try vk.FlushMappedMemoryRanges(backend.device, arrayPtr(&range));
+        }
+
+        const gpuBufferInfo = vk.BufferCreateInfo{
+            .size = buffer.raw.size,
+            .usage = vk.BufferUsageFlagBits.TRANSFER_DST_BIT | buffer.usageFlags,
+            .sharingMode = .EXCLUSIVE,
+        };
+        const gpuBuffer = try vk.CreateBuffer(backend.device, gpuBufferInfo, backend.vkAllocator);
+        buffer.gpuBuffer = gpuBuffer;
+
+        const gpuReqs = vk.GetBufferMemoryRequirements(backend.device, gpuBuffer);
+        const gpuAllocInfo = vk.MemoryAllocateInfo{
+            .allocationSize = gpuReqs.size,
+            .memoryTypeIndex = backend.getMemoryTypeIndex(gpuReqs.memoryTypeBits, UPLOAD_DEST_FLAGS),
+        };
+
+        // TODO VMA: better allocation management
+        const gpuBufferMemory = try vk.AllocateMemory(backend.device, gpuAllocInfo, backend.vkAllocator);
+        buffer.gpuMemory = gpuBufferMemory;
+        try vk.BindBufferMemory(backend.device, gpuBuffer, gpuBufferMemory, 0);
+
+        const copyRegion = vk.BufferCopy{
+            .srcOffset = 0,
+            .dstOffset = 0,
+            .size = buffer.raw.size,
+        };
+        vk.CmdCopyBuffer(cb, stagingBuffer, gpuBuffer, arrayPtr(&copyRegion));
+    }
+
+    upload.endAndWait();
+    data.renderingDataInitialized = true;
+}
+
+fn unloadRenderingData(data: *gltf.Data) void {
+    const backend = engine.render.backend;
+    assert(data.renderingDataInitialized);
+    for (data.buffers) |*buffer| {
+        if (buffer.gpuMemory != null) {
+            // TODO VMA: better memory allocation
+            vk.FreeMemory(backend.device, buffer.gpuMemory, backend.vkAllocator);
+            buffer.gpuMemory = null;
+        }
+        if (buffer.gpuBuffer != null) {
+            vk.DestroyBuffer(backend.device, buffer.gpuBuffer, backend.vkAllocator);
+            buffer.gpuBuffer = null;
+        }
+    }
+}
+
 fn unloadModel(data: *gltf.Data) void {
     cgltf.free(data.raw);
     gltf.free(data);
@@ -66,9 +191,9 @@ pub fn main() !void {
     defer engine.deinit();
 
     // Our state
-
-    var data = try loadModel();
+    var data = try loadModel(loadedModelIndex);
     defer unloadModel(data);
+    assert(!data.renderingDataInitialized);
 
     // Main loop
     while (try engine.beginFrame()) : (engine.endFrame()) {
@@ -78,27 +203,38 @@ pub fn main() !void {
             defer ig.End();
             if (!open) break :OPTIONS_WINDOW;
 
-            ig.Text(c"Current File (%lld/%lld): %s", modelPathIndex + 1, models.len, models[modelPathIndex].gltfFile);
+            ig.Text(c"Current File (%lld/%lld): %s", loadedModelIndex + 1, models.len, models[loadedModelIndex].gltfFile);
             if (ig.Button(c"Load Previous File", ig.Vec2{ .x = 0, .y = 0 })) {
-                modelPathIndex = (if (modelPathIndex == 0) models.len else modelPathIndex) - 1;
-                unloadModel(data);
-                data = try loadModel();
+                targetModelIndex = (if (targetModelIndex == 0) models.len else targetModelIndex) - 1;
             }
             ig.SameLine(0, -1);
             if (ig.Button(c"Load Next File", ig.Vec2{ .x = 0, .y = 0 })) {
-                modelPathIndex = if (modelPathIndex >= models.len - 1) 0 else (modelPathIndex + 1);
-                unloadModel(data);
-                data = try loadModel();
+                targetModelIndex = if (targetModelIndex >= models.len - 1) 0 else (targetModelIndex + 1);
             }
             _ = ig.Checkbox(c"Show glTF Data", &show_gltf_data);
             _ = ig.Checkbox(c"Show ImGui Demo", &show_demo_window);
+            if (ig.Button(c"Crash", ig.Vec2{ .x = 0, .y = 0 })) {
+                @panic("Don't press the big shiny button!");
+            }
         }
         if (show_demo_window) ig.ShowDemoWindow(&show_demo_window);
         if (show_gltf_data) drawGltfUI(data, &show_gltf_data);
 
+        if (targetModelIndex != loadedModelIndex) {
+            unloadModel(data);
+            data = try loadModel(targetModelIndex);
+            loadedModelIndex = targetModelIndex;
+        }
+
         // waits on frame ready semaphore
         var frame = try engine.render.beginRender();
         defer frame.end();
+
+        if (data.renderingDataInitialized != true) {
+            warn("Setting up rendering data...\n");
+            try uploadRenderingData(data, &frame);
+            assert(data.renderingDataInitialized);
+        }
 
         // TODO: Make this beginRenderPass(colorPass)
         var colorRender = try frame.beginColorPass(clearColor);

@@ -1,8 +1,15 @@
 const std = @import("std");
 const cgltf = @import("cgltf");
+const vk = @import("vk");
+const engine = @import("engine.zig");
 
 pub const Buffer = struct {
     raw: *cgltf.Buffer,
+
+    usageFlags: vk.BufferUsageFlags = 0,
+    updateRate: engine.render.UpdateRate = .STATIC,
+    gpuBuffer: ?vk.Buffer = null,
+    gpuMemory: ?vk.DeviceMemory = null,
 };
 
 pub const BufferView = struct {
@@ -163,6 +170,8 @@ pub const Data = struct {
     scenes: []Scene,
     scene: ?*Scene,
     animations: []Animation,
+
+    renderingDataInitialized: bool = false,
 };
 
 pub fn wrap(rawData: *cgltf.Data, parentAllocator: *std.mem.Allocator) !*Data {
