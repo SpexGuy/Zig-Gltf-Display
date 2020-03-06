@@ -147,10 +147,10 @@ pub const BufferView = extern struct {
 
 pub const AccessorSparse = extern struct {
     count: usize,
-    indices_buffer_view: *BufferView,
+    indices_buffer_view: ?*BufferView,
     indices_byte_offset: usize,
     indices_component_type: ComponentType,
-    values_buffer_view: *BufferView,
+    values_buffer_view: ?*BufferView,
     values_byte_offset: usize,
     extras: Extras,
     indices_extras: Extras,

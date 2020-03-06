@@ -76,6 +76,7 @@ pub const Primitive = struct {
 pub const Mesh = struct {
     raw: *cgltf.Mesh,
 
+    name: []const u8,
     primitives: []Primitive,
     weights: []f32,
     target_names: [][]const u8,
@@ -221,6 +222,7 @@ pub fn wrap(rawData: *cgltf.Data, parentAllocator: *std.mem.Allocator) !*Data {
 
         mesh.* = Mesh{
             .raw = rawMesh,
+            .name = cstr(rawMesh.name),
             .primitives = primitives,
             .weights = rawMesh.weights[0..rawMesh.weights_count],
             .target_names = names,
@@ -263,8 +265,8 @@ pub fn wrap(rawData: *cgltf.Data, parentAllocator: *std.mem.Allocator) !*Data {
         };
 
         if (rawAcc.is_sparse != 0) {
-            accessor.sparse_indices_buffer_view = fixNonnull(rawAcc.sparse.indices_buffer_view, rawData.buffer_views, data.buffer_views);
-            accessor.sparse_values_buffer_view = fixNonnull(rawAcc.sparse.values_buffer_view, rawData.buffer_views, data.buffer_views);
+            accessor.sparse_indices_buffer_view = fixOptional(rawAcc.sparse.indices_buffer_view, rawData.buffer_views, data.buffer_views);
+            accessor.sparse_values_buffer_view = fixOptional(rawAcc.sparse.values_buffer_view, rawData.buffer_views, data.buffer_views);
         }
     }
 
@@ -439,6 +441,6 @@ fn fixOptional(pointer: var, rawArray: var, wrapArray: var) ?*@typeOf(wrapArray.
 }
 
 fn fixNonnull(pointer: var, rawArray: var, wrapArray: var) *@typeOf(wrapArray.ptr).Child {
-    const diff = @divExact(@ptrToInt(pointer) - @ptrToInt(rawArray), @sizeOf(@typeOf(wrapArray.ptr).Child));
+    const diff = @divExact(@ptrToInt(pointer) - @ptrToInt(rawArray), @sizeOf(@typeOf(rawArray).Child));
     return &wrapArray[diff];
 }
