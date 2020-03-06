@@ -18,7 +18,7 @@ const models = [_]ModelPath{
     makePath("AnimatedMorphSphere"),
 };
 
-var modelPathIndex = usize(1);
+var modelPathIndex = usize(0);
 
 const ModelPath = struct {
     gltfFile: [*]const u8,
@@ -44,6 +44,7 @@ fn loadModel() !*gltf.Data {
     errdefer cgltf.free(data);
 
     try cgltf.loadBuffers(options, data, nextModel.directory);
+    // unload handled by cgltf.free
 
     const wrapped = try gltf.wrap(data, heap_allocator);
     errdefer gltf.free(wrapped);
@@ -56,14 +57,15 @@ fn unloadModel(data: *gltf.Data) void {
     gltf.free(data);
 }
 
+var show_demo_window = false;
+var show_gltf_data = false;
+var clearColor = ig.Vec4{ .x = 0.2, .y = 0.2, .z = 0.2, .w = 1 };
+
 pub fn main() !void {
     try engine.init(c"glTF Renderer", heap_allocator);
     defer engine.deinit();
 
     // Our state
-    var show_demo_window = false;
-    var show_gltf_data = false;
-    var clearColor = ig.Vec4{ .x = 0.2, .y = 0.2, .z = 0.2, .w = 1 };
 
     var data = try loadModel();
     defer unloadModel(data);
