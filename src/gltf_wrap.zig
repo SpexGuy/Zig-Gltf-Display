@@ -22,14 +22,14 @@ pub const Accessor = struct {
 pub const Attribute = struct {
     raw: *cgltf.Attribute,
 
-    name: []u8,
+    name: []const u8,
     data: *Accessor,
 };
 
 pub const Image = struct {
     raw: *cgltf.Image,
 
-    name: []u8,
+    name: []const u8,
     buffer_view: ?*BufferView,
 };
 
@@ -40,7 +40,7 @@ pub const Sampler = struct {
 pub const Texture = struct {
     raw: *cgltf.Texture,
 
-    name: []u8,
+    name: []const u8,
     image: ?*Image,
     sampler: ?*Sampler,
 };
@@ -48,7 +48,7 @@ pub const Texture = struct {
 pub const Material = struct {
     raw: *cgltf.Material,
 
-    name: []u8,
+    name: []const u8,
     pbr_metallic_color_texture: ?*Texture,
     pbr_metallic_roughness_texture: ?*Texture,
     pbr_specular_diffuse_texture: ?*Texture,
@@ -78,13 +78,13 @@ pub const Mesh = struct {
 
     primitives: []Primitive,
     weights: []f32,
-    target_names: [][]u8,
+    target_names: [][]const u8,
 };
 
 pub const Skin = struct {
     raw: *cgltf.Skin,
 
-    name: []u8,
+    name: []const u8,
     joints: []*Node,
     skeleton: ?*Node,
     inverse_bind_matrices: ?*Accessor,
@@ -93,19 +93,19 @@ pub const Skin = struct {
 pub const Camera = struct {
     raw: *cgltf.Camera,
 
-    name: []u8,
+    name: []const u8,
 };
 
 pub const Light = struct {
     raw: *cgltf.Light,
 
-    name: []u8,
+    name: []const u8,
 };
 
 pub const Node = struct {
     raw: *cgltf.Node,
 
-    name: []u8,
+    name: []const u8,
     parent: ?*Node,
     children: []*Node,
     skin: ?*Skin,
@@ -117,7 +117,7 @@ pub const Node = struct {
 pub const Scene = struct {
     raw: *cgltf.Scene,
 
-    name: []u8,
+    name: []const u8,
     nodes: []*Node,
 };
 
@@ -138,7 +138,7 @@ pub const AnimationChannel = struct {
 pub const Animation = struct {
     raw: *cgltf.Animation,
 
-    name: []u8,
+    name: []const u8,
     samplers: []AnimationSampler,
     channels: []AnimationChannel,
 };
@@ -216,7 +216,7 @@ pub fn wrap(rawData: *cgltf.Data, parentAllocator: *std.mem.Allocator) !*Data {
             };
         }
 
-        const names = try allocator.alloc([]u8, rawMesh.target_names_count);
+        const names = try allocator.alloc([]const u8, rawMesh.target_names_count);
         for (names) |*name, j| name.* = cstr(rawMesh.target_names[j]);
 
         mesh.* = Mesh{
@@ -405,13 +405,10 @@ pub fn wrap(rawData: *cgltf.Data, parentAllocator: *std.mem.Allocator) !*Data {
     return data;
 }
 
-fn cstr(data: ?[*]u8) []u8 {
-    if (data) |nonnull| {
-        return std.mem.toSlice(u8, nonnull);
-    } else {
-        var buf = [0]u8{};
-        return buf[0..0];
-    }
+const unnamed: [*]const u8 = c"<null>";
+
+fn cstr(data: ?[*]const u8) []const u8 {
+    return std.mem.toSliceConst(u8, data orelse unnamed);
 }
 
 fn copyAttributes(data: *Data, rawData: *cgltf.Data, rawAttributes: [*]cgltf.Attribute, rawCount: usize) ![]Attribute {
