@@ -190,7 +190,7 @@ pub const Accessor = extern struct {
 
     pub inline fn readUint(self: *const Accessor, index: usize, outInts: []u32) bool {
         assert(outInts.len == numComponents(self.type));
-        const result = cgltf_accessor_read_uint(self, index, outFloats.ptr, outFloats.len);
+        const result = cgltf_accessor_read_uint(self, index, outInts.ptr, outInts.len);
         return result != 0;
     }
 
@@ -543,7 +543,7 @@ pub inline fn free(data: *Data) void {
     cgltf_free(data);
 }
 
-pub inline fn numComponents(inType: Type) usize {
+pub fn numComponents(inType: Type) usize {
     // translated because we should at least try to inline this.
     return switch (inType) {
         .vec2 => 2,

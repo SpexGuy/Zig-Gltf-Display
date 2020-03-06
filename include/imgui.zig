@@ -223,7 +223,7 @@ pub const TreeNodeFlagBits = struct {
     pub const OpenOnDoubleClick: TreeNodeFlags = 1 << 6;
     pub const OpenOnArrow: TreeNodeFlags = 1 << 7;
     pub const Leaf: TreeNodeFlags = 1 << 8;
-    pub const Bullet: TreeNodeFlags = 1 << 9;
+    pub const BulletPt: TreeNodeFlags = 1 << 9;
     pub const FramePadding: TreeNodeFlags = 1 << 10;
     pub const SpanAvailWidth: TreeNodeFlags = 1 << 11;
     pub const SpanFullWidth: TreeNodeFlags = 1 << 12;
@@ -2833,7 +2833,7 @@ pub const raw = struct {
     pub extern fn igColorEdit4(label: [*]const u8, col: *[4]f32, flags: ColorEditFlags) bool;
     pub extern fn igColorPicker3(label: [*]const u8, col: *[3]f32, flags: ColorEditFlags) bool;
     pub extern fn igColorPicker4(label: [*]const u8, col: *[4]f32, flags: ColorEditFlags, ref_col: [*c]const f32) bool;
-    pub extern fn igColumns(count: i32, id: [*]const u8, border: bool) void;
+    pub extern fn igColumns(count: i32, id: ?[*]const u8, border: bool) void;
     pub extern fn igCombo(label: [*]const u8, current_item: [*c]i32, items: [*]const [*]const u8, items_count: i32, popup_max_height_in_items: i32) bool;
     pub extern fn igComboStr(label: [*]const u8, current_item: [*c]i32, items_separated_by_zeros: [*]const u8, popup_max_height_in_items: i32) bool;
     pub extern fn igComboFnPtr(label: [*]const u8, current_item: [*c]i32, items_getter: ?extern fn (data: ?*c_void, idx: i32, out_text: *[*]const u8) bool, data: ?*c_void, items_count: i32, popup_max_height_in_items: i32) bool;
