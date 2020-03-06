@@ -54,7 +54,7 @@ fn unloadModel(data: *gltf.Data) void {
 }
 
 pub fn main() !void {
-    try Engine.init(heap_allocator);
+    try Engine.init(c"glTF Renderer", heap_allocator);
     defer Engine.deinit();
 
     // Our state

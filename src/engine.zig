@@ -18,7 +18,7 @@ const Engine = struct {
     window: *glfw.GLFWwindow,
     render: RenderInterface,
 
-    pub fn init(self: *Self, allocator: *Allocator) !void {
+    pub fn init(self: *Self, windowName: [*]const u8, allocator: *Allocator) !void {
         assert(!g_EngineInitialized);
 
         // Setup GLFW window
@@ -27,7 +27,7 @@ const Engine = struct {
             return error.GlfwInitFailed;
 
         glfw.glfwWindowHint(glfw.GLFW_CLIENT_API, glfw.GLFW_NO_API);
-        const window = glfw.glfwCreateWindow(1280, 720, c"Dear ImGui GLFW+Vulkan example", null, null).?;
+        const window = glfw.glfwCreateWindow(1280, 720, windowName, null, null).?;
 
         const renderInterface = try RenderInterface._init(allocator, window);
 
