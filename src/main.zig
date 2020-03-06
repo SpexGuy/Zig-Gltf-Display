@@ -18,7 +18,7 @@ const models = [_]ModelPath{
     makePath("AnimatedMorphSphere"),
 };
 
-var nextModelPath = usize(0);
+var modelPathIndex = usize(1);
 
 const ModelPath = struct {
     gltfFile: [*]const u8,
@@ -33,18 +33,21 @@ fn makePath(comptime model: []const u8) ModelPath {
     return ModelPath{ .gltfFile = &gen.path, .directory = &gen.dir };
 }
 
-fn loadNextModel() !*gltf.Data {
-    const nextModel = &models[nextModelPath];
-    nextModelPath += 1;
-    if (nextModelPath >= models.len) nextModelPath = 0;
+fn loadModel() !*gltf.Data {
+    const nextModel = &models[modelPathIndex];
 
-    std.debug.warn("Loading {}\n", nextModel.gltfFile);
+    std.debug.warn("Loading {}\n", std.mem.toSliceConst(u8, nextModel.gltfFile));
 
     const options = cgltf.Options{};
+
     const data = try cgltf.parseFile(options, nextModel.gltfFile);
     errdefer cgltf.free(data);
+
     try cgltf.loadBuffers(options, data, nextModel.directory);
+
     const wrapped = try gltf.wrap(data, heap_allocator);
+    errdefer gltf.free(wrapped);
+
     return wrapped;
 }
 
@@ -58,21 +61,38 @@ pub fn main() !void {
     defer Engine.deinit();
 
     // Our state
-    var show_demo_window = true;
+    var show_demo_window = false;
+    var show_gltf_data = false;
     var clearColor = ig.Vec4{ .x = 0.2, .y = 0.2, .z = 0.2, .w = 1 };
 
-    var data = try loadNextModel();
+    var data = try loadModel();
     defer unloadModel(data);
-
-    std.debug.warn("GLTF contents: {}\n", data);
 
     // Main loop
     while (try Engine.beginFrame()) : (Engine.endFrame()) {
-        // 1. Show the big demo window (Most of the sample code is in ig.ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-        if (show_demo_window)
-            ig.ShowDemoWindow(&show_demo_window);
+        // show the options window
+        OPTIONS_WINDOW: {
+            const open = ig.Begin(c"Control", null, 0);
+            defer ig.End();
+            if (!open) break :OPTIONS_WINDOW;
 
-        drawGltfUI(data);
+            ig.Text(c"Current File (%lld/%lld): %s", modelPathIndex + 1, models.len, models[modelPathIndex].gltfFile);
+            if (ig.Button(c"Load Previous File", ig.Vec2{ .x = 0, .y = 0 })) {
+                modelPathIndex = (if (modelPathIndex == 0) models.len else modelPathIndex) - 1;
+                unloadModel(data);
+                data = try loadModel();
+            }
+            ig.SameLine(0, -1);
+            if (ig.Button(c"Load Next File", ig.Vec2{ .x = 0, .y = 0 })) {
+                modelPathIndex = if (modelPathIndex >= models.len - 1) 0 else (modelPathIndex + 1);
+                unloadModel(data);
+                data = try loadModel();
+            }
+            _ = ig.Checkbox(c"Show glTF Data", &show_gltf_data);
+            _ = ig.Checkbox(c"Show ImGui Demo", &show_demo_window);
+        }
+        if (show_demo_window) ig.ShowDemoWindow(&show_demo_window);
+        if (show_gltf_data) drawGltfUI(data, &show_gltf_data);
 
         // waits on frame ready semaphore
         var frame = try Engine.render.beginRender();
@@ -88,14 +108,14 @@ pub fn main() !void {
     }
 }
 
-fn drawGltfUI(data: *gltf.Data) void {
+fn drawGltfUI(data: *gltf.Data, show: *bool) void {
     var allocatorRaw = std.heap.ArenaAllocator.init(heap_allocator);
     defer allocatorRaw.deinit();
     const arena = &allocatorRaw.allocator;
 
     const Static = struct {};
 
-    const showWindow = ig.Begin(c"glTF Data", null, 0);
+    const showWindow = ig.Begin(c"glTF Data", show, 0);
     defer ig.End();
 
     // early out as an optimization
@@ -109,7 +129,7 @@ fn drawGltfUI(data: *gltf.Data) void {
 
     ig.Separator();
 
-    drawPtrUI(data, arena);
+    drawStructUI(gltf.Data, data, arena);
 
     ig.Separator();
 }
@@ -117,22 +137,24 @@ fn drawGltfUI(data: *gltf.Data) void {
 const NullTerm = [_]u8{0};
 const InlineFlags = ig.TreeNodeFlagBits.Leaf | ig.TreeNodeFlagBits.NoTreePushOnOpen | ig.TreeNodeFlagBits.BulletPt;
 
-fn drawPtrUI(dataPtr: var, arena: *Allocator) void {
-    const DataType = @typeOf(dataPtr).Child;
+/// Recursively draws generated read-only UI for a single struct.
+fn drawStructUI(comptime DataType: type, dataPtr: *const DataType, arena: *Allocator) void {
     switch (@typeInfo(DataType)) {
         .Struct => |info| {
             inline for (info.fields) |field| {
-                drawFieldUI(&@field(dataPtr, field.name), field.field_type, &(field.name ++ NullTerm), arena);
+                drawFieldUI(field.field_type, &@field(dataPtr, field.name), &(field.name ++ NullTerm), arena);
             }
         },
         .Pointer => {
-            drawPtrUI(dataPtr.*, arena);
+            drawStructUI(DataType.Child, dataPtr.*, arena);
         },
-        else => @compileError("Invalid type passed to drawPtrUI: " ++ @typeName(DataType)),
+        else => @compileError("Invalid type passed to drawStructUI: " ++ @typeName(DataType)),
     }
 }
 
-fn drawFieldUI(fieldPtr: var, comptime FieldType: type, name: [*]const u8, arena: *Allocator) void {
+/// Recursively draws generated read-only UI for a named field.
+/// name must be a null-terminated string.
+fn drawFieldUI(comptime FieldType: type, fieldPtr: *const FieldType, name: [*]const u8, arena: *Allocator) void {
     if (FieldType == c_void) {
         ig.AlignTextToFramePadding();
         _ = ig.TreeNodeExStr(name, InlineFlags);
@@ -172,7 +194,7 @@ fn drawFieldUI(fieldPtr: var, comptime FieldType: type, name: [*]const u8, arena
             ig.NextColumn();
         },
         .Array => |info| {
-            drawSliceFieldUI(fieldPtr.*[0..info.len], info.child, name, arena);
+            drawSliceFieldUI(info.child, fieldPtr.*[0..info.len], name, arena);
         },
         .Enum => |info| {
             ig.AlignTextToFramePadding();
@@ -192,12 +214,12 @@ fn drawFieldUI(fieldPtr: var, comptime FieldType: type, name: [*]const u8, arena
             ig.Text(c"%s", &(@typeName(FieldType) ++ NullTerm));
             ig.NextColumn();
             if (nodeOpen) {
-                drawPtrUI(fieldPtr, arena);
+                drawStructUI(FieldType, fieldPtr, arena);
             }
         },
         .Optional => |info| {
             if (fieldPtr.*) |nonnullValue| {
-                drawFieldUI(&nonnullValue, info.child, name, arena);
+                drawFieldUI(info.child, &nonnullValue, name, arena);
             } else {
                 ig.AlignTextToFramePadding();
                 _ = ig.TreeNodeExStr(name, InlineFlags);
@@ -209,8 +231,8 @@ fn drawFieldUI(fieldPtr: var, comptime FieldType: type, name: [*]const u8, arena
         },
         .Pointer => |info| {
             switch (info.size) {
-                .One => drawFieldUI(fieldPtr.*, info.child, name, arena),
-                .Slice => drawSliceFieldUI(fieldPtr.*, info.child, name, arena),
+                .One => drawFieldUI(info.child, fieldPtr.*, name, arena),
+                .Slice => drawSliceFieldUI(info.child, fieldPtr.*, name, arena),
                 else => {
                     ig.AlignTextToFramePadding();
                     _ = ig.TreeNodeExStr(name, InlineFlags);
@@ -234,22 +256,24 @@ fn drawFieldUI(fieldPtr: var, comptime FieldType: type, name: [*]const u8, arena
             _ = ig.TreeNodeExStr(name, InlineFlags);
             ig.NextColumn();
             ig.AlignTextToFramePadding();
-            ig.Text(&("<TODO " ++ @typeName(FieldType) ++ ">" ++ NullTerm));
+            ig.Text(&("<TODO " ++ @typeName(FieldType) ++ ">@0x%p" ++ NullTerm), fieldPtr);
             ig.NextColumn();
         },
     }
 }
 
-fn drawSliceFieldUI(slice: var, comptime DataType: type, name: [*]const u8, arena: *Allocator) void {
-    if (DataType == u8) {
-        // make sure this is a null-terminated slice
-        assert(slice.ptr[slice.len] == 0);
-
+/// Recursively draws generated UI for a slice.  If the slice is []u8, checks if it is a printable string
+/// and draws it if so.  Otherwise generates similar UI to a struct, with fields named [0], [1], etc.
+/// If the slice has length one and its payload is a struct, the [0] field will be elided and the single
+/// element will be displayed inline.
+fn drawSliceFieldUI(comptime DataType: type, slice: []const DataType, name: [*]const u8, arena: *Allocator) void {
+    if (DataType == u8 and slice.len < MAX_STRING_LEN and isPrintable(slice)) {
         ig.AlignTextToFramePadding();
         _ = ig.TreeNodeExStr(name, InlineFlags);
         ig.NextColumn();
         ig.AlignTextToFramePadding();
-        ig.Text(c"\"%s\"", slice.ptr);
+        const nullTermStr = if (std.fmt.allocPrint(arena, "{}" ++ NullTerm, slice)) |cstr| cstr.ptr else |err| c"out of memory";
+        ig.Text(c"\"%s\"", nullTermStr);
         ig.NextColumn();
     } else {
         ig.AlignTextToFramePadding();
@@ -260,18 +284,41 @@ fn drawSliceFieldUI(slice: var, comptime DataType: type, name: [*]const u8, aren
         ig.Text(c"[%llu]%s", slice.len, &(@typeName(DataType) ++ NullTerm));
         ig.NextColumn();
         if (nodeOpen) {
-            comptime var T = DataType;
-            comptime while (@typeInfo(T) == .Pointer and @typeInfo(T).Pointer.size == .One) {
-                T = T.Child;
-            };
-            if (@typeInfo(T) == .Struct and slice.len == 1) {
-                drawPtrUI(&slice[0], arena);
+            const NextDisplayType = RemoveSinglePointers(DataType);
+            if (@typeInfo(NextDisplayType) == .Struct and slice.len == 1) {
+                drawStructUI(DataType, &slice[0], arena);
             } else {
                 for (slice) |*item, i| {
                     const itemName: [*]const u8 = if (std.fmt.allocPrint(arena, "[{}]" ++ NullTerm, i)) |str| str.ptr else |err| c"<out of memory>";
-                    drawFieldUI(item, DataType, itemName, arena);
+                    drawFieldUI(DataType, item, itemName, arena);
                 }
             }
         }
     }
+}
+
+const MAX_STRING_LEN = 255;
+
+/// Returns true if the string is made up of only printable characters.
+/// \n,\r, and \t are not considered printable by this function.
+fn isPrintable(string: []const u8) bool {
+    for (string) |char| {
+        if (char < 32 or char > 126) return false;
+    }
+    return true;
+}
+
+/// Returns the type that this type points to after unwrapping all
+/// non-nullable single pointers.  Examples:
+/// *T -> T
+/// **T -> T
+/// ?*T -> ?*T
+/// **?*T -> ?*T
+/// *[*]*T -> [*]*T
+fn RemoveSinglePointers(comptime InType: type) type {
+    comptime var Type = InType;
+    comptime while (@typeInfo(Type) == .Pointer and @typeInfo(Type).Pointer.size == .One) {
+        Type = Type.Child;
+    };
+    return Type;
 }
