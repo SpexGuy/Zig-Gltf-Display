@@ -242,7 +242,7 @@ const __glsl_shader_frag_spv = [_]u32{
 // FUNCTIONS
 //-----------------------------------------------------------------------------
 
-fn MemoryType(properties: vk.MemoryPropertyFlags, type_bits: u32) ?u32 {
+pub fn MemoryType(properties: vk.MemoryPropertyFlags, type_bits: u32) ?u32 {
     var v = &g_VulkanInitInfo;
     var prop = vk.GetPhysicalDeviceMemoryProperties(v.PhysicalDevice);
     for (prop.memoryTypes[0..prop.memoryTypeCount]) |memType, i|

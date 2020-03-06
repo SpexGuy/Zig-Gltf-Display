@@ -2,7 +2,7 @@ const std = @import("std");
 const ig = @import("imgui");
 const cgltf = @import("cgltf");
 const gltf = @import("gltf_wrap.zig");
-const Engine = @import("engine.zig").g_Engine;
+const engine = @import("engine.zig");
 
 const Allocator = std.mem.Allocator;
 const warn = std.debug.warn;
@@ -57,8 +57,8 @@ fn unloadModel(data: *gltf.Data) void {
 }
 
 pub fn main() !void {
-    try Engine.init(c"glTF Renderer", heap_allocator);
-    defer Engine.deinit();
+    try engine.init(c"glTF Renderer", heap_allocator);
+    defer engine.deinit();
 
     // Our state
     var show_demo_window = false;
@@ -69,7 +69,7 @@ pub fn main() !void {
     defer unloadModel(data);
 
     // Main loop
-    while (try Engine.beginFrame()) : (Engine.endFrame()) {
+    while (try engine.beginFrame()) : (engine.endFrame()) {
         // show the options window
         OPTIONS_WINDOW: {
             const open = ig.Begin(c"Control", null, 0);
@@ -95,7 +95,7 @@ pub fn main() !void {
         if (show_gltf_data) drawGltfUI(data, &show_gltf_data);
 
         // waits on frame ready semaphore
-        var frame = try Engine.render.beginRender();
+        var frame = try engine.render.beginRender();
         defer frame.end();
 
         // TODO: Make this beginRenderPass(colorPass)
@@ -104,7 +104,7 @@ pub fn main() !void {
 
         // rendering code here...
 
-        try Engine.render.renderImgui(&colorRender);
+        try engine.render.renderImgui(&colorRender);
     }
 }
 
@@ -251,7 +251,7 @@ fn drawFieldUI(comptime FieldType: type, fieldPtr: *const FieldType, name: [*]co
             _ = ig.TreeNodeExStr(name, INLINE_FLAGS);
             ig.NextColumn();
             ig.AlignTextToFramePadding();
-            ig.Text(c"0x%p", fieldPtr);
+            ig.Text(c"%s@0x%p", &(@typeName(FieldType) ++ NULL_TERM), fieldPtr);
             ig.NextColumn();
         },
         else => {
