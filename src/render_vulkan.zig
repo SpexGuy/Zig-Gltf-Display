@@ -38,6 +38,12 @@ pub var descriptorPool: vk.DescriptorPool = undefined;
 pub var surface: vk.SurfaceKHR = undefined;
 
 // ----------------------- Render types -------------------------
+pub const Buffer = struct {
+    buffer: vk.Buffer,
+    // TODO VMA: better memory management
+    memory: vk.DeviceMemory,
+};
+
 pub const RenderFrame = struct {
     frameIndex: u32,
     fsd: *impl_vulkan.FrameSemaphores,
@@ -446,6 +452,23 @@ pub fn beginUpload(frame: *RenderFrame) !RenderUpload {
     };
 }
 
+pub fn uploadCopyBuffer(
+    frame: *RenderFrame,
+    upload: *RenderUpload,
+    source: *Buffer,
+    sourceOffset: usize,
+    dest: *Buffer,
+    destOffset: usize,
+    len: usize,
+) void {
+    const copyRegion = vk.BufferCopy{
+        .srcOffset = sourceOffset,
+        .dstOffset = destOffset,
+        .size = len,
+    };
+    vk.CmdCopyBuffer(upload.commandBuffer, source.buffer, dest.buffer, arrayPtr(&copyRegion));
+}
+
 pub fn abortUpload(frame: *RenderFrame, upload: *RenderUpload) void {
     vk.ResetCommandBuffer(upload.commandBuffer, vk.CommandBufferResetFlagBits.RELEASE_RESOURCES_BIT) catch {};
 }
@@ -460,12 +483,77 @@ pub fn endUploadAndWait(frame: *RenderFrame, upload: *RenderUpload) void {
     vk.QueueWaitIdle(queue) catch @panic("QueueWaitIdle failed!");
 }
 
+pub fn createGpuBuffer(size: usize, flags: vk.BufferUsageFlags) !Buffer {
+    const memoryFlags = vk.MemoryPropertyFlagBits.DEVICE_LOCAL_BIT;
+    const usageFlags = vk.BufferUsageFlagBits.TRANSFER_DST_BIT | flags;
+
+    return try createVkBuffer(size, usageFlags, memoryFlags);
+}
+
+pub fn createStagingBuffer(size: usize) !Buffer {
+    const memoryFlags = vk.MemoryPropertyFlagBits.HOST_VISIBLE_BIT | vk.MemoryPropertyFlagBits.HOST_COHERENT_BIT;
+    const usageFlags = vk.BufferUsageFlagBits.TRANSFER_SRC_BIT;
+
+    return try createVkBuffer(size, usageFlags, memoryFlags);
+}
+
+pub fn destroyBuffer(buffer: *Buffer) void {
+    vk.DestroyBuffer(device, buffer.buffer, vkAllocator);
+    vk.FreeMemory(device, buffer.memory, vkAllocator);
+}
+
+pub fn mapBuffer(buffer: *Buffer, offset: usize, length: usize) ![*]u8 {
+    var result: [*]u8 = undefined;
+    try vk.MapMemory(device, buffer.memory, offset, length, 0, @ptrCast(**c_void, &result));
+    return result;
+}
+
+pub fn flushMappedRange(buffer: *Buffer, mappedPtr: [*]u8, offset: usize, length: usize) !void {
+    const range = vk.MappedMemoryRange{
+        .memory = buffer.memory,
+        .offset = offset,
+        .size = length,
+    };
+    try vk.FlushMappedMemoryRanges(device, arrayPtr(&range));
+}
+
+pub fn unmapBuffer(buffer: *Buffer, mappedPtr: [*]u8, offset: usize, length: usize) void {
+    vk.UnmapMemory(device, buffer.memory);
+}
+
 pub fn renderImgui(frame: *RenderFrame, pass: *RenderPass) !void {
     // Record Imgui Draw Data and draw funcs into command buffer
     try impl_vulkan.RenderDrawData(imgui.GetDrawData(), pass.cb);
 }
 
 // ----------------------- Backend functions -------------------------
+pub fn createVkBuffer(size: usize, usageFlags: vk.BufferUsageFlags, memoryFlags: vk.MemoryPropertyFlags) !Buffer {
+    const info = vk.BufferCreateInfo{
+        .size = size,
+        .usage = usageFlags,
+        .sharingMode = .EXCLUSIVE,
+    };
+
+    const buffer = try vk.CreateBuffer(device, info, vkAllocator);
+    errdefer vk.DestroyBuffer(device, buffer, vkAllocator);
+
+    const stagingReqs = vk.GetBufferMemoryRequirements(device, buffer);
+    const stagingAllocInfo = vk.MemoryAllocateInfo{
+        .allocationSize = stagingReqs.size,
+        .memoryTypeIndex = getMemoryTypeIndex(stagingReqs.memoryTypeBits, memoryFlags),
+    };
+
+    // TODO VMA: better allocation management
+    const memory = try vk.AllocateMemory(device, stagingAllocInfo, vkAllocator);
+    errdefer vk.FreeMemory(device, memory, vkAllocator);
+    try vk.BindBufferMemory(device, buffer, memory, 0);
+
+    return Buffer{
+        .buffer = buffer,
+        .memory = memory,
+    };
+}
+
 pub fn getMemoryTypeIndex(memType: u32, properties: vk.MemoryPropertyFlags) u32 {
     return impl_vulkan.MemoryType(properties, memType).?;
 }

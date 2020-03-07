@@ -2,14 +2,14 @@ const std = @import("std");
 const cgltf = @import("cgltf");
 const vk = @import("vk");
 const engine = @import("engine.zig");
+const render = engine.render;
 
 pub const Buffer = struct {
     raw: *cgltf.Buffer,
 
     usageFlags: vk.BufferUsageFlags = 0,
     updateRate: engine.render.UpdateRate = .STATIC,
-    gpuBuffer: ?vk.Buffer = null,
-    gpuMemory: ?vk.DeviceMemory = null,
+    gpuBuffer: ?render.Buffer = null,
 };
 
 pub const BufferView = struct {

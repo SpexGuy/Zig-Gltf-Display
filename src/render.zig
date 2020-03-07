@@ -2,6 +2,11 @@ const std = @import("std");
 const imgui = @import("imgui");
 const glfw = @import("glfw");
 
+const engine = @import("engine.zig");
+
+// TODO: No vulkan allowed at this layer!!
+const vk = @import("vk");
+
 const Allocator = std.mem.Allocator;
 const assert = std.debug.assert;
 
@@ -24,17 +29,103 @@ pub const UpdateRate = enum {
     STREAMING,
 };
 
+pub const MappedRange = struct {
+    const Self = @This();
+
+    buffer: *Buffer,
+    byteOffset: usize,
+    data: []u8,
+
+    fn flush(self: *Self) !void {
+        try backend.flushMappedRange(&self.buffer.backend, self.data.ptr, self.byteOffset, self.data.len);
+    }
+
+    fn flushPart(self: *Self, comptime T: type, byteOffset: usize, count: usize) !void {
+        const lenBytes = count * @sizeOf(T);
+        assert(byteOffset + lenBytes <= self.data.len);
+        try backend.flushMappedRange(&self.buffer.backend, self.data.ptr, self.byteOffset + byteOffset, lenBytes);
+    }
+
+    fn get(self: *Self, comptime T: type) []T {
+        const count = self.data.len / @sizeOf(T);
+        return @intToPtr([*]T, @ptrToInt(self.data.ptr))[0..count];
+    }
+
+    fn getPart(self: *Self, comptime T: type, byteOffset: usize, count: usize) []T {
+        assert(byteOffset + count * @sizeOf(T) < self.data.len);
+        return @intToPtr([*]T, @ptrToInt(self.data.ptr) + byteOffset)[0..count];
+    }
+
+    fn end(self: *Self) void {
+        backend.unmapBuffer(&self.buffer.backend, self.data.ptr, self.byteOffset, self.data.len);
+    }
+};
+
+pub const Buffer = struct {
+    const Self = @This();
+
+    len: usize,
+    backend: backend.Buffer,
+
+    fn beginMap(self: *Buffer) !MappedRange {
+        return MappedRange{
+            .buffer = self,
+            .byteOffset = 0,
+            .data = (try backend.mapBuffer(&self.backend, 0, self.len))[0..self.len],
+        };
+    }
+
+    fn beginMapPart(self: *Buffer, comptime T: type, byteOffset: usize, itemCount: usize) !MappedRange {
+        const mapLengthBytes = itemCount * @sizeOf(T);
+        assert(mapLengthBytes + byteOffset <= self.mapLengthBytes);
+        return MappedRange{
+            .buffer = self,
+            .byteOffset = byteOffset,
+            .data = (try backend.mapBuffer(&self.backend, byteOffset, mapLengthBytes))[0..mapLengthBytes],
+        };
+    }
+
+    fn destroy(self: *Buffer) void {
+        backend.destroyBuffer(&self.backend);
+    }
+};
+
 pub const Upload = struct {
     const Self = @This();
 
     frame: *Frame,
     backend: backend.RenderUpload,
+    managedBuffers: std.ArrayList(Buffer),
+
+    pub fn copyBuffer(self: *Self, source: *Buffer, dest: *Buffer) void {
+        assert(dest.len >= source.len);
+        backend.uploadCopyBuffer(&self.frame.backend, &self.backend, &source.backend, 0, &dest.backend, 0, source.len);
+    }
+
+    pub fn copyBufferPart(self: *Self, source: *Buffer, sourceOffset: usize, dest: *Buffer, destOffset: usize, len: usize) void {
+        assert(sourceOffset + len <= source.len);
+        assert(destOffset + len <= dest.len);
+        backend.uploadCopyBuffer(&self.frame.backend, &self.backend, &source.backend, sourceOffset, &dest.backend, destOffset, len);
+    }
+
+    pub fn setBufferData(self: *Self, buffer: *Buffer, offset: usize, data: []const u8) !void {
+        assert(offset + data.len <= buffer.len);
+        const stagingBuffer = try self.newManagedStagingBuffer(data.len);
+        {
+            var map = try stagingBuffer.beginMap();
+            defer map.end();
+            @memcpy(map.data.ptr, data.ptr, data.len);
+            try map.flush();
+        }
+        self.copyBufferPart(stagingBuffer, 0, buffer, offset, data.len);
+    }
 
     pub fn abort(self: *Self) void {
         assert(self.frame.state == .UPLOAD);
         self.frame.state = .IDLE;
 
         backend.abortUpload(&self.frame.backend, &self.backend);
+        self._deleteManagedBuffers();
     }
 
     pub fn endAndWait(self: *Self) void {
@@ -42,6 +133,20 @@ pub const Upload = struct {
         self.frame.state = .IDLE;
 
         backend.endUploadAndWait(&self.frame.backend, &self.backend);
+        self._deleteManagedBuffers();
+    }
+
+    pub fn newManagedStagingBuffer(self: *Self, size: usize) !*Buffer {
+        const bufPtr = try self.managedBuffers.addOne();
+        errdefer self.managedBuffers.len -= 1;
+        bufPtr.* = try createStagingBuffer(size);
+        errdefer bufPtr.destroy();
+        return bufPtr;
+    }
+
+    pub fn _deleteManagedBuffers(self: *Self) void {
+        for (self.managedBuffers.toSlice()) |*buffer| buffer.destroy();
+        self.managedBuffers.deinit();
     }
 };
 
@@ -84,6 +189,7 @@ pub const Frame = struct {
         return Upload{
             .frame = self,
             .backend = try backend.beginUpload(&self.backend),
+            .managedBuffers = std.ArrayList(Buffer).init(engine.allocator),
         };
     }
 
@@ -110,6 +216,21 @@ pub fn beginRender() !Frame {
 pub fn renderImgui(pass: *Pass) !void {
     imgui.Render();
     try backend.renderImgui(&pass.frame.backend, &pass.backend);
+}
+
+pub fn createStagingBuffer(size: usize) !Buffer {
+    return Buffer{
+        .len = size,
+        .backend = try backend.createStagingBuffer(size),
+    };
+}
+
+// TODO: No vulkan allowed at this layer!!
+pub fn createGpuBuffer(size: usize, flags: vk.BufferUsageFlags) !Buffer {
+    return Buffer{
+        .len = size,
+        .backend = try backend.createGpuBuffer(size, flags),
+    };
 }
 
 // ----------------------- Internal functions -------------------------
