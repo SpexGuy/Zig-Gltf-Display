@@ -19,27 +19,27 @@ const models = [_]ModelPath{
     makePath("AnimatedMorphSphere"),
 };
 
-const FIRST_MODEL = usize(0);
+const FIRST_MODEL = @as(usize, 0);
 var loadedModelIndex = FIRST_MODEL;
 var targetModelIndex = FIRST_MODEL;
 
 const ModelPath = struct {
-    gltfFile: [*]const u8,
-    directory: [*]const u8,
+    gltfFile: [*:0]const u8,
+    directory: [*:0]const u8,
 };
 
 fn makePath(comptime model: []const u8) ModelPath {
     const gen = struct {
-        const path = "models/" ++ model ++ "/glTF/" ++ model ++ ".gltf" ++ [_]u8{0};
-        const dir = "models/" ++ model ++ "/glTF/" ++ [_]u8{0};
+        const path = "models/" ++ model ++ "/glTF/" ++ model ++ ".gltf";
+        const dir = "models/" ++ model ++ "/glTF/";
     };
-    return ModelPath{ .gltfFile = &gen.path, .directory = &gen.dir };
+    return ModelPath{ .gltfFile = gen.path, .directory = gen.dir };
 }
 
 fn loadModel(index: usize) !*gltf.Data {
     const nextModel = &models[targetModelIndex];
 
-    std.debug.warn("Loading {}\n", std.mem.toSliceConst(u8, nextModel.gltfFile));
+    std.debug.warn("Loading {}\n", .{std.mem.spanZ(nextModel.gltfFile)});
 
     const options = cgltf.Options{};
 
@@ -62,8 +62,8 @@ fn uploadRenderingData(data: *gltf.Data, frame: *engine.render.Frame) !void {
 
 fn markUsageFlags(data: *gltf.Data) void {
     for (data.buffer_views) |view| {
-        if (view.raw.type == .vertices) view.buffer.usageFlags |= vk.BufferUsageFlagBits.VERTEX_BUFFER_BIT;
-        if (view.raw.type == .indices) view.buffer.usageFlags |= vk.BufferUsageFlagBits.INDEX_BUFFER_BIT;
+        if (view.raw.type == .vertices) view.buffer.usageFlags.vertexBuffer = true;
+        if (view.raw.type == .indices) view.buffer.usageFlags.indexBuffer = true;
     }
 }
 
@@ -106,7 +106,7 @@ var show_gltf_data = false;
 var clearColor = ig.Vec4{ .x = 0.2, .y = 0.2, .z = 0.2, .w = 1 };
 
 pub fn main() !void {
-    try engine.init(c"glTF Renderer", heap_allocator);
+    try engine.init("glTF Renderer", heap_allocator);
     defer engine.deinit();
 
     // Our state
@@ -118,21 +118,21 @@ pub fn main() !void {
     while (try engine.beginFrame()) : (engine.endFrame()) {
         // show the options window
         OPTIONS_WINDOW: {
-            const open = ig.Begin(c"Control", null, 0);
+            const open = ig.Begin("Control", null, 0);
             defer ig.End();
             if (!open) break :OPTIONS_WINDOW;
 
-            ig.Text(c"Current File (%lld/%lld): %s", loadedModelIndex + 1, models.len, models[loadedModelIndex].gltfFile);
-            if (ig.Button(c"Load Previous File", ig.Vec2{ .x = 0, .y = 0 })) {
+            ig.Text("Current File (%lld/%lld): %s", loadedModelIndex + 1, models.len, models[loadedModelIndex].gltfFile);
+            if (ig.Button("Load Previous File", ig.Vec2{ .x = 0, .y = 0 })) {
                 targetModelIndex = (if (targetModelIndex == 0) models.len else targetModelIndex) - 1;
             }
             ig.SameLine(0, -1);
-            if (ig.Button(c"Load Next File", ig.Vec2{ .x = 0, .y = 0 })) {
+            if (ig.Button("Load Next File", ig.Vec2{ .x = 0, .y = 0 })) {
                 targetModelIndex = if (targetModelIndex >= models.len - 1) 0 else (targetModelIndex + 1);
             }
-            _ = ig.Checkbox(c"Show glTF Data", &show_gltf_data);
-            _ = ig.Checkbox(c"Show ImGui Demo", &show_demo_window);
-            if (ig.Button(c"Crash", ig.Vec2{ .x = 0, .y = 0 })) {
+            _ = ig.Checkbox("Show glTF Data", &show_gltf_data);
+            _ = ig.Checkbox("Show ImGui Demo", &show_demo_window);
+            if (ig.Button("Crash", ig.Vec2{ .x = 0, .y = 0 })) {
                 @panic("Don't press the big shiny button!");
             }
         }
@@ -150,7 +150,7 @@ pub fn main() !void {
         defer frame.end();
 
         if (data.renderingDataInitialized != true) {
-            warn("Setting up rendering data...\n");
+            warn("Setting up rendering data...\n", .{});
             try uploadRenderingData(data, &frame);
             assert(data.renderingDataInitialized);
         }
@@ -172,7 +172,7 @@ fn drawGltfUI(data: *gltf.Data, show: *bool) void {
 
     const Static = struct {};
 
-    const showWindow = ig.Begin(c"glTF Data", show, 0);
+    const showWindow = ig.Begin("glTF Data", show, 0);
     defer ig.End();
 
     // early out as an optimization
@@ -192,6 +192,17 @@ fn drawGltfUI(data: *gltf.Data, show: *bool) void {
 }
 
 const NULL_TERM = [_]u8{0};
+fn nullTerm(comptime str: []const u8) [:0]const u8 {
+    const fullStr = str ++ NULL_TERM;
+    return fullStr[0..str.len :0];
+}
+
+fn allocPrintZ(allocator: *Allocator, comptime fmt: []const u8, params: var) ![:0]const u8 {
+    const formatted = try std.fmt.allocPrint(allocator, fmt ++ NULL_TERM, params);
+    assert(formatted[formatted.len - 1] == 0);
+    return formatted[0 .. formatted.len - 1 :0];
+}
+
 const INLINE_FLAGS = ig.TreeNodeFlagBits.Leaf | ig.TreeNodeFlagBits.NoTreePushOnOpen | ig.TreeNodeFlagBits.BulletPt;
 const MAX_STRING_LEN = 255;
 
@@ -201,7 +212,7 @@ fn drawStructUI(comptime DataType: type, dataPtr: *const DataType, arena: *Alloc
     switch (@typeInfo(DataType)) {
         .Struct => |info| {
             inline for (info.fields) |field| {
-                drawFieldUI(field.field_type, &@field(dataPtr, field.name), &(field.name ++ NULL_TERM), arena);
+                drawFieldUI(field.field_type, &@field(dataPtr, field.name), nullTerm(field.name), arena);
             }
         },
         .Pointer => {
@@ -214,43 +225,44 @@ fn drawStructUI(comptime DataType: type, dataPtr: *const DataType, arena: *Alloc
 /// Recursively draws generated read-only UI for a named field.
 /// name must be a null-terminated string.
 /// No memory from the passed arena is in use after this call.  It can be freed or reset.
-fn drawFieldUI(comptime FieldType: type, fieldPtr: *const FieldType, name: [*]const u8, arena: *Allocator) void {
+/// fieldPtr is `var` to allow arbitrary bit alignment
+fn drawFieldUI(comptime FieldType: type, fieldPtr: var, name: [:0]const u8, arena: *Allocator) void {
     if (FieldType == c_void) {
         ig.AlignTextToFramePadding();
-        _ = ig.TreeNodeExStr(name, INLINE_FLAGS);
+        _ = ig.TreeNodeExStr(name.ptr, INLINE_FLAGS);
         ig.NextColumn();
         ig.AlignTextToFramePadding();
-        ig.Text(c"0x%p", fieldPtr);
+        ig.Text("0x%p", fieldPtr);
         ig.NextColumn();
         return;
     }
     switch (@typeInfo(FieldType)) {
         .Bool => {
             ig.AlignTextToFramePadding();
-            _ = ig.TreeNodeExStr(name, INLINE_FLAGS);
+            _ = ig.TreeNodeExStr(name.ptr, INLINE_FLAGS);
             ig.NextColumn();
             ig.AlignTextToFramePadding();
-            ig.Text(if (fieldPtr.*) c"true" else c"false");
+            ig.Text(if (fieldPtr.*) "true" else "false");
             ig.NextColumn();
         },
         .Int => |info| {
             ig.AlignTextToFramePadding();
-            _ = ig.TreeNodeExStr(name, INLINE_FLAGS);
+            _ = ig.TreeNodeExStr(name.ptr, INLINE_FLAGS);
             ig.NextColumn();
             ig.AlignTextToFramePadding();
             if (info.is_signed) {
-                ig.Text(c"%lld (%s)", @intCast(isize, fieldPtr.*), &(@typeName(FieldType) ++ NULL_TERM));
+                ig.Text("%lld (%s)", @intCast(isize, fieldPtr.*), @typeName(FieldType));
             } else {
-                ig.Text(c"%llu (%s)", @intCast(usize, fieldPtr.*), &(@typeName(FieldType) ++ NULL_TERM));
+                ig.Text("%llu (%s)", @intCast(usize, fieldPtr.*), @typeName(FieldType));
             }
             ig.NextColumn();
         },
         .Float => {
             ig.AlignTextToFramePadding();
-            _ = ig.TreeNodeExStr(name, INLINE_FLAGS);
+            _ = ig.TreeNodeExStr(name.ptr, INLINE_FLAGS);
             ig.NextColumn();
             ig.AlignTextToFramePadding();
-            ig.Text(c"%f (%s)", fieldPtr.*, &(@typeName(FieldType) ++ NULL_TERM));
+            ig.Text("%f (%s)", fieldPtr.*, @typeName(FieldType));
             ig.NextColumn();
         },
         .Array => |info| {
@@ -258,20 +270,20 @@ fn drawFieldUI(comptime FieldType: type, fieldPtr: *const FieldType, name: [*]co
         },
         .Enum => |info| {
             ig.AlignTextToFramePadding();
-            _ = ig.TreeNodeExStr(name, INLINE_FLAGS);
+            _ = ig.TreeNodeExStr(name.ptr, INLINE_FLAGS);
             ig.NextColumn();
             ig.AlignTextToFramePadding();
-            const cstr = if (std.fmt.allocPrint(arena, "{}" ++ NULL_TERM, @tagName(fieldPtr.*))) |str| str.ptr else |err| c"<out of memory>";
-            ig.Text(c".%s", cstr);
+            const cstr = if (allocPrintZ(arena, "{}", .{@tagName(fieldPtr.*)})) |str| str else |err| "<out of memory>";
+            ig.Text(".%s", cstr.ptr);
             ig.NextColumn();
         },
         .Struct => |info| {
             ig.AlignTextToFramePadding();
-            const nodeOpen = ig.TreeNodeStr(name);
+            const nodeOpen = ig.TreeNodeStr(name.ptr);
             defer if (nodeOpen) ig.TreePop();
             ig.NextColumn();
             ig.AlignTextToFramePadding();
-            ig.Text(c"%s", &(@typeName(FieldType) ++ NULL_TERM));
+            ig.Text("%s", @typeName(FieldType));
             ig.NextColumn();
             if (nodeOpen) {
                 drawStructUI(FieldType, fieldPtr, arena);
@@ -282,10 +294,10 @@ fn drawFieldUI(comptime FieldType: type, fieldPtr: *const FieldType, name: [*]co
                 drawFieldUI(info.child, &nonnullValue, name, arena);
             } else {
                 ig.AlignTextToFramePadding();
-                _ = ig.TreeNodeExStr(name, INLINE_FLAGS);
+                _ = ig.TreeNodeExStr(name.ptr, INLINE_FLAGS);
                 ig.NextColumn();
                 ig.AlignTextToFramePadding();
-                ig.Text(c"null");
+                ig.Text("null");
                 ig.NextColumn();
             }
         },
@@ -295,28 +307,28 @@ fn drawFieldUI(comptime FieldType: type, fieldPtr: *const FieldType, name: [*]co
                 .Slice => drawSliceFieldUI(info.child, fieldPtr.*, name, arena),
                 else => {
                     ig.AlignTextToFramePadding();
-                    _ = ig.TreeNodeExStr(name, INLINE_FLAGS);
+                    _ = ig.TreeNodeExStr(name.ptr, INLINE_FLAGS);
                     ig.NextColumn();
                     ig.AlignTextToFramePadding();
-                    ig.Text(c"0x%p", fieldPtr.*);
+                    ig.Text("0x%p", fieldPtr.*);
                     ig.NextColumn();
                 },
             }
         },
         .Opaque => {
             ig.AlignTextToFramePadding();
-            _ = ig.TreeNodeExStr(name, INLINE_FLAGS);
+            _ = ig.TreeNodeExStr(name.ptr, INLINE_FLAGS);
             ig.NextColumn();
             ig.AlignTextToFramePadding();
-            ig.Text(c"%s@0x%p", &(@typeName(FieldType) ++ NULL_TERM), fieldPtr);
+            ig.Text("%s@0x%p", @typeName(FieldType), fieldPtr);
             ig.NextColumn();
         },
         else => {
             ig.AlignTextToFramePadding();
-            _ = ig.TreeNodeExStr(name, INLINE_FLAGS);
+            _ = ig.TreeNodeExStr(name.ptr, INLINE_FLAGS);
             ig.NextColumn();
             ig.AlignTextToFramePadding();
-            ig.Text(&("<TODO " ++ @typeName(FieldType) ++ ">@0x%p" ++ NULL_TERM), fieldPtr);
+            ig.Text("<TODO " ++ @typeName(FieldType) ++ ">@0x%p", fieldPtr);
             ig.NextColumn();
         },
     }
@@ -327,22 +339,22 @@ fn drawFieldUI(comptime FieldType: type, fieldPtr: *const FieldType, name: [*]co
 /// If the slice has length one and its payload is a struct, the [0] field will be elided and the single
 /// element will be displayed inline.
 /// No memory from the passed arena is in use after this call.  It can be freed or reset.
-fn drawSliceFieldUI(comptime DataType: type, slice: []const DataType, name: [*]const u8, arena: *Allocator) void {
+fn drawSliceFieldUI(comptime DataType: type, slice: []const DataType, name: [:0]const u8, arena: *Allocator) void {
     if (DataType == u8 and slice.len < MAX_STRING_LEN and isPrintable(slice)) {
         ig.AlignTextToFramePadding();
-        _ = ig.TreeNodeExStr(name, INLINE_FLAGS);
+        _ = ig.TreeNodeExStr(name.ptr, INLINE_FLAGS);
         ig.NextColumn();
         ig.AlignTextToFramePadding();
-        const nullTermStr = if (std.fmt.allocPrint(arena, "{}" ++ NULL_TERM, slice)) |cstr| cstr.ptr else |err| c"out of memory";
-        ig.Text(c"\"%s\"", nullTermStr);
+        const nullTermStr = if (allocPrintZ(arena, "{}", .{slice})) |cstr| cstr else |err| "out of memory";
+        ig.Text("\"%s\" ", nullTermStr.ptr);
         ig.NextColumn();
     } else {
         ig.AlignTextToFramePadding();
-        const nodeOpen = ig.TreeNodeStr(name);
+        const nodeOpen = ig.TreeNodeStr(name.ptr);
         defer if (nodeOpen) ig.TreePop();
         ig.NextColumn();
         ig.AlignTextToFramePadding();
-        ig.Text(c"[%llu]%s", slice.len, &(@typeName(DataType) ++ NULL_TERM));
+        ig.Text("[%llu]%s", slice.len, nullTerm(@typeName(DataType)).ptr);
         ig.NextColumn();
         if (nodeOpen) {
             const NextDisplayType = RemoveSinglePointers(DataType);
@@ -350,7 +362,8 @@ fn drawSliceFieldUI(comptime DataType: type, slice: []const DataType, name: [*]c
                 drawStructUI(DataType, &slice[0], arena);
             } else {
                 for (slice) |*item, i| {
-                    const itemName: [*]const u8 = if (std.fmt.allocPrint(arena, "[{}]" ++ NULL_TERM, i)) |str| str.ptr else |err| c"<out of memory>";
+                    // TODO: Put null-terminated printing into
+                    const itemName: [:0]const u8 = if (allocPrintZ(arena, "[{}]", .{i})) |str| str else |err| "<out of memory>";
                     drawFieldUI(DataType, item, itemName, arena);
                 }
             }

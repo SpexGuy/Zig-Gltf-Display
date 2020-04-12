@@ -14,7 +14,7 @@ pub var allocator: *Allocator = undefined;
 pub var window: *glfw.GLFWwindow = undefined;
 
 // ----------------------- Public functions -------------------------
-pub fn init(windowName: [*]const u8, heap_allocator: *Allocator) !void {
+pub fn init(windowName: [:0]const u8, heap_allocator: *Allocator) !void {
     assert(!_engineInitialized);
 
     allocator = heap_allocator;
@@ -66,6 +66,6 @@ pub fn endFrame() void {}
 
 // ----------------------- Internal functions -------------------------
 
-extern fn glfw_error_callback(err: c_int, description: ?[*]const u8) void {
-    std.debug.warn("Glfw Error {}: {}\n", err, std.mem.toSliceConst(u8, description.?));
+fn glfw_error_callback(err: c_int, description: ?[*:0]const u8) callconv(.C) void {
+    std.debug.warn("Glfw Error {}: {}\n", .{err, std.mem.spanZ(description.?)});
 }

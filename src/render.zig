@@ -138,7 +138,7 @@ pub const Upload = struct {
 
     pub fn newManagedStagingBuffer(self: *Self, size: usize) !*Buffer {
         const bufPtr = try self.managedBuffers.addOne();
-        errdefer self.managedBuffers.len -= 1;
+        errdefer _ = self.managedBuffers.pop();
         bufPtr.* = try createStagingBuffer(size);
         errdefer bufPtr.destroy();
         return bufPtr;

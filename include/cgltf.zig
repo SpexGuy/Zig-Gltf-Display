@@ -1,7 +1,7 @@
 const assert = @import("std").debug.assert;
 
-pub const CString = [*]const u8;
-pub const MutCString = [*]u8;
+pub const CString = [*:0]const u8;
+pub const MutCString = [*:0]u8;
 
 pub const Bool32 = i32;
 

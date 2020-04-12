@@ -17,12 +17,12 @@ const deviceExtensions = [_]vk.CString{vk.KHR_SWAPCHAIN_EXTENSION_NAME};
 // ----------------------- Backend state -------------------------
 // @TODO: Move this into swapchain state
 var g_MainWindowData = impl_vulkan.Window{};
-var g_MinImageCount = u32(2);
+var g_MinImageCount = @as(u32, 2);
 var g_SwapChainRebuild = false;
-var g_SwapChainResizeWidth = u32(0);
-var g_SwapChainResizeHeight = u32(0);
-var g_FrameIndex = u32(0);
-var g_SemaphoreIndex = u32(0);
+var g_SwapChainResizeWidth = @as(u32, 0);
+var g_SwapChainResizeHeight = @as(u32, 0);
+var g_FrameIndex = @as(u32, 0);
+var g_SemaphoreIndex = @as(u32, 0);
 
 // All of these are set up by init()
 pub var window: *glfw.GLFWwindow = undefined;
@@ -52,7 +52,7 @@ pub const RenderFrame = struct {
 
 pub const RenderPass = struct {
     cb: vk.CommandBuffer,
-    wait_stage: vk.PipelineStageFlags,
+    wait_stage: vk.PipelineStageFlags align(4),
 };
 
 pub const RenderUpload = struct {
@@ -82,15 +82,15 @@ pub fn init(allocator: *std.mem.Allocator, inWindow: *glfw.GLFWwindow) !void {
 
         if (USE_VULKAN_DEBUG_REPORT) {
             // Enabling multiple validation layers grouped as LunarG standard validation
-            const layers = [_][*]const u8{c"VK_LAYER_LUNARG_standard_validation"};
+            const layers = [_][*:0]const u8{"VK_LAYER_LUNARG_standard_validation"};
             create_info.enabledLayerCount = @intCast(u32, layers.len);
             create_info.ppEnabledLayerNames = &layers;
 
             // Enable debug report extension (we need additional storage, so we duplicate the user array to add our new extension to it)
-            const extensions_ext = try allocator.alloc([*]const u8, extensions.len + 1);
+            const extensions_ext = try allocator.alloc([*:0]const u8, extensions.len + 1);
             defer allocator.free(extensions_ext);
-            std.mem.copy([*]const u8, extensions_ext[0..extensions.len], extensions);
-            extensions_ext[extensions.len] = c"VK_EXT_debug_report";
+            std.mem.copy([*:0]const u8, extensions_ext[0..extensions.len], extensions);
+            extensions_ext[extensions.len] = "VK_EXT_debug_report";
 
             create_info.enabledExtensionCount = @intCast(u32, extensions_ext.len);
             create_info.ppEnabledExtensionNames = extensions_ext.ptr;
@@ -107,11 +107,11 @@ pub fn init(allocator: *std.mem.Allocator, inWindow: *glfw.GLFWwindow) !void {
     // Register debug callback
     if (USE_VULKAN_DEBUG_REPORT) {
         // Get the function pointer (required for any extensions)
-        var vkCreateDebugReportCallbackEXT = @ptrCast(?@typeOf(vk.vkCreateDebugReportCallbackEXT), vk.GetInstanceProcAddr(instance, c"vkCreateDebugReportCallbackEXT")).?;
+        var vkCreateDebugReportCallbackEXT = @ptrCast(?@TypeOf(vk.vkCreateDebugReportCallbackEXT), vk.GetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT")).?;
 
         // Setup the debug report callback
         var debug_report_ci = vk.DebugReportCallbackCreateInfoEXT{
-            .flags = vk.DebugReportFlagBitsEXT.ERROR_BIT | vk.DebugReportFlagBitsEXT.WARNING_BIT | vk.DebugReportFlagBitsEXT.PERFORMANCE_WARNING_BIT,
+            .flags = .{ .errorBit = true, .warning = true, .performanceWarning = true },
             .pfnCallback = debug_report,
             .pUserData = null,
         };
@@ -122,7 +122,7 @@ pub fn init(allocator: *std.mem.Allocator, inWindow: *glfw.GLFWwindow) !void {
     }
     errdefer if (USE_VULKAN_DEBUG_REPORT) {
         // Remove the debug report callback
-        const vkDestroyDebugReportCallbackEXT = @ptrCast(?@typeOf(vk.vkDestroyDebugReportCallbackEXT), vk.GetInstanceProcAddr(instance, c"vkDestroyDebugReportCallbackEXT"));
+        const vkDestroyDebugReportCallbackEXT = @ptrCast(?@TypeOf(vk.vkDestroyDebugReportCallbackEXT), vk.GetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT"));
         assert(vkDestroyDebugReportCallbackEXT != null);
         vkDestroyDebugReportCallbackEXT.?(instance, debugReport, vkAllocator);
     };
@@ -154,7 +154,7 @@ pub fn init(allocator: *std.mem.Allocator, inWindow: *glfw.GLFWwindow) !void {
         defer allocator.free(queues);
         _ = vk.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, queues);
         for (queues) |queueProps, i| {
-            if (queueProps.queueFlags & vk.QueueFlagBits.GRAPHICS_BIT != 0) {
+            if (queueProps.queueFlags.graphics) {
                 break :SelectQueueFamily @intCast(u32, i);
             }
         }
@@ -163,7 +163,7 @@ pub fn init(allocator: *std.mem.Allocator, inWindow: *glfw.GLFWwindow) !void {
 
     // Create Logical Device (with 1 queue)
     {
-        var device_extensions = [_][*]const u8{c"VK_KHR_swapchain"};
+        var device_extensions = [_][*:0]const u8{"VK_KHR_swapchain"};
         var queue_priority = [_]f32{1.0};
         var queue_info = [_]vk.DeviceQueueCreateInfo{
             vk.DeviceQueueCreateInfo{
@@ -200,7 +200,7 @@ pub fn init(allocator: *std.mem.Allocator, inWindow: *glfw.GLFWwindow) !void {
             vk.DescriptorPoolSize{ .inType = .INPUT_ATTACHMENT, .descriptorCount = 1000 },
         };
         var pool_info = vk.DescriptorPoolCreateInfo{
-            .flags = vk.DescriptorPoolCreateFlagBits.FREE_DESCRIPTOR_SET_BIT,
+            .flags = .{ .freeDescriptorSet = true },
             .maxSets = 1000 * @intCast(u32, pool_sizes.len),
             .poolSizeCount = @intCast(u32, pool_sizes.len),
             .pPoolSizes = &pool_sizes,
@@ -266,7 +266,7 @@ pub fn deinit() void {
 
     if (USE_VULKAN_DEBUG_REPORT) {
         // Remove the debug report callback
-        const vkDestroyDebugReportCallbackEXT = @ptrCast(?@typeOf(vk.vkDestroyDebugReportCallbackEXT), vk.GetInstanceProcAddr(instance, c"vkDestroyDebugReportCallbackEXT"));
+        const vkDestroyDebugReportCallbackEXT = @ptrCast(?@TypeOf(vk.vkDestroyDebugReportCallbackEXT), vk.GetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT"));
         assert(vkDestroyDebugReportCallbackEXT != null);
         vkDestroyDebugReportCallbackEXT.?(instance, debugReport, vkAllocator);
     }
@@ -293,7 +293,7 @@ pub fn initImgui(allocator: *std.mem.Allocator) !void {
         .DescriptorPool = descriptorPool,
         .VkAllocator = vkAllocator,
         .MinImageCount = g_MinImageCount,
-        .MSAASamples = 0,
+        .MSAASamples = .{},
         .ImageCount = wd.ImageCount,
     };
     try impl_vulkan.Init(&init_info, wd.RenderPass);
@@ -318,9 +318,9 @@ pub fn initImgui(allocator: *std.mem.Allocator) !void {
     const command_pool = wd.Frames[0].CommandPool;
     const command_buffer = wd.Frames[0].CommandBuffer;
 
-    try vk.ResetCommandPool(device, command_pool, 0);
+    try vk.ResetCommandPool(device, command_pool, .{});
     const begin_info = vk.CommandBufferBeginInfo{
-        .flags = vk.CommandBufferUsageFlagBits.ONE_TIME_SUBMIT_BIT,
+        .flags = .{ .oneTimeSubmit = true },
     };
     try vk.BeginCommandBuffer(command_buffer, begin_info);
 
@@ -364,12 +364,12 @@ pub fn beginRender() !RenderFrame {
 
     const image_acquired_semaphore = fsd.ImageAcquiredSemaphore;
     const render_complete_semaphore = fsd.RenderCompleteSemaphore;
-    const frameIndex = (try vk.AcquireNextImageKHR(device, wd.Swapchain.?, ~u64(0), image_acquired_semaphore, null)).imageIndex;
+    const frameIndex = (try vk.AcquireNextImageKHR(device, wd.Swapchain.?, ~@as(u64, 0), image_acquired_semaphore, null)).imageIndex;
 
     const fd = &wd.Frames[frameIndex];
-    _ = try vk.WaitForFences(device, arrayPtr(&fd.Fence), vk.TRUE, ~u64(0)); // wait indefinitely instead of periodically checking
+    _ = try vk.WaitForFences(device, arrayPtr(&fd.Fence), vk.TRUE, ~@as(u64, 0)); // wait indefinitely instead of periodically checking
     try vk.ResetFences(device, arrayPtr(&fd.Fence));
-    try vk.ResetCommandPool(device, fd.CommandPool, 0);
+    try vk.ResetCommandPool(device, fd.CommandPool, .{});
 
     return RenderFrame{
         .frameIndex = frameIndex,
@@ -395,7 +395,7 @@ pub fn beginColorPass(frame: *RenderFrame, clearColor: imgui.Vec4) !RenderPass {
     const fd = frame.fd;
     {
         var info = vk.CommandBufferBeginInfo{
-            .flags = vk.CommandBufferUsageFlagBits.ONE_TIME_SUBMIT_BIT,
+            .flags = .{ .oneTimeSubmit = true },
         };
         try vk.BeginCommandBuffer(fd.CommandBuffer, info);
     }
@@ -415,7 +415,7 @@ pub fn beginColorPass(frame: *RenderFrame, clearColor: imgui.Vec4) !RenderPass {
     }
     return RenderPass{
         .cb = fd.CommandBuffer,
-        .wait_stage = vk.PipelineStageFlagBits.COLOR_ATTACHMENT_OUTPUT_BIT,
+        .wait_stage = .{ .colorAttachmentOutput = true },
     };
 }
 
@@ -443,7 +443,7 @@ pub fn beginUpload(frame: *RenderFrame) !RenderUpload {
     const fd = frame.fd;
     {
         var info = vk.CommandBufferBeginInfo{
-            .flags = vk.CommandBufferUsageFlagBits.ONE_TIME_SUBMIT_BIT,
+            .flags = .{ .oneTimeSubmit = true },
         };
         try vk.BeginCommandBuffer(fd.CommandBuffer, info);
     }
@@ -470,7 +470,7 @@ pub fn uploadCopyBuffer(
 }
 
 pub fn abortUpload(frame: *RenderFrame, upload: *RenderUpload) void {
-    vk.ResetCommandBuffer(upload.commandBuffer, vk.CommandBufferResetFlagBits.RELEASE_RESOURCES_BIT) catch {};
+    vk.ResetCommandBuffer(upload.commandBuffer, .{ .releaseResources = true }) catch {};
 }
 
 pub fn endUploadAndWait(frame: *RenderFrame, upload: *RenderUpload) void {
@@ -484,17 +484,11 @@ pub fn endUploadAndWait(frame: *RenderFrame, upload: *RenderUpload) void {
 }
 
 pub fn createGpuBuffer(size: usize, flags: vk.BufferUsageFlags) !Buffer {
-    const memoryFlags = vk.MemoryPropertyFlagBits.DEVICE_LOCAL_BIT;
-    const usageFlags = vk.BufferUsageFlagBits.TRANSFER_DST_BIT | flags;
-
-    return try createVkBuffer(size, usageFlags, memoryFlags);
+    return try createVkBuffer(size, flags.with(.{ .transferDst = true }), .{ .deviceLocal = true });
 }
 
 pub fn createStagingBuffer(size: usize) !Buffer {
-    const memoryFlags = vk.MemoryPropertyFlagBits.HOST_VISIBLE_BIT | vk.MemoryPropertyFlagBits.HOST_COHERENT_BIT;
-    const usageFlags = vk.BufferUsageFlagBits.TRANSFER_SRC_BIT;
-
-    return try createVkBuffer(size, usageFlags, memoryFlags);
+    return try createVkBuffer(size, .{ .transferSrc = true }, .{ .hostVisible = true, .hostCoherent = true });
 }
 
 pub fn destroyBuffer(buffer: *Buffer) void {
@@ -504,7 +498,7 @@ pub fn destroyBuffer(buffer: *Buffer) void {
 
 pub fn mapBuffer(buffer: *Buffer, offset: usize, length: usize) ![*]u8 {
     var result: [*]u8 = undefined;
-    try vk.MapMemory(device, buffer.memory, offset, length, 0, @ptrCast(**c_void, &result));
+    try vk.MapMemory(device, buffer.memory, offset, length, .{}, @ptrCast(**c_void, &result));
     return result;
 }
 
@@ -584,7 +578,7 @@ fn checkDeviceExtensionSupport(allocator: *std.mem.Allocator, inDevice: vk.Physi
 
     var availableExtensions = (try vk.EnumerateDeviceExtensionProperties(inDevice, null, availableExtensionsBuf)).properties;
 
-    var requiredExtensions = std.HashMap([*]const u8, void, hash_cstr, eql_cstr).init(allocator);
+    var requiredExtensions = std.HashMap([*:0]const u8, void, hash_cstr, eql_cstr).init(allocator);
     defer requiredExtensions.deinit();
 
     for (deviceExtensions) |device_ext| {
@@ -598,19 +592,19 @@ fn checkDeviceExtensionSupport(allocator: *std.mem.Allocator, inDevice: vk.Physi
     return requiredExtensions.count() == 0;
 }
 
-extern fn glfw_resize_callback(inWindow: ?*glfw.GLFWwindow, w: c_int, h: c_int) void {
+fn glfw_resize_callback(inWindow: ?*glfw.GLFWwindow, w: c_int, h: c_int) callconv(.C) void {
     g_SwapChainRebuild = true;
     g_SwapChainResizeWidth = @intCast(u32, w);
     g_SwapChainResizeHeight = @intCast(u32, h);
 }
 
-extern fn debug_report(flags: vk.DebugReportFlagsEXT, objectType: vk.DebugReportObjectTypeEXT, object: u64, location: usize, messageCode: i32, pLayerPrefix: ?[*]const u8, pMessage: ?[*]const u8, pUserData: ?*c_void) vk.Bool32 {
-    std.debug.warn("[vulkan] ObjectType: {}\nMessage: {}\n\n", objectType, pMessage);
+fn debug_report(flags: vk.DebugReportFlagsEXT, objectType: vk.DebugReportObjectTypeEXT, object: u64, location: usize, messageCode: i32, pLayerPrefix: ?[*]const u8, pMessage: ?[*]const u8, pUserData: ?*c_void) callconv(vk.CallConv) vk.Bool32 {
+    std.debug.warn("[vulkan] ObjectType: {}\nMessage: {}\n\n", .{ objectType, pMessage });
     @panic("VK Error");
     //return vk.FALSE;
 }
 
-fn hash_cstr(a: [*]const u8) u32 {
+fn hash_cstr(a: [*:0]const u8) u32 {
     // FNV 32-bit hash
     var h: u32 = 2166136261;
     var i: usize = 0;
@@ -621,20 +615,39 @@ fn hash_cstr(a: [*]const u8) u32 {
     return h;
 }
 
-fn eql_cstr(a: [*]const u8, b: [*]const u8) bool {
+fn eql_cstr(a: [*:0]const u8, b: [*:0]const u8) bool {
     return std.cstr.cmp(a, b) == 0;
 }
 
-// converts *T to *[1]T
-fn arrayPtrType(comptime ptrType: type) type {
-    const info = @typeInfo(ptrType);
-    if (info.Pointer.is_const) {
-        return *const [1]ptrType.Child;
-    } else {
-        return *[1]ptrType.Child;
+/// Takes a pointer type like *T, *const T, *align(4)T, etc,
+/// returns the pointer type *[1]T, *const [1]T, *align(4) [1]T, etc.
+fn ArrayPtrType(comptime ptrType: type) type {
+    comptime {
+        // Check that the input is of type *T
+        var info = @typeInfo(ptrType);
+        assert(info == .Pointer);
+        assert(info.Pointer.size == .One);
+        assert(info.Pointer.sentinel == null);
+
+        // Create the new value type, [1]T
+        const arrayInfo = std.builtin.TypeInfo{
+            .Array = .{
+                .len = 1,
+                .child = info.Pointer.child,
+                .sentinel = @as(?info.Pointer.child, null),
+            },
+        };
+
+        // Patch the type to be *[1]T, preserving other modifiers
+        const singleArrayType = @Type(arrayInfo);
+        info.Pointer.child = singleArrayType;
+        // also need to change the type of the sentinel
+        // we checked that this is null above so no work needs to be done here.
+        info.Pointer.sentinel = @as(?singleArrayType, null);
+        return @Type(info);
     }
 }
 
-pub fn arrayPtr(ptr: var) arrayPtrType(@typeOf(ptr)) {
-    return @ptrCast(arrayPtrType(@typeOf(ptr)), ptr);
+pub fn arrayPtr(ptr: var) ArrayPtrType(@TypeOf(ptr)) {
+    return @as(ArrayPtrType(@TypeOf(ptr)), ptr);
 }
