@@ -118,7 +118,7 @@ pub fn main() !void {
     while (try engine.beginFrame()) : (engine.endFrame()) {
         // show the options window
         OPTIONS_WINDOW: {
-            const open = ig.Begin("Control", null, 0);
+            const open = ig.Begin("Control", null, .{});
             defer ig.End();
             if (!open) break :OPTIONS_WINDOW;
 
@@ -172,7 +172,7 @@ fn drawGltfUI(data: *gltf.Data, show: *bool) void {
 
     const Static = struct {};
 
-    const showWindow = ig.Begin("glTF Data", show, 0);
+    const showWindow = ig.Begin("glTF Data", show, .{});
     defer ig.End();
 
     // early out as an optimization
@@ -203,7 +203,7 @@ fn allocPrintZ(allocator: *Allocator, comptime fmt: []const u8, params: var) ![:
     return formatted[0 .. formatted.len - 1 :0];
 }
 
-const INLINE_FLAGS = ig.TreeNodeFlagBits.Leaf | ig.TreeNodeFlagBits.NoTreePushOnOpen | ig.TreeNodeFlagBits.BulletPt;
+const INLINE_FLAGS = ig.TreeNodeFlags{ .Leaf=true, .NoTreePushOnOpen=true, .Bullet=true };
 const MAX_STRING_LEN = 255;
 
 /// Recursively draws generated read-only UI for a single struct.
