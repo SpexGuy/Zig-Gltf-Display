@@ -145,7 +145,7 @@ pub const Upload = struct {
     }
 
     pub fn _deleteManagedBuffers(self: *Self) void {
-        for (self.managedBuffers.toSlice()) |*buffer| buffer.destroy();
+        for (self.managedBuffers.items) |*buffer| buffer.destroy();
         self.managedBuffers.deinit();
     }
 };
