@@ -121,25 +121,25 @@ pub fn main() !void {
     while (try engine.beginFrame()) : (engine.endFrame()) {
         // show the options window
         OPTIONS_WINDOW: {
-            const open = ig.Begin("Control", null, .{});
+            const open = ig.Begin("Control");
             defer ig.End();
             if (!open) break :OPTIONS_WINDOW;
 
             ig.Text("Current File (%lld/%lld): %s", loadedModelIndex + 1, models.len, models[loadedModelIndex].gltfFile);
-            if (ig.Button("Load Previous File", .{ .x = 0, .y = 0 })) {
+            if (ig.Button("Load Previous File")) {
                 targetModelIndex = (if (targetModelIndex == 0) models.len else targetModelIndex) - 1;
             }
-            ig.SameLine(0, -1);
-            if (ig.Button("Load Next File", .{ .x = 0, .y = 0 })) {
+            ig.SameLine();
+            if (ig.Button("Load Next File")) {
                 targetModelIndex = if (targetModelIndex >= models.len - 1) 0 else (targetModelIndex + 1);
             }
             _ = ig.Checkbox("Show glTF Data", &show_gltf_data);
             _ = ig.Checkbox("Show ImGui Demo", &show_demo_window);
-            if (ig.Button("Crash", .{ .x = 0, .y = 0 })) {
+            if (ig.Button("Crash")) {
                 @panic("Don't press the big shiny button!");
             }
         }
-        if (show_demo_window) ig.ShowDemoWindow(&show_demo_window);
+        if (show_demo_window) ig.ShowDemoWindowExt(&show_demo_window);
         if (show_gltf_data) drawGltfUI(data, &show_gltf_data);
 
         if (targetModelIndex != loadedModelIndex) {
@@ -171,17 +171,17 @@ pub fn main() !void {
 fn drawGltfUI(data: *gltf.Data, show: *bool) void {
     const Static = struct {};
 
-    const showWindow = ig.Begin("glTF Data", show, .{});
+    const showWindow = ig.BeginExt("glTF Data", show, .{});
     defer ig.End();
 
     // early out as an optimization
     if (!showWindow) return;
 
-    ig.Columns(2, null, true);
-    defer ig.Columns(1, null, true);
+    ig.Columns(2);
+    defer ig.Columns(1);
 
     ig.PushStyleVarVec2(ig.StyleVar.FramePadding, ig.Vec2{ .x = 2, .y = 2 });
-    defer ig.PopStyleVar(1);
+    defer ig.PopStyleVar();
 
     ig.Separator();
 

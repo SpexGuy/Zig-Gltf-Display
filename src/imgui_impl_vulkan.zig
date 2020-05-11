@@ -464,8 +464,7 @@ pub fn CreateFontsTexture(command_buffer: vk.CommandBuffer) !void {
     var pixels: ?[*]u8 = undefined;
     var width: i32 = 0;
     var height: i32 = 0;
-    var bpp: i32 = 0;
-    io.Fonts.?.GetTexDataAsRGBA32(&pixels, &width, &height, &bpp);
+    io.Fonts.?.GetTexDataAsRGBA32(&pixels, &width, &height);
     var upload_size = @intCast(usize, width * height * 4);
 
     // Create the Image:

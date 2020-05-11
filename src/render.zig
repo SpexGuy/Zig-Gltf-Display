@@ -244,21 +244,21 @@ pub fn _deinit() void {
 pub fn _initImgui(allocator: *Allocator) !void {
     // Setup Dear ImGui context
     imgui.CHECKVERSION();
-    _ = imgui.CreateContext(null);
+    _ = imgui.CreateContext();
     var io = imgui.GetIO();
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
     // Setup Dear ImGui style
-    imgui.StyleColorsDark(null);
-    //imgui.StyleColorsClassic(null);
+    imgui.StyleColorsDark();
+    //imgui.StyleColorsClassic();
 
     try backend.initImgui(allocator);
 }
 pub fn _deinitImgui() void {
     backend.deinitImgui();
 
-    imgui.DestroyContext(null);
+    imgui.DestroyContext();
 }
 
 pub fn _beginFrame() !void {

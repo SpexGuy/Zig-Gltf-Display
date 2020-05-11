@@ -51,7 +51,7 @@ pub fn drawStructUI(comptime DataType: type, dataPtr: *const DataType, arena: *A
 pub fn drawFieldUI(comptime FieldType: type, fieldPtr: anytype, name: [:0]const u8, arena: *Allocator) void {
     if (FieldType == c_void) {
         ig.AlignTextToFramePadding();
-        _ = ig.TreeNodeExStr(name.ptr, INLINE_FLAGS);
+        _ = ig.TreeNodeExStrExt(name.ptr, INLINE_FLAGS);
         ig.NextColumn();
         ig.AlignTextToFramePadding();
         ig.Text("0x%p", fieldPtr);
@@ -61,7 +61,7 @@ pub fn drawFieldUI(comptime FieldType: type, fieldPtr: anytype, name: [:0]const 
     switch (@typeInfo(FieldType)) {
         .Bool => {
             ig.AlignTextToFramePadding();
-            _ = ig.TreeNodeExStr(name.ptr, INLINE_FLAGS);
+            _ = ig.TreeNodeExStrExt(name.ptr, INLINE_FLAGS);
             ig.NextColumn();
             ig.AlignTextToFramePadding();
             ig.Text(if (fieldPtr.*) "true" else "false");
@@ -69,7 +69,7 @@ pub fn drawFieldUI(comptime FieldType: type, fieldPtr: anytype, name: [:0]const 
         },
         .Int => |info| {
             ig.AlignTextToFramePadding();
-            _ = ig.TreeNodeExStr(name.ptr, INLINE_FLAGS);
+            _ = ig.TreeNodeExStrExt(name.ptr, INLINE_FLAGS);
             ig.NextColumn();
             ig.AlignTextToFramePadding();
             if (info.is_signed) {
@@ -81,7 +81,7 @@ pub fn drawFieldUI(comptime FieldType: type, fieldPtr: anytype, name: [:0]const 
         },
         .Float => {
             ig.AlignTextToFramePadding();
-            _ = ig.TreeNodeExStr(name.ptr, INLINE_FLAGS);
+            _ = ig.TreeNodeExStrExt(name.ptr, INLINE_FLAGS);
             ig.NextColumn();
             ig.AlignTextToFramePadding();
             ig.Text("%f (%s)", fieldPtr.*, @typeName(FieldType));
@@ -92,7 +92,7 @@ pub fn drawFieldUI(comptime FieldType: type, fieldPtr: anytype, name: [:0]const 
         },
         .Enum => |info| {
             ig.AlignTextToFramePadding();
-            _ = ig.TreeNodeExStr(name.ptr, INLINE_FLAGS);
+            _ = ig.TreeNodeExStrExt(name.ptr, INLINE_FLAGS);
             ig.NextColumn();
             ig.AlignTextToFramePadding();
             const cstr = if (allocPrintZ(arena, "{}", .{@tagName(fieldPtr.*)})) |str| str else |err| "<out of memory>";
@@ -116,7 +116,7 @@ pub fn drawFieldUI(comptime FieldType: type, fieldPtr: anytype, name: [:0]const 
                 drawFieldUI(info.child, &nonnullValue, name, arena);
             } else {
                 ig.AlignTextToFramePadding();
-                _ = ig.TreeNodeExStr(name.ptr, INLINE_FLAGS);
+                _ = ig.TreeNodeExStrExt(name.ptr, INLINE_FLAGS);
                 ig.NextColumn();
                 ig.AlignTextToFramePadding();
                 ig.Text("null");
@@ -129,7 +129,7 @@ pub fn drawFieldUI(comptime FieldType: type, fieldPtr: anytype, name: [:0]const 
                 .Slice => drawSliceFieldUI(info.child, fieldPtr.*, name, arena),
                 else => {
                     ig.AlignTextToFramePadding();
-                    _ = ig.TreeNodeExStr(name.ptr, INLINE_FLAGS);
+                    _ = ig.TreeNodeExStrExt(name.ptr, INLINE_FLAGS);
                     ig.NextColumn();
                     ig.AlignTextToFramePadding();
                     ig.Text("0x%p", fieldPtr.*);
@@ -139,7 +139,7 @@ pub fn drawFieldUI(comptime FieldType: type, fieldPtr: anytype, name: [:0]const 
         },
         .Opaque => {
             ig.AlignTextToFramePadding();
-            _ = ig.TreeNodeExStr(name.ptr, INLINE_FLAGS);
+            _ = ig.TreeNodeExStrExt(name.ptr, INLINE_FLAGS);
             ig.NextColumn();
             ig.AlignTextToFramePadding();
             ig.Text("%s@0x%p", @typeName(FieldType), fieldPtr);
@@ -147,7 +147,7 @@ pub fn drawFieldUI(comptime FieldType: type, fieldPtr: anytype, name: [:0]const 
         },
         else => {
             ig.AlignTextToFramePadding();
-            _ = ig.TreeNodeExStr(name.ptr, INLINE_FLAGS);
+            _ = ig.TreeNodeExStrExt(name.ptr, INLINE_FLAGS);
             ig.NextColumn();
             ig.AlignTextToFramePadding();
             ig.Text("<TODO " ++ @typeName(FieldType) ++ ">@0x%p", fieldPtr);
@@ -164,7 +164,7 @@ pub fn drawFieldUI(comptime FieldType: type, fieldPtr: anytype, name: [:0]const 
 pub fn drawSliceFieldUI(comptime DataType: type, slice: []const DataType, name: [:0]const u8, arena: *Allocator) void {
     if (DataType == u8 and slice.len < MAX_STRING_LEN and isPrintable(slice)) {
         ig.AlignTextToFramePadding();
-        _ = ig.TreeNodeExStr(name.ptr, INLINE_FLAGS);
+        _ = ig.TreeNodeExStrExt(name.ptr, INLINE_FLAGS);
         ig.NextColumn();
         ig.AlignTextToFramePadding();
         const nullTermStr = if (allocPrintZ(arena, "{}", .{slice})) |cstr| cstr else |err| "out of memory";
