@@ -185,7 +185,7 @@ fn drawGltfUI(data: *gltf.Data, show: *bool) void {
 
     ig.Separator();
 
-    autogui.draw(gltf.Data, data);
+    autogui.draw(gltf.Data, data, heap_allocator);
 
     ig.Separator();
 }

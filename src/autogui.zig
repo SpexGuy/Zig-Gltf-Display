@@ -1,3 +1,10 @@
+const std = @import("std");
+const ig = @import("imgui");
+
+const Allocator = std.mem.Allocator;
+const assert = std.debug.assert;
+const Child = std.meta.Child;
+
 const NULL_TERM = [_]u8{0};
 fn nullTerm(comptime str: []const u8) [:0]const u8 {
     const fullStr = str ++ NULL_TERM;
@@ -13,12 +20,12 @@ fn allocPrintZ(allocator: *Allocator, comptime fmt: []const u8, params: anytype)
 const INLINE_FLAGS = ig.TreeNodeFlags{ .Leaf = true, .NoTreePushOnOpen = true, .Bullet = true };
 const MAX_STRING_LEN = 255;
 
-pub fn draw(comptime DataType: type, dataPtr: *const DataType) void {
-    var allocatorRaw = std.heap.ArenaAllocator.init(heap_allocator);
+pub fn draw(comptime DataType: type, dataPtr: *const DataType, heapAllocator: *Allocator) void {
+    var allocatorRaw = std.heap.ArenaAllocator.init(heapAllocator);
     defer allocatorRaw.deinit();
     const arena = &allocatorRaw.allocator;
 
-    drawStructUI(DataType, dataPtr);
+    drawStructUI(DataType, dataPtr, arena);
 }
 
 /// Recursively draws generated read-only UI for a single struct.
