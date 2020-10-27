@@ -16,6 +16,15 @@ pub fn build(b: *Builder) void {
 
     const tests = b.addTest("src/all_tests.zig");
     setDependencies(b, tests);
+
+    const vscode_exe = b.addExecutable("vscode", "src/main.zig");
+    setDependencies(b, vscode_exe);
+
+    const vscode_install = b.addInstallArtifact(vscode_exe);
+
+    const vscode_step = b.step("vscode", "Build for VSCode");
+    vscode_step.dependOn(&vscode_install.step);
+
     const run_tests = b.step("test", "Run all tests");
     run_tests.dependOn(&tests.step);
 }
