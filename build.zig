@@ -6,38 +6,51 @@ const LibExeObjStep = std.build.LibExeObjStep;
 const glslc_command = if (std.builtin.os.tag == .windows) "tools/win/glslc.exe" else "glslc";
 
 pub fn build(b: *Builder) void {
-    const mode = b.standardReleaseOptions();
     const exe = b.addExecutable("zig-gltf", "src/main.zig");
-    exe.setBuildMode(mode);
-    exe.linkLibC();
-
-    exe.addPackagePath("imgui", "include/imgui.zig");
-    exe.addPackagePath("vk", "include/vk.zig");
-    exe.addPackagePath("glfw", "include/glfw.zig");
-    exe.addPackagePath("cgltf", "include/cgltf.zig");
-
-    if (std.builtin.os.tag == .windows) {
-        exe.linkSystemLibrary("lib/win/cimguid");
-        exe.linkSystemLibrary("lib/win/glfw3");
-        exe.linkSystemLibrary("lib/win/vulkan-1");
-        exe.linkSystemLibrary("gdi32");
-        exe.linkSystemLibrary("shell32");
-    } else {
-        exe.linkSystemLibrary("glfw");
-        exe.linkSystemLibrary("vulkan");
-        @compileError("TODO: Build and link cimgui for non-windows platforms");
-    }
-
-    exe.addCSourceFile("c_src/cgltf.c", &[_][]const u8{ "-std=c99", "-DCGLTF_IMPLEMENTATION", "-D_CRT_SECURE_NO_WARNINGS" });
-
+    setDependencies(b, exe);
     exe.install();
 
     const run_step = b.step("run", "Run the project");
     const run_cmd = exe.run();
     run_step.dependOn(&run_cmd.step);
+
+    const tests = b.addTest("src/all_tests.zig");
+    setDependencies(b, tests);
+    const run_tests = b.step("test", "Run all tests");
+    run_tests.dependOn(&tests.step);
 }
 
-fn addShader(b: *Builder, exe: var, in_file: []const u8, out_file: []const u8) !void {
+fn setDependencies(b: *Builder, step: *LibExeObjStep) void {
+    const mode = b.standardReleaseOptions();
+
+    step.setBuildMode(mode);
+    step.linkLibC();
+
+    step.addPackagePath("imgui", "include/imgui.zig");
+    step.addPackagePath("vk", "include/vk.zig");
+    step.addPackagePath("glfw", "include/glfw.zig");
+    step.addPackagePath("cgltf", "include/cgltf.zig");
+
+    if (std.builtin.os.tag == .windows) {
+        if (mode == .Debug) {
+            step.linkSystemLibrary("lib/win/cimguid");
+        } else {
+            step.linkSystemLibrary("lib/win/cimgui");
+        }
+        step.linkSystemLibrary("lib/win/glfw3");
+        step.linkSystemLibrary("lib/win/vulkan-1");
+        step.linkSystemLibrary("gdi32");
+        step.linkSystemLibrary("shell32");
+    } else {
+        step.linkSystemLibrary("glfw");
+        step.linkSystemLibrary("vulkan");
+        @compileError("TODO: Build and link cimgui for non-windows platforms");
+    }
+
+    step.addCSourceFile("c_src/cgltf.c", &[_][]const u8{ "-std=c99", "-DCGLTF_IMPLEMENTATION", "-D_CRT_SECURE_NO_WARNINGS" });
+}
+
+fn addShader(b: *Builder, exe: anytype, in_file: []const u8, out_file: []const u8) !void {
     // example:
     // glslc -o shaders/vert.spv shaders/shader.vert
     const dirname = "shaders";

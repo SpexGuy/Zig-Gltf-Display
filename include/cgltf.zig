@@ -25,14 +25,14 @@ pub const Result = extern enum {
 };
 
 pub const MemoryOptions = extern struct {
-    alloc: ?extern fn (?*c_void, usize) ?*c_void = null,
-    free: ?extern fn (?*c_void, ?*c_void) void = null,
+    alloc: ?fn (?*c_void, usize) callconv(.C) ?*c_void = null,
+    free: ?fn (?*c_void, ?*c_void) callconv(.C) void = null,
     user_data: ?*c_void = null,
 };
 
 pub const FileOptions = extern struct {
-    read: ?extern fn (*const MemoryOptions, *const FileOptions, CString, *usize, *(?*c_void)) Result = null,
-    release: ?extern fn (*const MemoryOptions, *const FileOptions, ?*c_void) void = null,
+    read: ?fn (*const MemoryOptions, *const FileOptions, CString, *usize, *(?*c_void)) callconv(.C) Result = null,
+    release: ?fn (*const MemoryOptions, *const FileOptions, ?*c_void) callconv(.C) void = null,
     user_data: ?*c_void = null,
 };
 
@@ -92,7 +92,7 @@ pub const PrimitiveType = extern enum {
 };
 
 pub const AlphaMode = extern enum {
-    opaque,
+    opaqueMode,
     mask,
     blend,
 };

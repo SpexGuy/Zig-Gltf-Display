@@ -1,7 +1,7 @@
 const assert = @import("std").debug.assert;
 
-pub const DrawListSharedData = @OpaqueType();
-pub const Context = @OpaqueType();
+pub const DrawListSharedData = opaque {};
+pub const Context = opaque {};
 pub const DrawCallback = ?fn (parent_list: ?*const DrawList, cmd: ?*const DrawCmd) callconv(.C) void;
 pub const DrawIdx = u16;
 pub const ID = u32;
@@ -84,11 +84,11 @@ pub const DrawCornerFlags = packed struct {
 
     const Self = @This();
     pub const None = Self{};
-    pub const Top = Self{ .TopLeft=true, .TopRight=true };
-    pub const Bot = Self{ .BotLeft=true, .BotRight=true };
-    pub const Left = Self{ .TopLeft=true, .BotLeft=true };
-    pub const Right = Self{ .TopRight=true, .BotRight=true };
-    pub const All = Self{ .TopLeft=true, .TopRight=true, .BotLeft=true, .BotRight=true };
+    pub const Top = Self{ .TopLeft = true, .TopRight = true };
+    pub const Bot = Self{ .BotLeft = true, .BotRight = true };
+    pub const Left = Self{ .TopLeft = true, .BotLeft = true };
+    pub const Right = Self{ .TopRight = true, .BotRight = true };
+    pub const All = Self{ .TopLeft = true, .TopRight = true, .BotLeft = true, .BotRight = true };
 
     pub usingnamespace FlagsMixin(Self);
 };
@@ -249,11 +249,11 @@ pub const ColorEditFlags = packed struct {
 
     const Self = @This();
     pub const None = Self{};
-    pub const _OptionsDefault = Self{ .DisplayRGB=true, .Uint8=true, .PickerHueBar=true, .InputRGB=true };
-    pub const _DisplayMask = Self{ .DisplayRGB=true, .DisplayHSV=true, .DisplayHex=true };
-    pub const _DataTypeMask = Self{ .Uint8=true, .Float=true };
-    pub const _PickerMask = Self{ .PickerHueBar=true, .PickerHueWheel=true };
-    pub const _InputMask = Self{ .InputRGB=true, .InputHSV=true };
+    pub const _OptionsDefault = Self{ .DisplayRGB = true, .Uint8 = true, .PickerHueBar = true, .InputRGB = true };
+    pub const _DisplayMask = Self{ .DisplayRGB = true, .DisplayHSV = true, .DisplayHex = true };
+    pub const _DataTypeMask = Self{ .Uint8 = true, .Float = true };
+    pub const _PickerMask = Self{ .PickerHueBar = true, .PickerHueWheel = true };
+    pub const _InputMask = Self{ .InputRGB = true, .InputHSV = true };
 
     pub usingnamespace FlagsMixin(Self);
 };
@@ -294,7 +294,7 @@ pub const ComboFlags = packed struct {
 
     const Self = @This();
     pub const None = Self{};
-    pub const HeightMask_ = Self{ .HeightSmall=true, .HeightRegular=true, .HeightLarge=true, .HeightLargest=true };
+    pub const HeightMask_ = Self{ .HeightSmall = true, .HeightRegular = true, .HeightLarge = true, .HeightLargest = true };
 
     pub usingnamespace FlagsMixin(Self);
 };
@@ -412,7 +412,7 @@ pub const DragDropFlags = packed struct {
 
     const Self = @This();
     pub const None = Self{};
-    pub const AcceptPeekOnly = Self{ .AcceptBeforeDelivery=true, .AcceptNoDrawDefaultRect=true };
+    pub const AcceptPeekOnly = Self{ .AcceptBeforeDelivery = true, .AcceptNoDrawDefaultRect = true };
 
     pub usingnamespace FlagsMixin(Self);
 };
@@ -453,7 +453,7 @@ pub const FocusedFlags = packed struct {
 
     const Self = @This();
     pub const None = Self{};
-    pub const RootAndChildWindows = Self{ .ChildWindows=true, .RootWindow=true };
+    pub const RootAndChildWindows = Self{ .ChildWindows = true, .RootWindow = true };
 
     pub usingnamespace FlagsMixin(Self);
 };
@@ -494,8 +494,8 @@ pub const HoveredFlags = packed struct {
 
     const Self = @This();
     pub const None = Self{};
-    pub const RectOnly = Self{ .AllowWhenBlockedByPopup=true, .AllowWhenBlockedByActiveItem=true, .AllowWhenOverlapped=true };
-    pub const RootAndChildWindows = Self{ .ChildWindows=true, .RootWindow=true };
+    pub const RectOnly = Self{ .AllowWhenBlockedByPopup = true, .AllowWhenBlockedByActiveItem = true, .AllowWhenOverlapped = true };
+    pub const RootAndChildWindows = Self{ .ChildWindows = true, .RootWindow = true };
 
     pub usingnamespace FlagsMixin(Self);
 };
@@ -616,8 +616,8 @@ pub const TabBarFlags = packed struct {
 
     const Self = @This();
     pub const None = Self{};
-    pub const FittingPolicyMask_ = Self{ .FittingPolicyResizeDown=true, .FittingPolicyScroll=true };
-    pub const FittingPolicyDefault_ = Self{ .FittingPolicyResizeDown=true };
+    pub const FittingPolicyMask_ = Self{ .FittingPolicyResizeDown = true, .FittingPolicyScroll = true };
+    pub const FittingPolicyDefault_ = Self{ .FittingPolicyResizeDown = true };
 
     pub usingnamespace FlagsMixin(Self);
 };
@@ -698,7 +698,7 @@ pub const TreeNodeFlags = packed struct {
 
     const Self = @This();
     pub const None = Self{};
-    pub const CollapsingHeader = Self{ .Framed=true, .NoTreePushOnOpen=true, .NoAutoOpenOnLog=true };
+    pub const CollapsingHeader = Self{ .Framed = true, .NoTreePushOnOpen = true, .NoAutoOpenOnLog = true };
 
     pub usingnamespace FlagsMixin(Self);
 };
@@ -739,9 +739,9 @@ pub const WindowFlags = packed struct {
 
     const Self = @This();
     pub const None = Self{};
-    pub const NoNav = Self{ .NoNavInputs=true, .NoNavFocus=true };
-    pub const NoDecoration = Self{ .NoTitleBar=true, .NoResize=true, .NoScrollbar=true, .NoCollapse=true };
-    pub const NoInputs = Self{ .NoMouseInputs=true, .NoNavInputs=true, .NoNavFocus=true };
+    pub const NoNav = Self{ .NoNavInputs = true, .NoNavFocus = true };
+    pub const NoDecoration = Self{ .NoTitleBar = true, .NoResize = true, .NoScrollbar = true, .NoCollapse = true };
+    pub const NoInputs = Self{ .NoMouseInputs = true, .NoNavInputs = true, .NoNavFocus = true };
 
     pub usingnamespace FlagsMixin(Self);
 };
@@ -1354,7 +1354,7 @@ pub const Payload = extern struct {
     SourceId: ID,
     SourceParentId: ID,
     DataFrameCount: i32,
-    DataType: [32+1]u8,
+    DataType: [32 + 1]u8,
     Preview: bool,
     Delivery: bool,
 
@@ -3309,7 +3309,7 @@ pub const raw = struct {
     pub extern fn igColorEdit3(label: ?[*:0]const u8, col: *[3]f32, flags: ColorEditFlags) bool;
     pub extern fn igColorEdit4(label: ?[*:0]const u8, col: *[4]f32, flags: ColorEditFlags) bool;
     pub extern fn igColorPicker3(label: ?[*:0]const u8, col: *[3]f32, flags: ColorEditFlags) bool;
-    pub extern fn igColorPicker4(label: ?[*:0]const u8, col: *[4]f32, flags: ColorEditFlags, ref_col: ?*[4]const f32) bool;
+    pub extern fn igColorPicker4(label: ?[*:0]const u8, col: *[4]f32, flags: ColorEditFlags, ref_col: ?*const [4]f32) bool;
     pub extern fn igColumns(count: i32, id: ?[*:0]const u8, border: bool) void;
     pub extern fn igCombo(label: ?[*:0]const u8, current_item: ?*i32, items: [*]const [*:0]const u8, items_count: i32, popup_max_height_in_items: i32) bool;
     pub extern fn igComboStr(label: ?[*:0]const u8, current_item: ?*i32, items_separated_by_zeros: ?[*]const u8, popup_max_height_in_items: i32) bool;

@@ -1,8 +1,8 @@
 const vk = @import("vk.zig");
 
-pub const GLFWmonitor = @OpaqueType();
-pub const GLFWwindow = @OpaqueType();
-pub const GLFWcursor = @OpaqueType();
+pub const GLFWmonitor = opaque {};
+pub const GLFWwindow = opaque {};
+pub const GLFWcursor = opaque {};
 
 pub const GLFWglproc = ?fn () callconv(.C) void;
 pub const GLFWvkproc = ?fn () callconv(.C) void;

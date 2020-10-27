@@ -3,6 +3,7 @@ const cgltf = @import("cgltf");
 const vk = @import("vk");
 const engine = @import("engine.zig");
 const render = engine.render;
+const Child = std.meta.Child;
 
 pub const Buffer = struct {
     raw: *cgltf.Buffer,
@@ -441,7 +442,7 @@ pub fn free(data: *Data) void {
     parentAllocator.destroy(data);
 }
 
-fn fixOptional(pointer: var, rawArray: var, wrapArray: var) ?*@TypeOf(wrapArray.ptr).Child {
+fn fixOptional(pointer: anytype, rawArray: anytype, wrapArray: anytype) ?*Child(@TypeOf(wrapArray.ptr)) {
     if (pointer) |nonNull| {
         return fixNonnull(nonNull, rawArray, wrapArray);
     } else {
@@ -449,7 +450,7 @@ fn fixOptional(pointer: var, rawArray: var, wrapArray: var) ?*@TypeOf(wrapArray.
     }
 }
 
-fn fixNonnull(pointer: var, rawArray: var, wrapArray: var) *@TypeOf(wrapArray.ptr).Child {
-    const diff = @divExact(@ptrToInt(pointer) - @ptrToInt(rawArray), @sizeOf(@TypeOf(rawArray).Child));
+fn fixNonnull(pointer: anytype, rawArray: anytype, wrapArray: anytype) *Child(@TypeOf(wrapArray.ptr)) {
+    const diff = @divExact(@ptrToInt(pointer) - @ptrToInt(rawArray), @sizeOf(Child(@TypeOf(rawArray))));
     return &wrapArray[diff];
 }

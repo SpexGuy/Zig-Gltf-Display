@@ -67,7 +67,7 @@ pub const Buffer = struct {
     len: usize,
     backend: backend.Buffer,
 
-    fn beginMap(self: *Buffer) !MappedRange {
+    pub fn beginMap(self: *Buffer) !MappedRange {
         return MappedRange{
             .buffer = self,
             .byteOffset = 0,
@@ -75,7 +75,7 @@ pub const Buffer = struct {
         };
     }
 
-    fn beginMapPart(self: *Buffer, comptime T: type, byteOffset: usize, itemCount: usize) !MappedRange {
+    pub fn beginMapPart(self: *Buffer, comptime T: type, byteOffset: usize, itemCount: usize) !MappedRange {
         const mapLengthBytes = itemCount * @sizeOf(T);
         assert(mapLengthBytes + byteOffset <= self.mapLengthBytes);
         return MappedRange{
@@ -85,7 +85,7 @@ pub const Buffer = struct {
         };
     }
 
-    fn destroy(self: *Buffer) void {
+    pub fn destroy(self: *Buffer) void {
         backend.destroyBuffer(&self.backend);
     }
 };

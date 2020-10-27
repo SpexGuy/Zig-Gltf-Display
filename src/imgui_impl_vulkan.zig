@@ -48,6 +48,8 @@ const imgui = @import("imgui");
 const std = @import("std");
 const vk = @import("vk");
 
+const assert = std.debug.assert;
+
 pub const InitInfo = struct {
     Instance: vk.Instance,
     PhysicalDevice: vk.PhysicalDevice,
@@ -270,7 +272,7 @@ fn CreateOrResizeBuffer(buffer: *?vk.Buffer, buffer_memory: *?vk.DeviceMemory, p
     g_BufferMemoryAlignment = if (g_BufferMemoryAlignment > req.alignment) g_BufferMemoryAlignment else req.alignment;
     var alloc_info = vk.MemoryAllocateInfo{
         .allocationSize = req.size,
-        .memoryTypeIndex = MemoryType(.{ .hostVisible=true }, req.memoryTypeBits).?,
+        .memoryTypeIndex = MemoryType(.{ .hostVisible = true }, req.memoryTypeBits).?,
     };
     buffer_memory.* = try vk.AllocateMemory(v.Device, alloc_info, v.VkAllocator);
 
@@ -319,8 +321,8 @@ fn SetupRenderState(draw_data: *imgui.DrawData, command_buffer: vk.CommandBuffer
             -1.0 - draw_data.DisplayPos.x * scale[0],
             -1.0 - draw_data.DisplayPos.y * scale[1],
         };
-        vk.CmdPushConstants(command_buffer, g_PipelineLayout.?, .{ .vertex=true }, @sizeOf(f32) * 0, std.mem.asBytes(&scale));
-        vk.CmdPushConstants(command_buffer, g_PipelineLayout.?, .{ .vertex=true }, @sizeOf(f32) * 2, std.mem.asBytes(&translate));
+        vk.CmdPushConstants(command_buffer, g_PipelineLayout.?, .{ .vertex = true }, @sizeOf(f32) * 0, std.mem.asBytes(&scale));
+        vk.CmdPushConstants(command_buffer, g_PipelineLayout.?, .{ .vertex = true }, @sizeOf(f32) * 2, std.mem.asBytes(&translate));
     }
 }
 
@@ -352,9 +354,9 @@ pub fn RenderDrawData(draw_data: *imgui.DrawData, command_buffer: vk.CommandBuff
     var vertex_size = @intCast(usize, draw_data.TotalVtxCount) * @sizeOf(imgui.DrawVert);
     var index_size = @intCast(usize, draw_data.TotalIdxCount) * @sizeOf(imgui.DrawIdx);
     if (rb.VertexBuffer == null or rb.VertexBufferSize < vertex_size)
-        try CreateOrResizeBuffer(&rb.VertexBuffer, &rb.VertexBufferMemory, &rb.VertexBufferSize, vertex_size, .{ .vertexBuffer=true });
+        try CreateOrResizeBuffer(&rb.VertexBuffer, &rb.VertexBufferMemory, &rb.VertexBufferSize, vertex_size, .{ .vertexBuffer = true });
     if (rb.IndexBuffer == null or rb.IndexBufferSize < index_size)
-        try CreateOrResizeBuffer(&rb.IndexBuffer, &rb.IndexBufferMemory, &rb.IndexBufferSize, index_size, .{ .indexBuffer=true });
+        try CreateOrResizeBuffer(&rb.IndexBuffer, &rb.IndexBufferMemory, &rb.IndexBufferSize, index_size, .{ .indexBuffer = true });
 
     // Upload vertex/index data into a single contiguous GPU buffer
     {
@@ -478,9 +480,9 @@ pub fn CreateFontsTexture(command_buffer: vk.CommandBuffer) !void {
             },
             .mipLevels = 1,
             .arrayLayers = 1,
-            .samples = .{ .t1=true },
+            .samples = .{ .t1 = true },
             .tiling = .OPTIMAL,
-            .usage = .{ .sampled=true, .transferDst=true },
+            .usage = .{ .sampled = true, .transferDst = true },
             .sharingMode = .EXCLUSIVE,
             .initialLayout = .UNDEFINED,
         };
@@ -488,7 +490,7 @@ pub fn CreateFontsTexture(command_buffer: vk.CommandBuffer) !void {
         var req = vk.GetImageMemoryRequirements(v.Device, g_FontImage.?);
         var alloc_info = vk.MemoryAllocateInfo{
             .allocationSize = req.size,
-            .memoryTypeIndex = MemoryType(.{.deviceLocal=true}, req.memoryTypeBits).?,
+            .memoryTypeIndex = MemoryType(.{ .deviceLocal = true }, req.memoryTypeBits).?,
         };
         g_FontMemory = try vk.AllocateMemory(v.Device, alloc_info, v.VkAllocator);
         try vk.BindImageMemory(v.Device, g_FontImage.?, g_FontMemory.?, 0);
@@ -501,7 +503,7 @@ pub fn CreateFontsTexture(command_buffer: vk.CommandBuffer) !void {
             .viewType = .T_2D,
             .format = .R8G8B8A8_UNORM,
             .subresourceRange = vk.ImageSubresourceRange{
-                .aspectMask = .{ .color=true },
+                .aspectMask = .{ .color = true },
                 .levelCount = 1,
                 .layerCount = 1,
                 .baseMipLevel = 0,
@@ -542,7 +544,7 @@ pub fn CreateFontsTexture(command_buffer: vk.CommandBuffer) !void {
     {
         var buffer_info = vk.BufferCreateInfo{
             .size = upload_size,
-            .usage = .{ .transferSrc=true },
+            .usage = .{ .transferSrc = true },
             .sharingMode = .EXCLUSIVE,
         };
         g_UploadBuffer = try vk.CreateBuffer(v.Device, buffer_info, v.VkAllocator);
@@ -552,7 +554,7 @@ pub fn CreateFontsTexture(command_buffer: vk.CommandBuffer) !void {
         }
         var alloc_info = vk.MemoryAllocateInfo{
             .allocationSize = req.size,
-            .memoryTypeIndex = MemoryType(.{ .hostVisible=true }, req.memoryTypeBits).?,
+            .memoryTypeIndex = MemoryType(.{ .hostVisible = true }, req.memoryTypeBits).?,
         };
         g_UploadBufferMemory = try vk.AllocateMemory(v.Device, alloc_info, v.VkAllocator);
         try vk.BindBufferMemory(v.Device, g_UploadBuffer.?, g_UploadBufferMemory.?, 0);
@@ -576,25 +578,25 @@ pub fn CreateFontsTexture(command_buffer: vk.CommandBuffer) !void {
     {
         var copy_barrier = [1]vk.ImageMemoryBarrier{vk.ImageMemoryBarrier{
             .srcAccessMask = .{},
-            .dstAccessMask = .{ .transferWrite=true },
+            .dstAccessMask = .{ .transferWrite = true },
             .oldLayout = .UNDEFINED,
             .newLayout = .TRANSFER_DST_OPTIMAL,
             .srcQueueFamilyIndex = vk.QUEUE_FAMILY_IGNORED,
             .dstQueueFamilyIndex = vk.QUEUE_FAMILY_IGNORED,
             .image = g_FontImage.?,
             .subresourceRange = vk.ImageSubresourceRange{
-                .aspectMask = .{ .color=true },
+                .aspectMask = .{ .color = true },
                 .levelCount = 1,
                 .layerCount = 1,
                 .baseMipLevel = 0,
                 .baseArrayLayer = 0,
             },
         }};
-        vk.CmdPipelineBarrier(command_buffer, .{ .host=true }, .{ .transfer=true }, .{}, &[_]vk.MemoryBarrier{}, &[_]vk.BufferMemoryBarrier{}, &copy_barrier);
+        vk.CmdPipelineBarrier(command_buffer, .{ .host = true }, .{ .transfer = true }, .{}, &[_]vk.MemoryBarrier{}, &[_]vk.BufferMemoryBarrier{}, &copy_barrier);
 
         var region = [_]vk.BufferImageCopy{vk.BufferImageCopy{
             .imageSubresource = vk.ImageSubresourceLayers{
-                .aspectMask = .{ .color=true },
+                .aspectMask = .{ .color = true },
                 .mipLevel = 0,
                 .baseArrayLayer = 0,
                 .layerCount = 1,
@@ -608,22 +610,22 @@ pub fn CreateFontsTexture(command_buffer: vk.CommandBuffer) !void {
         vk.CmdCopyBufferToImage(command_buffer, g_UploadBuffer.?, g_FontImage.?, .TRANSFER_DST_OPTIMAL, &region);
 
         var use_barrier = [_]vk.ImageMemoryBarrier{vk.ImageMemoryBarrier{
-            .srcAccessMask = .{ .transferWrite=true },
-            .dstAccessMask = .{ .shaderRead=true },
+            .srcAccessMask = .{ .transferWrite = true },
+            .dstAccessMask = .{ .shaderRead = true },
             .oldLayout = .TRANSFER_DST_OPTIMAL,
             .newLayout = .SHADER_READ_ONLY_OPTIMAL,
             .srcQueueFamilyIndex = vk.QUEUE_FAMILY_IGNORED,
             .dstQueueFamilyIndex = vk.QUEUE_FAMILY_IGNORED,
             .image = g_FontImage.?,
             .subresourceRange = vk.ImageSubresourceRange{
-                .aspectMask = .{ .color=true },
+                .aspectMask = .{ .color = true },
                 .levelCount = 1,
                 .layerCount = 1,
                 .baseMipLevel = 0,
                 .baseArrayLayer = 0,
             },
         }};
-        vk.CmdPipelineBarrier(command_buffer, .{ .transfer=true }, .{ .fragmentShader=true }, .{}, &[_]vk.MemoryBarrier{}, &[_]vk.BufferMemoryBarrier{}, &use_barrier);
+        vk.CmdPipelineBarrier(command_buffer, .{ .transfer = true }, .{ .fragmentShader = true }, .{}, &[_]vk.MemoryBarrier{}, &[_]vk.BufferMemoryBarrier{}, &use_barrier);
     }
 
     // Store our identifier
@@ -677,7 +679,7 @@ fn CreateDeviceObjects() !void {
             .binding = 0,
             .descriptorType = .COMBINED_IMAGE_SAMPLER,
             .descriptorCount = 1,
-            .stageFlags = .{ .fragment=true },
+            .stageFlags = .{ .fragment = true },
             .pImmutableSamplers = &sampler,
         }};
         const info = vk.DescriptorSetLayoutCreateInfo{
@@ -702,7 +704,7 @@ fn CreateDeviceObjects() !void {
     if (g_PipelineLayout == null) {
         // Constants: we are using 'vec2 offset' and 'vec2 scale' instead of a full 3d projection matrix
         const push_constants = [_]vk.PushConstantRange{vk.PushConstantRange{
-            .stageFlags = .{ .vertex=true },
+            .stageFlags = .{ .vertex = true },
             .offset = 0 * @sizeOf(f32),
             .size = 4 * @sizeOf(f32),
         }};
@@ -718,12 +720,12 @@ fn CreateDeviceObjects() !void {
 
     const stage = [_]vk.PipelineShaderStageCreateInfo{
         vk.PipelineShaderStageCreateInfo{
-            .stage = .{ .vertex=true },
+            .stage = .{ .vertex = true },
             .module = vert_module,
             .pName = "main",
         },
         vk.PipelineShaderStageCreateInfo{
-            .stage = .{ .fragment=true },
+            .stage = .{ .fragment = true },
             .module = frag_module,
             .pName = "main",
         },
@@ -788,7 +790,7 @@ fn CreateDeviceObjects() !void {
     };
 
     const ms_info = vk.PipelineMultisampleStateCreateInfo{
-        .rasterizationSamples = if (!v.MSAASamples.isEmpty()) v.MSAASamples else .{ .t1=true },
+        .rasterizationSamples = if (!v.MSAASamples.isEmpty()) v.MSAASamples else .{ .t1 = true },
 
         .sampleShadingEnable = vk.FALSE,
         .minSampleShading = 0,
@@ -804,7 +806,7 @@ fn CreateDeviceObjects() !void {
         .srcAlphaBlendFactor = .ONE_MINUS_SRC_ALPHA,
         .dstAlphaBlendFactor = .ZERO,
         .alphaBlendOp = .ADD,
-        .colorWriteMask = .{ .r=true, .g=true, .b=true, .a=true },
+        .colorWriteMask = .{ .r = true, .g = true, .b = true, .a = true },
     }};
 
     const depth_info = vk.PipelineDepthStencilStateCreateInfo{
@@ -1011,7 +1013,7 @@ fn CreateWindowCommandBuffers(physical_device: vk.PhysicalDevice, device: vk.Dev
         const fsd = &wd.FrameSemaphores[i];
         {
             const info = vk.CommandPoolCreateInfo{
-                .flags = .{ .resetCommandBuffer=true },
+                .flags = .{ .resetCommandBuffer = true },
                 .queueFamilyIndex = queue_family,
             };
             fd.CommandPool = try vk.CreateCommandPool(device, info, allocator);
@@ -1026,7 +1028,7 @@ fn CreateWindowCommandBuffers(physical_device: vk.PhysicalDevice, device: vk.Dev
         }
         {
             const info = vk.FenceCreateInfo{
-                .flags = .{ .signaled=true },
+                .flags = .{ .signaled = true },
             };
             fd.Fence = try vk.CreateFence(device, info, allocator);
         }
@@ -1086,11 +1088,11 @@ fn CreateWindowSwapChain(physical_device: vk.PhysicalDevice, device: vk.Device, 
             .imageFormat = wd.SurfaceFormat.format,
             .imageColorSpace = wd.SurfaceFormat.colorSpace,
             .imageArrayLayers = 1,
-            .imageUsage = .{ .colorAttachment=true },
+            .imageUsage = .{ .colorAttachment = true },
             .imageExtent = undefined, // we will fill this in later
             .imageSharingMode = .EXCLUSIVE, // Assume that graphics family == present family
-            .preTransform = .{ .identity=true },
-            .compositeAlpha = .{ .opaque=true },
+            .preTransform = .{ .identity = true },
+            .compositeAlpha = .{ .opaqueBit = true },
             .presentMode = wd.PresentMode,
             .clipped = vk.TRUE,
             .oldSwapchain = old_swapchain,
@@ -1134,7 +1136,7 @@ fn CreateWindowSwapChain(physical_device: vk.PhysicalDevice, device: vk.Device, 
     {
         const attachment = vk.AttachmentDescription{
             .format = wd.SurfaceFormat.format,
-            .samples = .{ .t1=true },
+            .samples = .{ .t1 = true },
             .loadOp = .CLEAR,
             .storeOp = .STORE,
             .stencilLoadOp = .DONT_CARE,
@@ -1155,10 +1157,10 @@ fn CreateWindowSwapChain(physical_device: vk.PhysicalDevice, device: vk.Device, 
         const dependency = vk.SubpassDependency{
             .srcSubpass = vk.SUBPASS_EXTERNAL,
             .dstSubpass = 0,
-            .srcStageMask = .{ .colorAttachmentOutput=true },
-            .dstStageMask = .{ .colorAttachmentOutput=true },
+            .srcStageMask = .{ .colorAttachmentOutput = true },
+            .dstStageMask = .{ .colorAttachmentOutput = true },
             .srcAccessMask = .{},
-            .dstAccessMask = .{ .colorAttachmentWrite=true },
+            .dstAccessMask = .{ .colorAttachmentWrite = true },
         };
         const info = vk.RenderPassCreateInfo{
             .attachmentCount = 1,
@@ -1184,7 +1186,7 @@ fn CreateWindowSwapChain(physical_device: vk.PhysicalDevice, device: vk.Device, 
                 .a = .IDENTITY,
             },
             .subresourceRange = vk.ImageSubresourceRange{
-                .aspectMask = .{ .color=true },
+                .aspectMask = .{ .color = true },
                 .baseMipLevel = 0,
                 .levelCount = 1,
                 .baseArrayLayer = 0,
@@ -1289,15 +1291,18 @@ fn DestroyWindowRenderBuffers(device: vk.Device, buffers: *WindowRenderBuffers, 
 }
 
 // converts *T to *[1]T
-fn arrayPtrType(comptime ptrType: type) type {
-    const info = @typeInfo(ptrType);
-    if (info.Pointer.is_const) {
-        return *const [1]ptrType.Child;
-    } else {
-        return *[1]ptrType.Child;
+fn ArrayPtrType(comptime PtrType: type) type {
+    var info = @typeInfo(PtrType);
+    if (info != .Pointer or info.Pointer.size != .One) {
+        @compileError("Type " ++ @typeName(PtrType) ++ " does not match pattern *T");
     }
+    const NewChild = [1]info.Pointer.child;
+    info.Pointer.child = NewChild;
+    assert(info.Pointer.sentinel == null);
+    info.Pointer.sentinel = @as(?NewChild, null);
+    return @Type(info);
 }
 
-fn arrayPtr(ptr: var) arrayPtrType(@TypeOf(ptr)) {
-    return @ptrCast(arrayPtrType(@TypeOf(ptr)), ptr);
+fn arrayPtr(ptr: anytype) ArrayPtrType(@TypeOf(ptr)) {
+    return ptr;
 }

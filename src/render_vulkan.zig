@@ -648,6 +648,6 @@ fn ArrayPtrType(comptime ptrType: type) type {
     }
 }
 
-pub fn arrayPtr(ptr: var) ArrayPtrType(@TypeOf(ptr)) {
+pub fn arrayPtr(ptr: anytype) ArrayPtrType(@TypeOf(ptr)) {
     return @as(ArrayPtrType(@TypeOf(ptr)), ptr);
 }
