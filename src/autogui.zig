@@ -5,13 +5,17 @@ const Allocator = std.mem.Allocator;
 const assert = std.debug.assert;
 const Child = std.meta.Child;
 
+const AutoguiContext = struct {
+    arena: *Allocator,
+};
+
 const NULL_TERM = [_]u8{0};
-fn nullTerm(comptime str: []const u8) [:0]const u8 {
+pub fn nullTerm(comptime str: []const u8) [:0]const u8 {
     const fullStr = str ++ NULL_TERM;
     return fullStr[0..str.len :0];
 }
 
-fn allocPrintZ(allocator: *Allocator, comptime fmt: []const u8, params: anytype) ![:0]const u8 {
+pub fn allocPrintZ(allocator: *Allocator, comptime fmt: []const u8, params: anytype) ![:0]const u8 {
     const formatted = try std.fmt.allocPrint(allocator, fmt ++ NULL_TERM, params);
     assert(formatted[formatted.len - 1] == 0);
     return formatted[0 .. formatted.len - 1 :0];
@@ -33,8 +37,13 @@ pub fn draw(comptime DataType: type, dataPtr: *const DataType, heapAllocator: *A
 pub fn drawStructUI(comptime DataType: type, dataPtr: *const DataType, arena: *Allocator) void {
     switch (@typeInfo(DataType)) {
         .Struct => |info| {
-            inline for (info.fields) |field| {
-                drawFieldUI(field.field_type, &@field(dataPtr, field.name), nullTerm(field.name), arena);
+            if (@hasDecl(DataType, "drawUI")) {
+                const context = AutoguiContext{ .arena = arena };
+                dataPtr.drawUI(context);
+            } else {
+                inline for (info.fields) |field| {
+                    drawFieldUI(field.field_type, &@field(dataPtr, field.name), nullTerm(field.name), arena);
+                }
             }
         },
         .Pointer => {
@@ -72,7 +81,7 @@ pub fn drawFieldUI(comptime FieldType: type, fieldPtr: anytype, name: [:0]const 
             _ = ig.TreeNodeExStrExt(name.ptr, INLINE_FLAGS);
             ig.NextColumn();
             ig.AlignTextToFramePadding();
-            if (info.is_signed) {
+            if (info.signedness == .signed) {
                 ig.Text("%lld (%s)", @intCast(isize, fieldPtr.*), @typeName(FieldType));
             } else {
                 ig.Text("%llu (%s)", @intCast(usize, fieldPtr.*), @typeName(FieldType));
@@ -95,7 +104,7 @@ pub fn drawFieldUI(comptime FieldType: type, fieldPtr: anytype, name: [:0]const 
             _ = ig.TreeNodeExStrExt(name.ptr, INLINE_FLAGS);
             ig.NextColumn();
             ig.AlignTextToFramePadding();
-            const cstr = if (allocPrintZ(arena, "{}", .{@tagName(fieldPtr.*)})) |str| str else |err| "<out of memory>";
+            const cstr = if (allocPrintZ(arena, "{s}", .{@tagName(fieldPtr.*)})) |str| str else |err| "<out of memory>";
             ig.Text(".%s", cstr.ptr);
             ig.NextColumn();
         },
@@ -167,7 +176,7 @@ pub fn drawSliceFieldUI(comptime DataType: type, slice: []const DataType, name: 
         _ = ig.TreeNodeExStrExt(name.ptr, INLINE_FLAGS);
         ig.NextColumn();
         ig.AlignTextToFramePadding();
-        const nullTermStr = if (allocPrintZ(arena, "{}", .{slice})) |cstr| cstr else |err| "out of memory";
+        const nullTermStr = if (allocPrintZ(arena, "{s}", .{slice})) |cstr| cstr else |err| "out of memory";
         ig.Text("\"%s\" ", nullTermStr.ptr);
         ig.NextColumn();
     } else {

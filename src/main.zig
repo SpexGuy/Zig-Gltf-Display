@@ -42,7 +42,7 @@ fn makePath(comptime model: []const u8) ModelPath {
 fn loadModel(index: usize) !*gltf.Data {
     const nextModel = &models[targetModelIndex];
 
-    std.debug.warn("Loading {}\n", .{std.mem.spanZ(nextModel.gltfFile)});
+    std.debug.warn("Loading {s}\n", .{std.mem.spanZ(nextModel.gltfFile)});
 
     const options = cgltf.Options{};
 

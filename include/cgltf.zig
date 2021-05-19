@@ -172,29 +172,24 @@ pub const Accessor = extern struct {
     is_sparse: Bool32,
     sparse: AccessorSparse, // valid only if is_sparse != 0
     extras: Extras,
-
-    pub inline fn unpackFloatsCount(self: *const Accessor) usize {
+    pub fn unpackFloatsCount(self: *const Accessor) callconv(.Inline) usize {
         return cgltf_accessor_unpack_floats(self, null, 0);
     }
-
-    pub inline fn unpackFloats(self: *const Accessor, outBuffer: []f32) []f32 {
+    pub fn unpackFloats(self: *const Accessor, outBuffer: []f32) callconv(.Inline) []f32 {
         const actualCount = cgltf_accessor_unpack_floats(self, outBuffer.ptr, outBuffer.len);
         return outBuffer[0..actualCount];
     }
-
-    pub inline fn readFloat(self: *const Accessor, index: usize, outFloats: []f32) bool {
+    pub fn readFloat(self: *const Accessor, index: usize, outFloats: []f32) callconv(.Inline) bool {
         assert(outFloats.len == numComponents(self.type));
         const result = cgltf_accessor_read_float(self, index, outFloats.ptr, outFloats.len);
         return result != 0;
     }
-
-    pub inline fn readUint(self: *const Accessor, index: usize, outInts: []u32) bool {
+    pub fn readUint(self: *const Accessor, index: usize, outInts: []u32) callconv(.Inline) bool {
         assert(outInts.len == numComponents(self.type));
         const result = cgltf_accessor_read_uint(self, index, outInts.ptr, outInts.len);
         return result != 0;
     }
-
-    pub inline fn readIndex(self: *const Accessor, index: usize) usize {
+    pub fn readIndex(self: *const Accessor, index: usize) callconv(.Inline) usize {
         return cgltf_accessor_read_index(self, index);
     }
 };
@@ -371,14 +366,12 @@ pub const Node = extern struct {
     scale: [3]f32,
     matrix: [16]f32,
     extras: Extras,
-
-    pub inline fn transformLocal(self: *const Node) [16]f32 {
+    pub fn transformLocal(self: *const Node) callconv(.Inline) [16]f32 {
         var transform: [16]f32 = undefined;
         cgltf_node_transform_local(self, &transform);
         return transform;
     }
-
-    pub inline fn transformWorld(self: *const Node) [16]f32 {
+    pub fn transformWorld(self: *const Node) callconv(.Inline) [16]f32 {
         var transform: [16]f32 = undefined;
         cgltf_node_transform_world(self, &transform);
         return transform;
@@ -468,8 +461,7 @@ pub const Data = extern struct {
     memory: MemoryOptions,
     file: FileOptions,
 };
-
-pub inline fn parse(options: *const Options, data: []const u8) !*Data {
+pub fn parse(options: *const Options, data: []const u8) callconv(.Inline) !*Data {
     var out_data: ?*Data = undefined;
     const result = cgltf_parse(options, data.ptr, data.len, &out_data);
     if (result == .success) return out_data.?;
@@ -486,8 +478,7 @@ pub inline fn parse(options: *const Options, data: []const u8) !*Data {
         else => unreachable,
     }
 }
-
-pub inline fn parseFile(options: Options, path: CString) !*Data {
+pub fn parseFile(options: Options, path: CString) callconv(.Inline) !*Data {
     var out_data: ?*Data = undefined;
     const result = cgltf_parse_file(&options, path, &out_data);
     if (result == .success) return out_data.?;
@@ -504,8 +495,7 @@ pub inline fn parseFile(options: Options, path: CString) !*Data {
         else => unreachable,
     }
 }
-
-pub inline fn loadBuffers(options: Options, data: *Data, gltf_path: CString) !void {
+pub fn loadBuffers(options: Options, data: *Data, gltf_path: CString) callconv(.Inline) !void {
     const result = cgltf_load_buffers(&options, data, gltf_path);
     if (result == .success) return;
     switch (result) {
@@ -521,8 +511,7 @@ pub inline fn loadBuffers(options: Options, data: *Data, gltf_path: CString) !vo
         else => unreachable,
     }
 }
-
-pub inline fn loadBufferBase64(options: Options, size: usize, base64: []const u8) ![]u8 {
+pub fn loadBufferBase64(options: Options, size: usize, base64: []const u8) callconv(.Inline) ![]u8 {
     assert(base64.len >= (size * 4 + 2) / 3);
     var out: ?*c_void = null;
     const result = cgltf_load_buffer_base64(&options, size, base64.ptr, &out);
@@ -534,12 +523,10 @@ pub inline fn loadBufferBase64(options: Options, size: usize, base64: []const u8
         else => unreachable,
     }
 }
-
-pub inline fn validate(data: *Data) Result {
+pub fn validate(data: *Data) callconv(.Inline) Result {
     return cgltf_validate(data);
 }
-
-pub inline fn free(data: *Data) void {
+pub fn free(data: *Data) callconv(.Inline) void {
     cgltf_free(data);
 }
 
@@ -555,14 +542,13 @@ pub fn numComponents(inType: Type) usize {
         else => 1,
     };
 }
-
-pub inline fn copyExtrasJsonCount(data: *const Data, extras: *const Extras) usize {
+pub fn copyExtrasJsonCount(data: *const Data, extras: *const Extras) callconv(.Inline) usize {
     var size: usize = 0;
     var result = cgltf_copy_extras_json(data, extras, null, &size);
     assert(result == .success); // can only fail on invalid size ptr
     return size;
 }
-pub inline fn copyExtrasJson(data: *const Data, extras: *const Extras, outBuffer: []u8) []u8 {
+pub fn copyExtrasJson(data: *const Data, extras: *const Extras, outBuffer: []u8) callconv(.Inline) []u8 {
     var size: usize = outBuffer.len;
     var result = cgltf_copy_extras_json(data, extras, outBuffer.ptr, &size);
     assert(result == .success); // can only fail on invalid size ptr

@@ -9,7 +9,7 @@ const impl_vulkan = @import("imgui_impl_vulkan.zig");
 
 const assert = std.debug.assert;
 
-const USE_VULKAN_DEBUG_REPORT = std.debug.runtime_safety;
+const USE_VULKAN_DEBUG_REPORT = std.debug.runtime_safety and false;
 const IMGUI_UNLIMITED_FRAME_RATE = false;
 
 const deviceExtensions = [_]vk.CString{vk.KHR_SWAPCHAIN_EXTENSION_NAME};
@@ -81,8 +81,7 @@ pub fn init(allocator: *std.mem.Allocator, inWindow: *glfw.GLFWwindow) !void {
         };
 
         if (USE_VULKAN_DEBUG_REPORT) {
-            // Enabling multiple validation layers grouped as LunarG standard validation
-            const layers = [_][*:0]const u8{"VK_LAYER_LUNARG_standard_validation"};
+            const layers = [_][*:0]const u8{"VK_LAYER_KHRONOS_validation"};
             create_info.enabledLayerCount = @intCast(u32, layers.len);
             create_info.ppEnabledLayerNames = &layers;
 
@@ -598,8 +597,8 @@ fn glfw_resize_callback(inWindow: ?*glfw.GLFWwindow, w: c_int, h: c_int) callcon
     g_SwapChainResizeHeight = @intCast(u32, h);
 }
 
-fn debug_report(flags: vk.DebugReportFlagsEXT.IntType, objectType: vk.DebugReportObjectTypeEXT, object: u64, location: usize, messageCode: i32, pLayerPrefix: ?[*]const u8, pMessage: ?[*]const u8, pUserData: ?*c_void) callconv(vk.CallConv) vk.Bool32 {
-    std.debug.warn("[vulkan] ObjectType: {}\nMessage: {}\n\n", .{ objectType, pMessage });
+fn debug_report(flags: vk.DebugReportFlagsEXT.IntType, objectType: vk.DebugReportObjectTypeEXT, object: u64, location: usize, messageCode: i32, pLayerPrefix: ?[*:0]const u8, pMessage: ?[*:0]const u8, pUserData: ?*c_void) callconv(vk.CallConv) vk.Bool32 {
+    std.debug.warn("[vulkan] ObjectType: {}\nMessage: {s}\n\n", .{ objectType, pMessage });
     @panic("VK Error");
     //return vk.FALSE;
 }
