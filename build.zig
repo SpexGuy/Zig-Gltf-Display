@@ -50,6 +50,9 @@ fn setDependencies(b: *Builder, step: *LibExeObjStep) void {
         step.linkSystemLibrary("lib/win/vulkan-1");
         step.linkSystemLibrary("gdi32");
         step.linkSystemLibrary("shell32");
+        if (step.kind == .Exe) {
+            step.subsystem = .Windows;
+        }
     } else {
         step.linkSystemLibrary("glfw");
         step.linkSystemLibrary("vulkan");

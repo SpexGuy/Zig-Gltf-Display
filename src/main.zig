@@ -189,3 +189,20 @@ fn drawGltfUI(data: *gltf.Data, show: *bool) void {
 
     ig.Separator();
 }
+
+pub export fn WinMain(
+    hInstance: ?*c_void,
+    hPrevInstance: ?*c_void,
+    lpCmdLine: ?[*:0]const u8,
+    nShowCmd: c_int,
+) void {
+    std.debug.maybeEnableSegfaultHandler();
+    main() catch |err| {
+        std.log.err("{s}", .{@errorName(err)});
+        if (@errorReturnTrace()) |trace| {
+            std.debug.dumpStackTrace(trace.*);
+        }
+        std.os.exit(1);
+    };
+    std.os.exit(0);
+}
