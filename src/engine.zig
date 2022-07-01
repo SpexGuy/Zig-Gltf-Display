@@ -10,11 +10,11 @@ pub const render = @import("render.zig");
 
 // ----------------------- Engine state -------------------------
 pub var _engineInitialized = false;
-pub var allocator: *Allocator = undefined;
+pub var allocator: Allocator = undefined;
 pub var window: *glfw.GLFWwindow = undefined;
 
 // ----------------------- Public functions -------------------------
-pub fn init(windowName: [:0]const u8, heap_allocator: *Allocator) !void {
+pub fn init(windowName: [:0]const u8, heap_allocator: Allocator) !void {
     assert(!_engineInitialized);
 
     allocator = heap_allocator;
@@ -67,5 +67,5 @@ pub fn endFrame() void {}
 // ----------------------- Internal functions -------------------------
 
 fn glfw_error_callback(err: c_int, description: ?[*:0]const u8) callconv(.C) void {
-    std.debug.warn("Glfw Error {}: {s}\n", .{ err, std.mem.spanZ(description.?) });
+    std.debug.print("Glfw Error {}: {s}\n", .{ err, std.mem.span(description.?) });
 }

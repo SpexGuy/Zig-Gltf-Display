@@ -8,7 +8,7 @@ const engine = @import("engine.zig");
 const autogui = @import("autogui.zig");
 
 const Allocator = std.mem.Allocator;
-const warn = std.debug.warn;
+const print = std.debug.print;
 const assert = std.debug.assert;
 const Child = std.meta.Child;
 
@@ -39,10 +39,10 @@ fn makePath(comptime model: []const u8) ModelPath {
     return ModelPath{ .gltfFile = gen.path, .directory = gen.dir };
 }
 
-fn loadModel(index: usize) !*gltf.Data {
+fn loadModel() !*gltf.Data {
     const nextModel = &models[targetModelIndex];
 
-    std.debug.warn("Loading {s}\n", .{std.mem.spanZ(nextModel.gltfFile)});
+    std.debug.print("Loading {s}\n", .{std.mem.sliceTo(nextModel.gltfFile, 0)});
 
     const options = cgltf.Options{};
 
@@ -78,7 +78,7 @@ fn uploadBuffers(data: *gltf.Data, frame: *engine.render.Frame) !void {
 
     errdefer unloadRenderingData(data);
 
-    for (data.buffers) |*buffer, i| {
+    for (data.buffers) |*buffer| {
         buffer.gpuBuffer = try engine.render.createGpuBuffer(buffer.raw.size, buffer.usageFlags);
         const bufferData = @ptrCast([*]u8, buffer.raw.data.?)[0..buffer.raw.size];
         try upload.setBufferData(&buffer.gpuBuffer.?, 0, bufferData);
@@ -89,7 +89,6 @@ fn uploadBuffers(data: *gltf.Data, frame: *engine.render.Frame) !void {
 }
 
 fn unloadRenderingData(data: *gltf.Data) void {
-    const backend = engine.render.backend;
     assert(data.renderingDataInitialized);
     for (data.buffers) |*buffer| {
         if (buffer.gpuBuffer != null) {
@@ -113,7 +112,7 @@ pub fn main() !void {
     defer engine.deinit();
 
     // Our state
-    var data = try loadModel(loadedModelIndex);
+    var data = try loadModel();
     defer unloadModel(data);
     assert(!data.renderingDataInitialized);
 
@@ -144,7 +143,7 @@ pub fn main() !void {
 
         if (targetModelIndex != loadedModelIndex) {
             unloadModel(data);
-            data = try loadModel(targetModelIndex);
+            data = try loadModel();
             loadedModelIndex = targetModelIndex;
         }
 
@@ -153,7 +152,7 @@ pub fn main() !void {
         defer frame.end();
 
         if (data.renderingDataInitialized != true) {
-            warn("Setting up rendering data...\n", .{});
+            print("Setting up rendering data...\n", .{});
             try uploadRenderingData(data, &frame);
             assert(data.renderingDataInitialized);
         }
@@ -169,18 +168,16 @@ pub fn main() !void {
 }
 
 fn drawGltfUI(data: *gltf.Data, show: *bool) void {
-    const Static = struct {};
-
     const showWindow = ig.BeginExt("glTF Data", show, .{});
     defer ig.End();
 
     // early out as an optimization
     if (!showWindow) return;
 
-    ig.Columns(2);
-    defer ig.Columns(1);
+    ig.ColumnsExt(2, null, true);
+    defer ig.ColumnsExt(1, null, true);
 
-    ig.PushStyleVarVec2(ig.StyleVar.FramePadding, ig.Vec2{ .x = 2, .y = 2 });
+    ig.PushStyleVar_Vec2(ig.StyleVar.FramePadding, ig.Vec2{ .x = 2, .y = 2 });
     defer ig.PopStyleVar();
 
     ig.Separator();
@@ -191,11 +188,15 @@ fn drawGltfUI(data: *gltf.Data, show: *bool) void {
 }
 
 pub export fn WinMain(
-    hInstance: ?*c_void,
-    hPrevInstance: ?*c_void,
+    hInstance: ?*anyopaque,
+    hPrevInstance: ?*anyopaque,
     lpCmdLine: ?[*:0]const u8,
     nShowCmd: c_int,
 ) void {
+    _ = nShowCmd;
+    _ = lpCmdLine;
+    _ = hPrevInstance;
+    _ = hInstance;
     std.debug.maybeEnableSegfaultHandler();
     main() catch |err| {
         std.log.err("{s}", .{@errorName(err)});

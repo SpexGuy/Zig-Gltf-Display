@@ -5,13 +5,14 @@ pub const MutCString = [*:0]u8;
 
 pub const Bool32 = i32;
 
-pub const FileType = extern enum {
+pub const FileType = enum (u32) {
     invalid,
     gltf,
     glb,
+    _,
 };
 
-pub const Result = extern enum {
+pub const Result = enum (u32) {
     success,
     data_too_short,
     unknown_format,
@@ -22,18 +23,19 @@ pub const Result = extern enum {
     io_error,
     out_of_memory,
     legacy_gltf,
+    _,
 };
 
 pub const MemoryOptions = extern struct {
-    alloc: ?fn (?*c_void, usize) callconv(.C) ?*c_void = null,
-    free: ?fn (?*c_void, ?*c_void) callconv(.C) void = null,
-    user_data: ?*c_void = null,
+    alloc: ?fn (?*anyopaque, usize) callconv(.C) ?*anyopaque = null,
+    free: ?fn (?*anyopaque, ?*anyopaque) callconv(.C) void = null,
+    user_data: ?*anyopaque = null,
 };
 
 pub const FileOptions = extern struct {
-    read: ?fn (*const MemoryOptions, *const FileOptions, CString, *usize, *(?*c_void)) callconv(.C) Result = null,
-    release: ?fn (*const MemoryOptions, *const FileOptions, ?*c_void) callconv(.C) void = null,
-    user_data: ?*c_void = null,
+    read: ?fn (*const MemoryOptions, *const FileOptions, CString, *usize, *(?*anyopaque)) callconv(.C) Result = null,
+    release: ?fn (*const MemoryOptions, *const FileOptions, ?*anyopaque) callconv(.C) void = null,
+    user_data: ?*anyopaque = null,
 };
 
 pub const Options = extern struct {
@@ -43,13 +45,14 @@ pub const Options = extern struct {
     file: FileOptions = FileOptions{},
 };
 
-pub const BufferViewType = extern enum {
+pub const BufferViewType = enum (u32) {
     invalid,
     indices,
     vertices,
+    _,
 };
 
-pub const AttributeType = extern enum {
+pub const AttributeType = enum (u32) {
     invalid,
     position,
     normal,
@@ -58,9 +61,10 @@ pub const AttributeType = extern enum {
     color,
     joints,
     weights,
+    _,
 };
 
-pub const ComponentType = extern enum {
+pub const ComponentType = enum (u32) {
     invalid,
     r_8,
     r_8u,
@@ -68,9 +72,10 @@ pub const ComponentType = extern enum {
     r_16u,
     r_32u,
     r_32f,
+    _,
 };
 
-pub const Type = extern enum {
+pub const Type = enum (u32) {
     invalid,
     scalar,
     vec2,
@@ -79,9 +84,10 @@ pub const Type = extern enum {
     mat2,
     mat3,
     mat4,
+    _,
 };
 
-pub const PrimitiveType = extern enum {
+pub const PrimitiveType = enum (u32) {
     points,
     lines,
     line_loop,
@@ -89,39 +95,45 @@ pub const PrimitiveType = extern enum {
     triangles,
     triangle_strip,
     triangle_fan,
+    _,
 };
 
-pub const AlphaMode = extern enum {
+pub const AlphaMode = enum (u32) {
     opaqueMode,
     mask,
     blend,
+    _,
 };
 
-pub const AnimationPathType = extern enum {
+pub const AnimationPathType = enum (u32) {
     invalid,
     translation,
     rotation,
     scale,
     weights,
+    _,
 };
 
-pub const InterpolationType = extern enum {
+pub const InterpolationType = enum (u32) {
     linear,
     step,
     cubic_spline,
+    _,
 };
 
-pub const CameraType = extern enum {
+pub const CameraType = enum (u32) {
     invalid,
     perspective,
     orthographic,
+    _,
 };
 
-pub const LightType = extern enum {
+pub const LightType = enum (u32) {
     invalid,
     directional,
     point,
     spot,
+    _,
 };
 
 pub const Extras = extern struct {
@@ -132,7 +144,7 @@ pub const Extras = extern struct {
 pub const Buffer = extern struct {
     size: usize,
     uri: ?MutCString,
-    data: ?*c_void,
+    data: ?*anyopaque,
     extras: Extras,
 };
 
@@ -418,7 +430,7 @@ pub const Asset = extern struct {
 
 pub const Data = extern struct {
     file_type: FileType,
-    file_data: ?*c_void,
+    file_data: ?*anyopaque,
     asset: Asset,
     meshes: [*]Mesh,
     meshes_count: usize,
@@ -456,7 +468,7 @@ pub const Data = extern struct {
     extensions_required_count: usize,
     json: [*]const u8,
     json_size: usize,
-    bin: ?*const c_void,
+    bin: ?*const anyopaque,
     bin_size: usize,
     memory: MemoryOptions,
     file: FileOptions,
@@ -513,7 +525,7 @@ pub fn loadBuffers(options: Options, data: *Data, gltf_path: CString) callconv(.
 }
 pub fn loadBufferBase64(options: Options, size: usize, base64: []const u8) callconv(.Inline) ![]u8 {
     assert(base64.len >= (size * 4 + 2) / 3);
-    var out: ?*c_void = null;
+    var out: ?*anyopaque = null;
     const result = cgltf_load_buffer_base64(&options, size, base64.ptr, &out);
     if (result == .success)
         return @ptrCast([*]u8, out.?)[0..size];
@@ -555,10 +567,10 @@ pub fn copyExtrasJson(data: *const Data, extras: *const Extras, outBuffer: []u8)
     return outBuffer[0..size];
 }
 
-pub extern fn cgltf_parse(options: [*c]const Options, data: ?*const c_void, size: usize, out_data: [*c]([*c]Data)) Result;
+pub extern fn cgltf_parse(options: [*c]const Options, data: ?*const anyopaque, size: usize, out_data: [*c]([*c]Data)) Result;
 pub extern fn cgltf_parse_file(options: [*c]const Options, path: [*c]const u8, out_data: [*c]([*c]Data)) Result;
 pub extern fn cgltf_load_buffers(options: [*c]const Options, data: [*c]Data, gltf_path: [*c]const u8) Result;
-pub extern fn cgltf_load_buffer_base64(options: [*c]const Options, size: usize, base64: [*c]const u8, out_data: [*c](?*c_void)) Result;
+pub extern fn cgltf_load_buffer_base64(options: [*c]const Options, size: usize, base64: [*c]const u8, out_data: [*c](?*anyopaque)) Result;
 pub extern fn cgltf_validate(data: [*c]Data) Result;
 pub extern fn cgltf_free(data: [*c]Data) void;
 pub extern fn cgltf_node_transform_local(node: [*c]const Node, out_matrix: [*c]f32) void;

@@ -234,18 +234,18 @@ pub fn createGpuBuffer(size: usize, flags: vk.BufferUsageFlags) !Buffer {
 }
 
 // ----------------------- Internal functions -------------------------
-pub fn _init(allocator: *Allocator, window: *glfw.GLFWwindow) !void {
+pub fn _init(allocator: Allocator, window: *glfw.GLFWwindow) !void {
     try backend.init(allocator, window);
 }
 pub fn _deinit() void {
     backend.deinit();
 }
 
-pub fn _initImgui(allocator: *Allocator) !void {
+pub fn _initImgui(allocator: Allocator) !void {
     // Setup Dear ImGui context
     imgui.CHECKVERSION();
     _ = imgui.CreateContext();
-    var io = imgui.GetIO();
+    //var io = imgui.GetIO();
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 

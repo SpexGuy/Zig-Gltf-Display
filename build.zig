@@ -3,11 +3,18 @@ const path = std.fs.path;
 const Builder = std.build.Builder;
 const LibExeObjStep = std.build.LibExeObjStep;
 
+const ig_build = @import("zig-imgui/imgui_build.zig");
+
 const glslc_command = if (std.builtin.os.tag == .windows) "tools/win/glslc.exe" else "glslc";
 
 pub fn build(b: *Builder) void {
+    const mode = b.standardReleaseOptions();
+    const target = b.standardTargetOptions(.{});
+
+    ig_build.addTestStep(b, "imgui:test", "zig-imgui/imgui", mode, target);
+
     const exe = b.addExecutable("zig-gltf", "src/main.zig");
-    setDependencies(b, exe);
+    setDependencies(exe, mode, target);
     exe.install();
 
     const run_step = b.step("run", "Run the project");
@@ -15,10 +22,10 @@ pub fn build(b: *Builder) void {
     run_step.dependOn(&run_cmd.step);
 
     const tests = b.addTest("src/all_tests.zig");
-    setDependencies(b, tests);
+    setDependencies(tests, mode, target);
 
     const vscode_exe = b.addExecutable("vscode", "src/main.zig");
-    setDependencies(b, vscode_exe);
+    setDependencies(vscode_exe, mode, target);
 
     const vscode_install = b.addInstallArtifact(vscode_exe);
 
@@ -29,34 +36,26 @@ pub fn build(b: *Builder) void {
     run_tests.dependOn(&tests.step);
 }
 
-fn setDependencies(b: *Builder, step: *LibExeObjStep) void {
-    const mode = b.standardReleaseOptions();
-
+fn setDependencies(step: *LibExeObjStep, mode: std.builtin.Mode, target: std.zig.CrossTarget) void {
     step.setBuildMode(mode);
-    step.linkLibC();
+    step.linkLibCpp();
 
-    step.addPackagePath("imgui", "include/imgui.zig");
+    ig_build.link(step, "zig-imgui/imgui");
     step.addPackagePath("vk", "include/vk.zig");
     step.addPackagePath("glfw", "include/glfw.zig");
     step.addPackagePath("cgltf", "include/cgltf.zig");
 
-    if (std.builtin.os.tag == .windows) {
-        if (mode == .Debug) {
-            step.linkSystemLibrary("lib/win/cimguid");
-        } else {
-            step.linkSystemLibrary("lib/win/cimgui");
-        }
-        step.linkSystemLibrary("lib/win/glfw3");
-        step.linkSystemLibrary("lib/win/vulkan-1");
+    if (target.getOs().tag == .windows) {
+        step.addObjectFile(if (target.getAbi() == .msvc) "lib/win/glfw3.lib" else "lib/win/libglfw3.a");
+        step.addObjectFile("lib/win/vulkan-1.lib");
         step.linkSystemLibrary("gdi32");
         step.linkSystemLibrary("shell32");
-        if (step.kind == .Exe) {
+        if (step.kind == .exe) {
             step.subsystem = .Windows;
         }
     } else {
         step.linkSystemLibrary("glfw");
         step.linkSystemLibrary("vulkan");
-        @compileError("TODO: Build and link cimgui for non-windows platforms");
     }
 
     step.addCSourceFile("c_src/cgltf.c", &[_][]const u8{ "-std=c99", "-DCGLTF_IMPLEMENTATION", "-D_CRT_SECURE_NO_WARNINGS" });

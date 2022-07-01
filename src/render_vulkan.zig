@@ -33,7 +33,7 @@ pub var device: vk.Device = undefined;
 pub var queueFamily: u32 = undefined;
 pub var queue: vk.Queue = undefined;
 pub var debugReport: if (USE_VULKAN_DEBUG_REPORT) vk.DebugReportCallbackEXT else void = undefined;
-pub var pipelineCache: ?vk.PipelineCache = undefined;
+pub var pipelineCache: vk.PipelineCache = undefined;
 pub var descriptorPool: vk.DescriptorPool = undefined;
 pub var surface: vk.SurfaceKHR = undefined;
 
@@ -60,7 +60,7 @@ pub const RenderUpload = struct {
 };
 
 // ----------------------- Render interface functions -------------------------
-pub fn init(allocator: *std.mem.Allocator, inWindow: *glfw.GLFWwindow) !void {
+pub fn init(allocator: std.mem.Allocator, inWindow: *glfw.GLFWwindow) !void {
     window = inWindow;
 
     // Setup Vulkan
@@ -248,7 +248,7 @@ pub fn init(allocator: *std.mem.Allocator, inWindow: *glfw.GLFWwindow) !void {
 
         // Create SwapChain, RenderPass, Framebuffer, etc.
         assert(g_MinImageCount >= 2);
-        try impl_vulkan.CreateWindow(instance, physicalDevice, device, wd, queueFamily, vkAllocator, @intCast(u32, w), @intCast(u32, h), g_MinImageCount);
+        try impl_vulkan.CreateOrResizeWindow(instance, physicalDevice, device, wd, queueFamily, vkAllocator, @intCast(u32, w), @intCast(u32, h), g_MinImageCount);
     }
     errdefer impl_vulkan.DestroyWindow(instance, device, &g_MainWindowData, vkAllocator) catch {};
 }
@@ -274,7 +274,8 @@ pub fn deinit() void {
     vk.DestroyInstance(instance, vkAllocator);
 }
 
-pub fn initImgui(allocator: *std.mem.Allocator) !void {
+pub fn initImgui(allocator: std.mem.Allocator) !void {
+    _ = allocator;
     // Setup Platform/Renderer bindings
     var initResult = impl_glfw.InitForVulkan(window, true);
     assert(initResult);
@@ -282,7 +283,6 @@ pub fn initImgui(allocator: *std.mem.Allocator) !void {
     const wd = &g_MainWindowData;
 
     var init_info = impl_vulkan.InitInfo{
-        .Allocator = allocator,
         .Instance = instance,
         .PhysicalDevice = physicalDevice,
         .Device = device,
@@ -292,7 +292,8 @@ pub fn initImgui(allocator: *std.mem.Allocator) !void {
         .DescriptorPool = descriptorPool,
         .VkAllocator = vkAllocator,
         .MinImageCount = g_MinImageCount,
-        .MSAASamples = .{},
+        .MSAASamples = .{ .t1 = true },
+        .Subpass = 0,
         .ImageCount = wd.ImageCount,
     };
     try impl_vulkan.Init(&init_info, wd.RenderPass);
@@ -330,7 +331,7 @@ pub fn initImgui(allocator: *std.mem.Allocator) !void {
         .pCommandBuffers = arrayPtr(&command_buffer),
     };
     try vk.EndCommandBuffer(command_buffer);
-    try vk.QueueSubmit(queue, arrayPtr(&end_info), null);
+    try vk.QueueSubmit(queue, arrayPtr(&end_info), .Null);
 
     try vk.DeviceWaitIdle(device);
     impl_vulkan.DestroyFontUploadObjects();
@@ -346,7 +347,7 @@ pub fn beginFrame() !void {
     if (g_SwapChainRebuild) {
         g_SwapChainRebuild = false;
         try impl_vulkan.SetMinImageCount(g_MinImageCount);
-        try impl_vulkan.CreateWindow(instance, physicalDevice, device, &g_MainWindowData, queueFamily, vkAllocator, g_SwapChainResizeWidth, g_SwapChainResizeHeight, g_MinImageCount);
+        try impl_vulkan.CreateOrResizeWindow(instance, physicalDevice, device, &g_MainWindowData, queueFamily, vkAllocator, g_SwapChainResizeWidth, g_SwapChainResizeHeight, g_MinImageCount);
     }
 }
 
@@ -362,8 +363,8 @@ pub fn beginRender() !RenderFrame {
     g_SemaphoreIndex = (g_SemaphoreIndex + 1) % wd.ImageCount; // Now we can use the next set of semaphores
 
     const image_acquired_semaphore = fsd.ImageAcquiredSemaphore;
-    const render_complete_semaphore = fsd.RenderCompleteSemaphore;
-    const frameIndex = (try vk.AcquireNextImageKHR(device, wd.Swapchain.?, ~@as(u64, 0), image_acquired_semaphore, null)).imageIndex;
+    //const render_complete_semaphore = fsd.RenderCompleteSemaphore;
+    const frameIndex = (try vk.AcquireNextImageKHR(device, wd.Swapchain, ~@as(u64, 0), image_acquired_semaphore, .Null)).imageIndex;
 
     const fd = &wd.Frames[frameIndex];
     _ = try vk.WaitForFences(device, arrayPtr(&fd.Fence), vk.TRUE, ~@as(u64, 0)); // wait indefinitely instead of periodically checking
@@ -384,7 +385,7 @@ pub fn endRender(frame: *RenderFrame) void {
         .waitSemaphoreCount = 1,
         .pWaitSemaphores = arrayPtr(&render_complete_semaphore),
         .swapchainCount = 1,
-        .pSwapchains = arrayPtr(&wd.Swapchain.?),
+        .pSwapchains = arrayPtr(&wd.Swapchain),
         .pImageIndices = arrayPtr(&frame.frameIndex),
     };
     _ = vk.QueuePresentKHR(queue, info) catch @panic("QueuePresentKHR Failed!"); // TODO device lost
@@ -401,7 +402,7 @@ pub fn beginColorPass(frame: *RenderFrame, clearColor: imgui.Vec4) !RenderPass {
     {
         const wd = &g_MainWindowData;
         var info = vk.RenderPassBeginInfo{
-            .renderPass = wd.RenderPass.?,
+            .renderPass = wd.RenderPass,
             .framebuffer = fd.Framebuffer,
             .renderArea = vk.Rect2D{
                 .offset = vk.Offset2D{ .x = 0, .y = 0 },
@@ -460,6 +461,7 @@ pub fn uploadCopyBuffer(
     destOffset: usize,
     len: usize,
 ) void {
+    _ = frame;
     const copyRegion = vk.BufferCopy{
         .srcOffset = sourceOffset,
         .dstOffset = destOffset,
@@ -469,16 +471,18 @@ pub fn uploadCopyBuffer(
 }
 
 pub fn abortUpload(frame: *RenderFrame, upload: *RenderUpload) void {
+    _ = frame;
     vk.ResetCommandBuffer(upload.commandBuffer, .{ .releaseResources = true }) catch {};
 }
 
 pub fn endUploadAndWait(frame: *RenderFrame, upload: *RenderUpload) void {
+    _ = frame;
     vk.EndCommandBuffer(upload.commandBuffer) catch @panic("EndCommandBuffer failed!");
     const submitInfo = vk.SubmitInfo{
         .commandBufferCount = 1,
         .pCommandBuffers = arrayPtr(&upload.commandBuffer),
     };
-    vk.QueueSubmit(queue, arrayPtr(&submitInfo), null) catch @panic("QueueSubmit failed!");
+    vk.QueueSubmit(queue, arrayPtr(&submitInfo), .Null) catch @panic("QueueSubmit failed!");
     vk.QueueWaitIdle(queue) catch @panic("QueueWaitIdle failed!");
 }
 
@@ -497,11 +501,12 @@ pub fn destroyBuffer(buffer: *Buffer) void {
 
 pub fn mapBuffer(buffer: *Buffer, offset: usize, length: usize) ![*]u8 {
     var result: [*]u8 = undefined;
-    try vk.MapMemory(device, buffer.memory, offset, length, .{}, @ptrCast(**c_void, &result));
+    try vk.MapMemory(device, buffer.memory, offset, length, .{}, @ptrCast(**anyopaque, &result));
     return result;
 }
 
 pub fn flushMappedRange(buffer: *Buffer, mappedPtr: [*]u8, offset: usize, length: usize) !void {
+    _ = mappedPtr;
     const range = vk.MappedMemoryRange{
         .memory = buffer.memory,
         .offset = offset,
@@ -511,12 +516,14 @@ pub fn flushMappedRange(buffer: *Buffer, mappedPtr: [*]u8, offset: usize, length
 }
 
 pub fn unmapBuffer(buffer: *Buffer, mappedPtr: [*]u8, offset: usize, length: usize) void {
+    _ = mappedPtr; _ = offset; _ = length;
     vk.UnmapMemory(device, buffer.memory);
 }
 
 pub fn renderImgui(frame: *RenderFrame, pass: *RenderPass) !void {
+    _ = frame;
     // Record Imgui Draw Data and draw funcs into command buffer
-    try impl_vulkan.RenderDrawData(imgui.GetDrawData(), pass.cb);
+    try impl_vulkan.RenderDrawData(imgui.GetDrawData(), pass.cb, .Null);
 }
 
 // ----------------------- Backend functions -------------------------
@@ -551,10 +558,13 @@ pub fn getMemoryTypeIndex(memType: u32, properties: vk.MemoryPropertyFlags) u32 
     return impl_vulkan.MemoryType(properties, memType).?;
 }
 
-fn isDeviceSuitable(allocator: *std.mem.Allocator, inDevice: vk.PhysicalDevice) !bool {
+fn isDeviceSuitable(allocator: std.mem.Allocator, inDevice: vk.PhysicalDevice) !bool {
     // @TODO: Proper checks
-    if (@ptrToInt(allocator) != 0) return true;
-    return error.OutOfMemory;
+    _ = inDevice;
+    _ = allocator;
+    var runtime_false = false;
+    if (runtime_false) return error.OutOfMemory;
+    return true;
     //const indices = try findQueueFamilies(allocator, inDevice);
     //
     //const extensionsSupported = try checkDeviceExtensionSupport(allocator, inDevice);
@@ -569,7 +579,7 @@ fn isDeviceSuitable(allocator: *std.mem.Allocator, inDevice: vk.PhysicalDevice) 
     //return indices.isComplete() and extensionsSupported and swapChainAdequate;
 }
 
-fn checkDeviceExtensionSupport(allocator: *std.mem.Allocator, inDevice: vk.PhysicalDevice) !bool {
+fn checkDeviceExtensionSupport(allocator: std.mem.Allocator, inDevice: vk.PhysicalDevice) !bool {
     var extensionCount = try vk.EnumerateDeviceExtensionPropertiesCount(inDevice, null);
 
     const availableExtensionsBuf = try allocator.alloc(vk.ExtensionProperties, extensionCount);
@@ -592,13 +602,20 @@ fn checkDeviceExtensionSupport(allocator: *std.mem.Allocator, inDevice: vk.Physi
 }
 
 fn glfw_resize_callback(inWindow: ?*glfw.GLFWwindow, w: c_int, h: c_int) callconv(.C) void {
+    _ = inWindow;
     g_SwapChainRebuild = true;
     g_SwapChainResizeWidth = @intCast(u32, w);
     g_SwapChainResizeHeight = @intCast(u32, h);
 }
 
-fn debug_report(flags: vk.DebugReportFlagsEXT.IntType, objectType: vk.DebugReportObjectTypeEXT, object: u64, location: usize, messageCode: i32, pLayerPrefix: ?[*:0]const u8, pMessage: ?[*:0]const u8, pUserData: ?*c_void) callconv(vk.CallConv) vk.Bool32 {
-    std.debug.warn("[vulkan] ObjectType: {}\nMessage: {s}\n\n", .{ objectType, pMessage });
+fn debug_report(flags: vk.DebugReportFlagsEXT.IntType, objectType: vk.DebugReportObjectTypeEXT, object: u64, location: usize, messageCode: i32, pLayerPrefix: ?[*:0]const u8, pMessage: ?[*:0]const u8, pUserData: ?*anyopaque) callconv(vk.CallConv) vk.Bool32 {
+    _ = flags;
+    _ = object;
+    _ = location;
+    _ = messageCode;
+    _ = pLayerPrefix;
+    _ = pUserData;
+    std.debug.print("[vulkan] ObjectType: {}\nMessage: {s}\n\n", .{ objectType, pMessage });
     @panic("VK Error");
     //return vk.FALSE;
 }

@@ -19,7 +19,10 @@
 //
 //
 
-const assert = @import("std").debug.assert;
+const std = @import("std");
+const builtin = @import("builtin");
+const assert = std.debug.assert;
+
 pub const CString = [*:0]const u8;
 pub fn FlagsMixin(comptime FlagType: type) type {
     comptime assert(@sizeOf(FlagType) == 4);
@@ -52,38 +55,30 @@ pub fn FlagsMixin(comptime FlagType: type) type {
     };
 }
 
-const builtin = @import("builtin");
 pub const CallConv = if (builtin.os.tag == .windows)
-    @import("std").os.windows.WINAPI
-else if (builtin.abi == .android and (builtin.cpu.arch.isARM() or builtin.cpu.arch.isThumb()) and builtin.Target.arm.featureSetHas(builtin.cpu.features, .has_v7) and builtin.cpu.arch.ptrBitWidth() == 32)
-    // On Android 32-bit ARM targets, Vulkan functions use the "hardfloat"
-    // calling convention, i.e. float parameters are passed in registers. This
-    // is true even if the rest of the application passes floats on the stack,
-    // as it does by default when compiling for the armeabi-v7a NDK ABI.
-    builtin.CallingConvention.AAPCSVFP
-else
-    builtin.CallingConvention.C;
+        std.os.windows.WINAPI
+    else if (builtin.abi == .android and (builtin.cpu.arch.isARM() or builtin.cpu.arch.isThumb()) and builtin.Target.arm.featureSetHas(builtin.cpu.features, .has_v7) and builtin.cpu.arch.ptrBitWidth() == 32)
+        // On Android 32-bit ARM targets, Vulkan functions use the "hardfloat"
+        // calling convention, i.e. float parameters are passed in registers. This
+        // is true even if the rest of the application passes floats on the stack,
+        // as it does by default when compiling for the armeabi-v7a NDK ABI.
+        builtin.CallingConvention.AAPCSVFP
+    else
+        builtin.CallingConvention.C;
+
 
 pub const VERSION_1_0 = 1;
-pub fn MAKE_VERSION(major: u32, minor: u32, patch: u32) u32 {
-    return @shlExact(major, 22) | @shlExact(minor, 12) | patch;
-}
+pub fn MAKE_VERSION(major: u32, minor: u32, patch: u32) u32 { return @shlExact(major, 22) | @shlExact(minor, 12) | patch; }
 
 // DEPRECATED: This define has been removed. Specific version defines (e.g. VK_API_VERSION_1_0), or the VK_MAKE_VERSION macro, should be used instead.
 //pub const API_VERSION = MAKE_VERSION(1, 0, 0); // Patch version should always be set to 0
 
 // Vulkan 1.0 version number
-pub const API_VERSION_1_0 = MAKE_VERSION(1, 0, 0); // Patch version should always be set to 0
+pub const API_VERSION_1_0 = MAKE_VERSION(1, 0, 0);// Patch version should always be set to 0
 
-pub fn VERSION_MAJOR(version: u32) u32 {
-    return version >> 22;
-}
-pub fn VERSION_MINOR(version: u32) u32 {
-    return (version >> 12) & 0x3ff;
-}
-pub fn VERSION_PATCH(version: u32) u32 {
-    return version & 0xfff;
-}
+pub fn VERSION_MAJOR(version: u32) u32 { return version >> 22; }
+pub fn VERSION_MINOR(version: u32) u32 { return (version >> 12) & 0x3ff; }
+pub fn VERSION_PATCH(version: u32) u32 { return version & 0xfff; }
 
 // Version of this file
 pub const HEADER_VERSION = 132;
@@ -93,31 +88,31 @@ pub const Bool32 = u32;
 pub const DeviceSize = u64;
 pub const SampleMask = u32;
 
-pub const Instance = *opaque {};
-pub const PhysicalDevice = *opaque {};
-pub const Device = *opaque {};
-pub const Queue = *opaque {};
-pub const Semaphore = *opaque {};
-pub const CommandBuffer = *opaque {};
-pub const Fence = *opaque {};
-pub const DeviceMemory = *opaque {};
-pub const Buffer = *opaque {};
-pub const Image = *opaque {};
-pub const Event = *opaque {};
-pub const QueryPool = *opaque {};
-pub const BufferView = *opaque {};
-pub const ImageView = *opaque {};
-pub const ShaderModule = *opaque {};
-pub const PipelineCache = *opaque {};
-pub const PipelineLayout = *opaque {};
-pub const RenderPass = *opaque {};
-pub const Pipeline = *opaque {};
-pub const DescriptorSetLayout = *opaque {};
-pub const Sampler = *opaque {};
-pub const DescriptorPool = *opaque {};
-pub const DescriptorSet = *opaque {};
-pub const Framebuffer = *opaque {};
-pub const CommandPool = *opaque {};
+pub const Instance = enum(usize) { Null = 0, _ };
+pub const PhysicalDevice = enum(usize) { Null = 0, _ };
+pub const Device = enum(usize) { Null = 0, _ };
+pub const Queue = enum(usize) { Null = 0, _ };
+pub const Semaphore = enum(u64) { Null = 0, _ };
+pub const CommandBuffer = enum(usize) { Null = 0, _ };
+pub const Fence = enum(u64) { Null = 0, _ };
+pub const DeviceMemory = enum(u64) { Null = 0, _ };
+pub const Buffer = enum(u64) { Null = 0, _ };
+pub const Image = enum(u64) { Null = 0, _ };
+pub const Event = enum(u64) { Null = 0, _ };
+pub const QueryPool = enum(u64) { Null = 0, _ };
+pub const BufferView = enum(u64) { Null = 0, _ };
+pub const ImageView = enum(u64) { Null = 0, _ };
+pub const ShaderModule = enum(u64) { Null = 0, _ };
+pub const PipelineCache = enum(u64) { Null = 0, _ };
+pub const PipelineLayout = enum(u64) { Null = 0, _ };
+pub const RenderPass = enum(u64) { Null = 0, _ };
+pub const Pipeline = enum(u64) { Null = 0, _ };
+pub const DescriptorSetLayout = enum(u64) { Null = 0, _ };
+pub const Sampler = enum(u64) { Null = 0, _ };
+pub const DescriptorPool = enum(u64) { Null = 0, _ };
+pub const DescriptorSet = enum(u64) { Null = 0, _ };
+pub const Framebuffer = enum(u64) { Null = 0, _ };
+pub const CommandPool = enum(u64) { Null = 0, _ };
 
 pub const LOD_CLAMP_NONE = @as(f32, 1000.0);
 pub const REMAINING_MIP_LEVELS = (~@as(u32, 0));
@@ -135,12 +130,12 @@ pub const MAX_MEMORY_HEAPS = 16;
 pub const MAX_EXTENSION_NAME_SIZE = 256;
 pub const MAX_DESCRIPTION_SIZE = 256;
 
-pub const PipelineCacheHeaderVersion = extern enum(i32) {
+pub const PipelineCacheHeaderVersion = enum(i32) {
     ONE = 1,
     _,
 };
 
-pub const Result = extern enum(i32) {
+pub const Result = enum(i32) {
     SUCCESS = 0,
     NOT_READY = 1,
     TIMEOUT = 2,
@@ -184,7 +179,7 @@ pub const Result = extern enum(i32) {
     pub const ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS_KHR = Self.ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS;
 };
 
-pub const StructureType = extern enum(i32) {
+pub const StructureType = enum(i32) {
     APPLICATION_INFO = 0,
     INSTANCE_CREATE_INFO = 1,
     DEVICE_QUEUE_CREATE_INFO = 2,
@@ -703,7 +698,7 @@ pub const StructureType = extern enum(i32) {
     pub const PHYSICAL_DEVICE_HOST_QUERY_RESET_FEATURES_EXT = Self.PHYSICAL_DEVICE_HOST_QUERY_RESET_FEATURES;
 };
 
-pub const SystemAllocationScope = extern enum(i32) {
+pub const SystemAllocationScope = enum(i32) {
     COMMAND = 0,
     OBJECT = 1,
     CACHE = 2,
@@ -712,12 +707,12 @@ pub const SystemAllocationScope = extern enum(i32) {
     _,
 };
 
-pub const InternalAllocationType = extern enum(i32) {
+pub const InternalAllocationType = enum(i32) {
     EXECUTABLE = 0,
     _,
 };
 
-pub const Format = extern enum(i32) {
+pub const Format = enum(i32) {
     UNDEFINED = 0,
     R4G4_UNORM_PACK8 = 1,
     R4G4B4A4_UNORM_PACK16 = 2,
@@ -998,21 +993,21 @@ pub const Format = extern enum(i32) {
     pub const G16_B16_R16_3PLANE_444_UNORM_KHR = Self.G16_B16_R16_3PLANE_444_UNORM;
 };
 
-pub const ImageType = extern enum(i32) {
+pub const ImageType = enum(i32) {
     T_1D = 0,
     T_2D = 1,
     T_3D = 2,
     _,
 };
 
-pub const ImageTiling = extern enum(i32) {
+pub const ImageTiling = enum(i32) {
     OPTIMAL = 0,
     LINEAR = 1,
     DRM_FORMAT_MODIFIER_EXT = 1000158000,
     _,
 };
 
-pub const PhysicalDeviceType = extern enum(i32) {
+pub const PhysicalDeviceType = enum(i32) {
     OTHER = 0,
     INTEGRATED_GPU = 1,
     DISCRETE_GPU = 2,
@@ -1021,7 +1016,7 @@ pub const PhysicalDeviceType = extern enum(i32) {
     _,
 };
 
-pub const QueryType = extern enum(i32) {
+pub const QueryType = enum(i32) {
     OCCLUSION = 0,
     PIPELINE_STATISTICS = 1,
     TIMESTAMP = 2,
@@ -1032,13 +1027,13 @@ pub const QueryType = extern enum(i32) {
     _,
 };
 
-pub const SharingMode = extern enum(i32) {
+pub const SharingMode = enum(i32) {
     EXCLUSIVE = 0,
     CONCURRENT = 1,
     _,
 };
 
-pub const ImageLayout = extern enum(i32) {
+pub const ImageLayout = enum(i32) {
     UNDEFINED = 0,
     GENERAL = 1,
     COLOR_ATTACHMENT_OPTIMAL = 2,
@@ -1069,7 +1064,7 @@ pub const ImageLayout = extern enum(i32) {
     pub const STENCIL_READ_ONLY_OPTIMAL_KHR = Self.STENCIL_READ_ONLY_OPTIMAL;
 };
 
-pub const ImageViewType = extern enum(i32) {
+pub const ImageViewType = enum(i32) {
     T_1D = 0,
     T_2D = 1,
     T_3D = 2,
@@ -1080,7 +1075,7 @@ pub const ImageViewType = extern enum(i32) {
     _,
 };
 
-pub const ComponentSwizzle = extern enum(i32) {
+pub const ComponentSwizzle = enum(i32) {
     IDENTITY = 0,
     ZERO = 1,
     ONE = 2,
@@ -1091,13 +1086,13 @@ pub const ComponentSwizzle = extern enum(i32) {
     _,
 };
 
-pub const VertexInputRate = extern enum(i32) {
+pub const VertexInputRate = enum(i32) {
     VERTEX = 0,
     INSTANCE = 1,
     _,
 };
 
-pub const PrimitiveTopology = extern enum(i32) {
+pub const PrimitiveTopology = enum(i32) {
     POINT_LIST = 0,
     LINE_LIST = 1,
     LINE_STRIP = 2,
@@ -1112,7 +1107,7 @@ pub const PrimitiveTopology = extern enum(i32) {
     _,
 };
 
-pub const PolygonMode = extern enum(i32) {
+pub const PolygonMode = enum(i32) {
     FILL = 0,
     LINE = 1,
     POINT = 2,
@@ -1120,13 +1115,13 @@ pub const PolygonMode = extern enum(i32) {
     _,
 };
 
-pub const FrontFace = extern enum(i32) {
+pub const FrontFace = enum(i32) {
     COUNTER_CLOCKWISE = 0,
     CLOCKWISE = 1,
     _,
 };
 
-pub const CompareOp = extern enum(i32) {
+pub const CompareOp = enum(i32) {
     NEVER = 0,
     LESS = 1,
     EQUAL = 2,
@@ -1138,7 +1133,7 @@ pub const CompareOp = extern enum(i32) {
     _,
 };
 
-pub const StencilOp = extern enum(i32) {
+pub const StencilOp = enum(i32) {
     KEEP = 0,
     ZERO = 1,
     REPLACE = 2,
@@ -1150,7 +1145,7 @@ pub const StencilOp = extern enum(i32) {
     _,
 };
 
-pub const LogicOp = extern enum(i32) {
+pub const LogicOp = enum(i32) {
     CLEAR = 0,
     AND = 1,
     AND_REVERSE = 2,
@@ -1170,7 +1165,7 @@ pub const LogicOp = extern enum(i32) {
     _,
 };
 
-pub const BlendFactor = extern enum(i32) {
+pub const BlendFactor = enum(i32) {
     ZERO = 0,
     ONE = 1,
     SRC_COLOR = 2,
@@ -1193,7 +1188,7 @@ pub const BlendFactor = extern enum(i32) {
     _,
 };
 
-pub const BlendOp = extern enum(i32) {
+pub const BlendOp = enum(i32) {
     ADD = 0,
     SUBTRACT = 1,
     REVERSE_SUBTRACT = 2,
@@ -1248,7 +1243,7 @@ pub const BlendOp = extern enum(i32) {
     _,
 };
 
-pub const DynamicState = extern enum(i32) {
+pub const DynamicState = enum(i32) {
     VIEWPORT = 0,
     SCISSOR = 1,
     LINE_WIDTH = 2,
@@ -1268,7 +1263,7 @@ pub const DynamicState = extern enum(i32) {
     _,
 };
 
-pub const Filter = extern enum(i32) {
+pub const Filter = enum(i32) {
     NEAREST = 0,
     LINEAR = 1,
     CUBIC_IMG = 1000015000,
@@ -1278,13 +1273,13 @@ pub const Filter = extern enum(i32) {
     pub const CUBIC_EXT = Self.CUBIC_IMG;
 };
 
-pub const SamplerMipmapMode = extern enum(i32) {
+pub const SamplerMipmapMode = enum(i32) {
     NEAREST = 0,
     LINEAR = 1,
     _,
 };
 
-pub const SamplerAddressMode = extern enum(i32) {
+pub const SamplerAddressMode = enum(i32) {
     REPEAT = 0,
     MIRRORED_REPEAT = 1,
     CLAMP_TO_EDGE = 2,
@@ -1296,7 +1291,7 @@ pub const SamplerAddressMode = extern enum(i32) {
     pub const MIRROR_CLAMP_TO_EDGE_KHR = Self.MIRROR_CLAMP_TO_EDGE;
 };
 
-pub const BorderColor = extern enum(i32) {
+pub const BorderColor = enum(i32) {
     FLOAT_TRANSPARENT_BLACK = 0,
     INT_TRANSPARENT_BLACK = 1,
     FLOAT_OPAQUE_BLACK = 2,
@@ -1306,7 +1301,7 @@ pub const BorderColor = extern enum(i32) {
     _,
 };
 
-pub const DescriptorType = extern enum(i32) {
+pub const DescriptorType = enum(i32) {
     SAMPLER = 0,
     COMBINED_IMAGE_SAMPLER = 1,
     SAMPLED_IMAGE = 2,
@@ -1323,33 +1318,33 @@ pub const DescriptorType = extern enum(i32) {
     _,
 };
 
-pub const AttachmentLoadOp = extern enum(i32) {
+pub const AttachmentLoadOp = enum(i32) {
     LOAD = 0,
     CLEAR = 1,
     DONT_CARE = 2,
     _,
 };
 
-pub const AttachmentStoreOp = extern enum(i32) {
+pub const AttachmentStoreOp = enum(i32) {
     STORE = 0,
     DONT_CARE = 1,
     _,
 };
 
-pub const PipelineBindPoint = extern enum(i32) {
+pub const PipelineBindPoint = enum(i32) {
     GRAPHICS = 0,
     COMPUTE = 1,
     RAY_TRACING_NV = 1000165000,
     _,
 };
 
-pub const CommandBufferLevel = extern enum(i32) {
+pub const CommandBufferLevel = enum(i32) {
     PRIMARY = 0,
     SECONDARY = 1,
     _,
 };
 
-pub const IndexType = extern enum(i32) {
+pub const IndexType = enum(i32) {
     UINT16 = 0,
     UINT32 = 1,
     NONE_NV = 1000165000,
@@ -1357,13 +1352,13 @@ pub const IndexType = extern enum(i32) {
     _,
 };
 
-pub const SubpassContents = extern enum(i32) {
+pub const SubpassContents = enum(i32) {
     INLINE = 0,
     SECONDARY_COMMAND_BUFFERS = 1,
     _,
 };
 
-pub const ObjectType = extern enum(i32) {
+pub const ObjectType = enum(i32) {
     UNKNOWN = 0,
     INSTANCE = 1,
     PHYSICAL_DEVICE = 2,
@@ -1410,7 +1405,7 @@ pub const ObjectType = extern enum(i32) {
     pub const SAMPLER_YCBCR_CONVERSION_KHR = Self.SAMPLER_YCBCR_CONVERSION;
 };
 
-pub const VendorId = extern enum(i32) {
+pub const VendorId = enum(i32) {
     VIV = 0x10001,
     VSI = 0x10002,
     KAZAN = 0x10003,
@@ -2309,8 +2304,9 @@ pub const ShaderStageFlags = packed struct {
     __reserved_bit_30: bool = false,
     __reserved_bit_31: bool = false,
 
-    pub const allGraphics = fromInt(0x0000001F);
-    pub const all = fromInt(0x7FFFFFFF);
+    const Self = @This();
+    pub const allGraphics = Self.fromInt(0x0000001F);
+    pub const all = Self.fromInt(0x7FFFFFFF);
 
     pub usingnamespace FlagsMixin(@This());
 };
@@ -2374,8 +2370,9 @@ pub const CullModeFlags = packed struct {
     __reserved_bit_30: bool = false,
     __reserved_bit_31: bool = false,
 
-    pub const none = fromInt(0);
-    pub const frontAndBack = fromInt(0x00000003);
+    const Self = @This();
+    pub const none = Self.fromInt(0);
+    pub const frontAndBack = Self.fromInt(0x00000003);
 
     pub usingnamespace FlagsMixin(@This());
 };
@@ -3013,7 +3010,7 @@ pub const StencilFaceFlags = packed struct {
     __reserved_bit_31: bool = false,
 
     const Self = @This();
-    pub const frontAndBack = fromInt(0x00000003);
+    pub const frontAndBack = Self.fromInt(0x00000003);
     pub const stencilFrontAndBack = Self{ .frontAndBack = true };
 
     pub usingnamespace FlagsMixin(Self);
@@ -3021,7 +3018,7 @@ pub const StencilFaceFlags = packed struct {
 
 pub const ApplicationInfo = extern struct {
     sType: StructureType = .APPLICATION_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     pApplicationName: ?CString = null,
     applicationVersion: u32,
     pEngineName: ?CString = null,
@@ -3031,7 +3028,7 @@ pub const ApplicationInfo = extern struct {
 
 pub const InstanceCreateInfo = extern struct {
     sType: StructureType = .INSTANCE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: InstanceCreateFlags align(4) = InstanceCreateFlags{},
     pApplicationInfo: ?*const ApplicationInfo = null,
     enabledLayerCount: u32 = 0,
@@ -3041,41 +3038,41 @@ pub const InstanceCreateInfo = extern struct {
 };
 
 pub const PFN_AllocationFunction = fn (
-    ?*c_void,
+    ?*anyopaque,
     usize,
     usize,
     SystemAllocationScope,
-) callconv(CallConv) ?*c_void;
+) callconv(CallConv) ?*anyopaque;
 
 pub const PFN_ReallocationFunction = fn (
-    ?*c_void,
-    ?*c_void,
+    ?*anyopaque,
+    ?*anyopaque,
     usize,
     usize,
     SystemAllocationScope,
-) callconv(CallConv) ?*c_void;
+) callconv(CallConv) ?*anyopaque;
 
 pub const PFN_FreeFunction = fn (
-    ?*c_void,
-    ?*c_void,
+    ?*anyopaque,
+    ?*anyopaque,
 ) callconv(CallConv) void;
 
 pub const PFN_InternalAllocationNotification = fn (
-    ?*c_void,
+    ?*anyopaque,
     usize,
     InternalAllocationType,
     SystemAllocationScope,
 ) callconv(CallConv) void;
 
 pub const PFN_InternalFreeNotification = fn (
-    ?*c_void,
+    ?*anyopaque,
     usize,
     InternalAllocationType,
     SystemAllocationScope,
 ) callconv(CallConv) void;
 
 pub const AllocationCallbacks = extern struct {
-    pUserData: ?*c_void = null,
+    pUserData: ?*anyopaque = null,
     pfnAllocation: PFN_AllocationFunction,
     pfnReallocation: PFN_ReallocationFunction,
     pfnFree: PFN_FreeFunction,
@@ -3284,7 +3281,7 @@ pub const PhysicalDeviceProperties = extern struct {
     vendorID: u32,
     deviceID: u32,
     deviceType: PhysicalDeviceType,
-    deviceName: [MAX_PHYSICAL_DEVICE_NAME_SIZE - 1:0]u8,
+    deviceName: [MAX_PHYSICAL_DEVICE_NAME_SIZE-1:0]u8,
     pipelineCacheUUID: [UUID_SIZE]u8,
     limits: PhysicalDeviceLimits,
     sparseProperties: PhysicalDeviceSparseProperties,
@@ -3318,7 +3315,7 @@ pub const PFN_VoidFunction = fn () callconv(CallConv) void;
 
 pub const DeviceQueueCreateInfo = extern struct {
     sType: StructureType = .DEVICE_QUEUE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: DeviceQueueCreateFlags align(4) = DeviceQueueCreateFlags{},
     queueFamilyIndex: u32,
     queueCount: u32,
@@ -3327,7 +3324,7 @@ pub const DeviceQueueCreateInfo = extern struct {
 
 pub const DeviceCreateInfo = extern struct {
     sType: StructureType = .DEVICE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: DeviceCreateFlags align(4) = DeviceCreateFlags{},
     queueCreateInfoCount: u32,
     pQueueCreateInfos: [*]const DeviceQueueCreateInfo,
@@ -3339,20 +3336,20 @@ pub const DeviceCreateInfo = extern struct {
 };
 
 pub const ExtensionProperties = extern struct {
-    extensionName: [MAX_EXTENSION_NAME_SIZE - 1:0]u8,
+    extensionName: [MAX_EXTENSION_NAME_SIZE-1:0]u8,
     specVersion: u32,
 };
 
 pub const LayerProperties = extern struct {
-    layerName: [MAX_EXTENSION_NAME_SIZE - 1:0]u8,
+    layerName: [MAX_EXTENSION_NAME_SIZE-1:0]u8,
     specVersion: u32,
     implementationVersion: u32,
-    description: [MAX_DESCRIPTION_SIZE - 1:0]u8,
+    description: [MAX_DESCRIPTION_SIZE-1:0]u8,
 };
 
 pub const SubmitInfo = extern struct {
     sType: StructureType = .SUBMIT_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     waitSemaphoreCount: u32 = 0,
     pWaitSemaphores: [*]const Semaphore = undefined,
     pWaitDstStageMask: [*]align(4) const PipelineStageFlags = undefined,
@@ -3364,14 +3361,14 @@ pub const SubmitInfo = extern struct {
 
 pub const MemoryAllocateInfo = extern struct {
     sType: StructureType = .MEMORY_ALLOCATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     allocationSize: DeviceSize,
     memoryTypeIndex: u32,
 };
 
 pub const MappedMemoryRange = extern struct {
     sType: StructureType = .MAPPED_MEMORY_RANGE,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     memory: DeviceMemory,
     offset: DeviceSize,
     size: DeviceSize,
@@ -3400,7 +3397,7 @@ pub const SparseImageMemoryRequirements = extern struct {
 pub const SparseMemoryBind = extern struct {
     resourceOffset: DeviceSize,
     size: DeviceSize,
-    memory: ?DeviceMemory = null,
+    memory: DeviceMemory = DeviceMemory.Null,
     memoryOffset: DeviceSize,
     flags: SparseMemoryBindFlags align(4) = SparseMemoryBindFlags{},
 };
@@ -3433,7 +3430,7 @@ pub const SparseImageMemoryBind = extern struct {
     subresource: ImageSubresource,
     offset: Offset3D,
     extent: Extent3D,
-    memory: ?DeviceMemory = null,
+    memory: DeviceMemory = DeviceMemory.Null,
     memoryOffset: DeviceSize,
     flags: SparseMemoryBindFlags align(4) = SparseMemoryBindFlags{},
 };
@@ -3446,7 +3443,7 @@ pub const SparseImageMemoryBindInfo = extern struct {
 
 pub const BindSparseInfo = extern struct {
     sType: StructureType = .BIND_SPARSE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     waitSemaphoreCount: u32 = 0,
     pWaitSemaphores: [*]const Semaphore = undefined,
     bufferBindCount: u32 = 0,
@@ -3461,25 +3458,25 @@ pub const BindSparseInfo = extern struct {
 
 pub const FenceCreateInfo = extern struct {
     sType: StructureType = .FENCE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: FenceCreateFlags align(4) = FenceCreateFlags{},
 };
 
 pub const SemaphoreCreateInfo = extern struct {
     sType: StructureType = .SEMAPHORE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: SemaphoreCreateFlags align(4) = SemaphoreCreateFlags{},
 };
 
 pub const EventCreateInfo = extern struct {
     sType: StructureType = .EVENT_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: EventCreateFlags align(4) = EventCreateFlags{},
 };
 
 pub const QueryPoolCreateInfo = extern struct {
     sType: StructureType = .QUERY_POOL_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: QueryPoolCreateFlags align(4) = QueryPoolCreateFlags{},
     queryType: QueryType,
     queryCount: u32,
@@ -3488,7 +3485,7 @@ pub const QueryPoolCreateInfo = extern struct {
 
 pub const BufferCreateInfo = extern struct {
     sType: StructureType = .BUFFER_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: BufferCreateFlags align(4) = BufferCreateFlags{},
     size: DeviceSize,
     usage: BufferUsageFlags align(4),
@@ -3499,7 +3496,7 @@ pub const BufferCreateInfo = extern struct {
 
 pub const BufferViewCreateInfo = extern struct {
     sType: StructureType = .BUFFER_VIEW_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: BufferViewCreateFlags align(4) = BufferViewCreateFlags{},
     buffer: Buffer,
     format: Format,
@@ -3509,7 +3506,7 @@ pub const BufferViewCreateInfo = extern struct {
 
 pub const ImageCreateInfo = extern struct {
     sType: StructureType = .IMAGE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: ImageCreateFlags align(4) = ImageCreateFlags{},
     imageType: ImageType,
     format: Format,
@@ -3550,7 +3547,7 @@ pub const ImageSubresourceRange = extern struct {
 
 pub const ImageViewCreateInfo = extern struct {
     sType: StructureType = .IMAGE_VIEW_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: ImageViewCreateFlags align(4) = ImageViewCreateFlags{},
     image: Image,
     viewType: ImageViewType,
@@ -3561,7 +3558,7 @@ pub const ImageViewCreateInfo = extern struct {
 
 pub const ShaderModuleCreateInfo = extern struct {
     sType: StructureType = .SHADER_MODULE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: ShaderModuleCreateFlags align(4) = ShaderModuleCreateFlags{},
     codeSize: usize,
     pCode: [*]const u32,
@@ -3569,10 +3566,10 @@ pub const ShaderModuleCreateInfo = extern struct {
 
 pub const PipelineCacheCreateInfo = extern struct {
     sType: StructureType = .PIPELINE_CACHE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: PipelineCacheCreateFlags align(4) = PipelineCacheCreateFlags{},
     initialDataSize: usize = 0,
-    pInitialData: ?*const c_void = undefined,
+    pInitialData: ?*const anyopaque = undefined,
 };
 
 pub const SpecializationMapEntry = extern struct {
@@ -3585,12 +3582,12 @@ pub const SpecializationInfo = extern struct {
     mapEntryCount: u32 = 0,
     pMapEntries: [*]const SpecializationMapEntry = undefined,
     dataSize: usize = 0,
-    pData: ?*const c_void = undefined,
+    pData: ?*const anyopaque = undefined,
 };
 
 pub const PipelineShaderStageCreateInfo = extern struct {
     sType: StructureType = .PIPELINE_SHADER_STAGE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: PipelineShaderStageCreateFlags align(4) = PipelineShaderStageCreateFlags{},
     stage: ShaderStageFlags align(4),
     module: ShaderModule,
@@ -3613,7 +3610,7 @@ pub const VertexInputAttributeDescription = extern struct {
 
 pub const PipelineVertexInputStateCreateInfo = extern struct {
     sType: StructureType = .PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: PipelineVertexInputStateCreateFlags align(4) = PipelineVertexInputStateCreateFlags{},
     vertexBindingDescriptionCount: u32 = 0,
     pVertexBindingDescriptions: [*]const VertexInputBindingDescription = undefined,
@@ -3623,7 +3620,7 @@ pub const PipelineVertexInputStateCreateInfo = extern struct {
 
 pub const PipelineInputAssemblyStateCreateInfo = extern struct {
     sType: StructureType = .PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: PipelineInputAssemblyStateCreateFlags align(4) = PipelineInputAssemblyStateCreateFlags{},
     topology: PrimitiveTopology,
     primitiveRestartEnable: Bool32,
@@ -3631,7 +3628,7 @@ pub const PipelineInputAssemblyStateCreateInfo = extern struct {
 
 pub const PipelineTessellationStateCreateInfo = extern struct {
     sType: StructureType = .PIPELINE_TESSELLATION_STATE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: PipelineTessellationStateCreateFlags align(4) = PipelineTessellationStateCreateFlags{},
     patchControlPoints: u32,
 };
@@ -3662,7 +3659,7 @@ pub const Rect2D = extern struct {
 
 pub const PipelineViewportStateCreateInfo = extern struct {
     sType: StructureType = .PIPELINE_VIEWPORT_STATE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: PipelineViewportStateCreateFlags align(4) = PipelineViewportStateCreateFlags{},
     viewportCount: u32,
     pViewports: ?[*]const Viewport = null,
@@ -3672,7 +3669,7 @@ pub const PipelineViewportStateCreateInfo = extern struct {
 
 pub const PipelineRasterizationStateCreateInfo = extern struct {
     sType: StructureType = .PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: PipelineRasterizationStateCreateFlags align(4) = PipelineRasterizationStateCreateFlags{},
     depthClampEnable: Bool32,
     rasterizerDiscardEnable: Bool32,
@@ -3688,7 +3685,7 @@ pub const PipelineRasterizationStateCreateInfo = extern struct {
 
 pub const PipelineMultisampleStateCreateInfo = extern struct {
     sType: StructureType = .PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: PipelineMultisampleStateCreateFlags align(4) = PipelineMultisampleStateCreateFlags{},
     rasterizationSamples: SampleCountFlags align(4),
     sampleShadingEnable: Bool32,
@@ -3710,7 +3707,7 @@ pub const StencilOpState = extern struct {
 
 pub const PipelineDepthStencilStateCreateInfo = extern struct {
     sType: StructureType = .PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: PipelineDepthStencilStateCreateFlags align(4) = PipelineDepthStencilStateCreateFlags{},
     depthTestEnable: Bool32,
     depthWriteEnable: Bool32,
@@ -3736,7 +3733,7 @@ pub const PipelineColorBlendAttachmentState = extern struct {
 
 pub const PipelineColorBlendStateCreateInfo = extern struct {
     sType: StructureType = .PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: PipelineColorBlendStateCreateFlags align(4) = PipelineColorBlendStateCreateFlags{},
     logicOpEnable: Bool32,
     logicOp: LogicOp,
@@ -3747,7 +3744,7 @@ pub const PipelineColorBlendStateCreateInfo = extern struct {
 
 pub const PipelineDynamicStateCreateInfo = extern struct {
     sType: StructureType = .PIPELINE_DYNAMIC_STATE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: PipelineDynamicStateCreateFlags align(4) = PipelineDynamicStateCreateFlags{},
     dynamicStateCount: u32 = 0,
     pDynamicStates: [*]const DynamicState = undefined,
@@ -3755,7 +3752,7 @@ pub const PipelineDynamicStateCreateInfo = extern struct {
 
 pub const GraphicsPipelineCreateInfo = extern struct {
     sType: StructureType = .GRAPHICS_PIPELINE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: PipelineCreateFlags align(4) = PipelineCreateFlags{},
     stageCount: u32,
     pStages: [*]const PipelineShaderStageCreateInfo,
@@ -3771,17 +3768,17 @@ pub const GraphicsPipelineCreateInfo = extern struct {
     layout: PipelineLayout,
     renderPass: RenderPass,
     subpass: u32,
-    basePipelineHandle: ?Pipeline = null,
+    basePipelineHandle: Pipeline = Pipeline.Null,
     basePipelineIndex: i32,
 };
 
 pub const ComputePipelineCreateInfo = extern struct {
     sType: StructureType = .COMPUTE_PIPELINE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: PipelineCreateFlags align(4) = PipelineCreateFlags{},
     stage: PipelineShaderStageCreateInfo,
     layout: PipelineLayout,
-    basePipelineHandle: ?Pipeline = null,
+    basePipelineHandle: Pipeline = Pipeline.Null,
     basePipelineIndex: i32,
 };
 
@@ -3793,7 +3790,7 @@ pub const PushConstantRange = extern struct {
 
 pub const PipelineLayoutCreateInfo = extern struct {
     sType: StructureType = .PIPELINE_LAYOUT_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: PipelineLayoutCreateFlags align(4) = PipelineLayoutCreateFlags{},
     setLayoutCount: u32 = 0,
     pSetLayouts: [*]const DescriptorSetLayout = undefined,
@@ -3803,7 +3800,7 @@ pub const PipelineLayoutCreateInfo = extern struct {
 
 pub const SamplerCreateInfo = extern struct {
     sType: StructureType = .SAMPLER_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: SamplerCreateFlags align(4) = SamplerCreateFlags{},
     magFilter: Filter,
     minFilter: Filter,
@@ -3832,7 +3829,7 @@ pub const DescriptorSetLayoutBinding = extern struct {
 
 pub const DescriptorSetLayoutCreateInfo = extern struct {
     sType: StructureType = .DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: DescriptorSetLayoutCreateFlags align(4) = DescriptorSetLayoutCreateFlags{},
     bindingCount: u32 = 0,
     pBindings: [*]const DescriptorSetLayoutBinding = undefined,
@@ -3845,7 +3842,7 @@ pub const DescriptorPoolSize = extern struct {
 
 pub const DescriptorPoolCreateInfo = extern struct {
     sType: StructureType = .DESCRIPTOR_POOL_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: DescriptorPoolCreateFlags align(4) = DescriptorPoolCreateFlags{},
     maxSets: u32,
     poolSizeCount: u32,
@@ -3854,7 +3851,7 @@ pub const DescriptorPoolCreateInfo = extern struct {
 
 pub const DescriptorSetAllocateInfo = extern struct {
     sType: StructureType = .DESCRIPTOR_SET_ALLOCATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     descriptorPool: DescriptorPool,
     descriptorSetCount: u32,
     pSetLayouts: [*]const DescriptorSetLayout,
@@ -3874,7 +3871,7 @@ pub const DescriptorBufferInfo = extern struct {
 
 pub const WriteDescriptorSet = extern struct {
     sType: StructureType = .WRITE_DESCRIPTOR_SET,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     dstSet: DescriptorSet,
     dstBinding: u32,
     dstArrayElement: u32,
@@ -3887,7 +3884,7 @@ pub const WriteDescriptorSet = extern struct {
 
 pub const CopyDescriptorSet = extern struct {
     sType: StructureType = .COPY_DESCRIPTOR_SET,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     srcSet: DescriptorSet,
     srcBinding: u32,
     srcArrayElement: u32,
@@ -3899,7 +3896,7 @@ pub const CopyDescriptorSet = extern struct {
 
 pub const FramebufferCreateInfo = extern struct {
     sType: StructureType = .FRAMEBUFFER_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: FramebufferCreateFlags align(4) = FramebufferCreateFlags{},
     renderPass: RenderPass,
     attachmentCount: u32 = 0,
@@ -3951,7 +3948,7 @@ pub const SubpassDependency = extern struct {
 
 pub const RenderPassCreateInfo = extern struct {
     sType: StructureType = .RENDER_PASS_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: RenderPassCreateFlags align(4) = RenderPassCreateFlags{},
     attachmentCount: u32 = 0,
     pAttachments: [*]const AttachmentDescription = undefined,
@@ -3963,14 +3960,14 @@ pub const RenderPassCreateInfo = extern struct {
 
 pub const CommandPoolCreateInfo = extern struct {
     sType: StructureType = .COMMAND_POOL_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: CommandPoolCreateFlags align(4) = CommandPoolCreateFlags{},
     queueFamilyIndex: u32,
 };
 
 pub const CommandBufferAllocateInfo = extern struct {
     sType: StructureType = .COMMAND_BUFFER_ALLOCATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     commandPool: CommandPool,
     level: CommandBufferLevel,
     commandBufferCount: u32,
@@ -3978,10 +3975,10 @@ pub const CommandBufferAllocateInfo = extern struct {
 
 pub const CommandBufferInheritanceInfo = extern struct {
     sType: StructureType = .COMMAND_BUFFER_INHERITANCE_INFO,
-    pNext: ?*const c_void = null,
-    renderPass: ?RenderPass = null,
+    pNext: ?*const anyopaque = null,
+    renderPass: RenderPass = RenderPass.Null,
     subpass: u32,
-    framebuffer: ?Framebuffer = null,
+    framebuffer: Framebuffer = Framebuffer.Null,
     occlusionQueryEnable: Bool32,
     queryFlags: QueryControlFlags align(4) = QueryControlFlags{},
     pipelineStatistics: QueryPipelineStatisticFlags align(4) = QueryPipelineStatisticFlags{},
@@ -3989,7 +3986,7 @@ pub const CommandBufferInheritanceInfo = extern struct {
 
 pub const CommandBufferBeginInfo = extern struct {
     sType: StructureType = .COMMAND_BUFFER_BEGIN_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: CommandBufferUsageFlags align(4) = CommandBufferUsageFlags{},
     pInheritanceInfo: ?*const CommandBufferInheritanceInfo = null,
 };
@@ -4069,14 +4066,14 @@ pub const ImageResolve = extern struct {
 
 pub const MemoryBarrier = extern struct {
     sType: StructureType = .MEMORY_BARRIER,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     srcAccessMask: AccessFlags align(4) = AccessFlags{},
     dstAccessMask: AccessFlags align(4) = AccessFlags{},
 };
 
 pub const BufferMemoryBarrier = extern struct {
     sType: StructureType = .BUFFER_MEMORY_BARRIER,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     srcAccessMask: AccessFlags align(4),
     dstAccessMask: AccessFlags align(4),
     srcQueueFamilyIndex: u32,
@@ -4088,7 +4085,7 @@ pub const BufferMemoryBarrier = extern struct {
 
 pub const ImageMemoryBarrier = extern struct {
     sType: StructureType = .IMAGE_MEMORY_BARRIER,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     srcAccessMask: AccessFlags align(4),
     dstAccessMask: AccessFlags align(4),
     oldLayout: ImageLayout,
@@ -4101,7 +4098,7 @@ pub const ImageMemoryBarrier = extern struct {
 
 pub const RenderPassBeginInfo = extern struct {
     sType: StructureType = .RENDER_PASS_BEGIN_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     renderPass: RenderPass,
     framebuffer: Framebuffer,
     renderArea: Rect2D,
@@ -4147,7 +4144,7 @@ pub extern fn vkCreateInstance(
 ) callconv(CallConv) Result;
 
 pub extern fn vkDestroyInstance(
-    instance: ?Instance,
+    instance: Instance,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -4195,7 +4192,7 @@ pub extern fn vkGetPhysicalDeviceMemoryProperties(
 ) callconv(CallConv) void;
 
 pub extern fn vkGetInstanceProcAddr(
-    instance: ?Instance,
+    instance: Instance,
     pName: CString,
 ) callconv(CallConv) PFN_VoidFunction;
 
@@ -4212,7 +4209,7 @@ pub extern fn vkCreateDevice(
 ) callconv(CallConv) Result;
 
 pub extern fn vkDestroyDevice(
-    device: ?Device,
+    device: Device,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -4251,7 +4248,7 @@ pub extern fn vkQueueSubmit(
     queue: Queue,
     submitCount: u32,
     pSubmits: [*]const SubmitInfo,
-    fence: ?Fence,
+    fence: Fence,
 ) callconv(CallConv) Result;
 
 pub extern fn vkQueueWaitIdle(queue: Queue) callconv(CallConv) Result;
@@ -4266,7 +4263,7 @@ pub extern fn vkAllocateMemory(
 
 pub extern fn vkFreeMemory(
     device: Device,
-    memory: ?DeviceMemory,
+    memory: DeviceMemory,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -4276,7 +4273,7 @@ pub extern fn vkMapMemory(
     offset: DeviceSize,
     size: DeviceSize,
     flags: MemoryMapFlags.IntType,
-    ppData: ?**c_void,
+    ppData: ?**anyopaque,
 ) callconv(CallConv) Result;
 
 pub extern fn vkUnmapMemory(
@@ -4350,7 +4347,7 @@ pub extern fn vkQueueBindSparse(
     queue: Queue,
     bindInfoCount: u32,
     pBindInfo: [*]const BindSparseInfo,
-    fence: ?Fence,
+    fence: Fence,
 ) callconv(CallConv) Result;
 
 pub extern fn vkCreateFence(
@@ -4362,7 +4359,7 @@ pub extern fn vkCreateFence(
 
 pub extern fn vkDestroyFence(
     device: Device,
-    fence: ?Fence,
+    fence: Fence,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -4394,7 +4391,7 @@ pub extern fn vkCreateSemaphore(
 
 pub extern fn vkDestroySemaphore(
     device: Device,
-    semaphore: ?Semaphore,
+    semaphore: Semaphore,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -4407,7 +4404,7 @@ pub extern fn vkCreateEvent(
 
 pub extern fn vkDestroyEvent(
     device: Device,
-    event: ?Event,
+    event: Event,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -4435,7 +4432,7 @@ pub extern fn vkCreateQueryPool(
 
 pub extern fn vkDestroyQueryPool(
     device: Device,
-    queryPool: ?QueryPool,
+    queryPool: QueryPool,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -4445,7 +4442,7 @@ pub extern fn vkGetQueryPoolResults(
     firstQuery: u32,
     queryCount: u32,
     dataSize: usize,
-    pData: ?*c_void,
+    pData: ?*anyopaque,
     stride: DeviceSize,
     flags: QueryResultFlags.IntType,
 ) callconv(CallConv) Result;
@@ -4459,7 +4456,7 @@ pub extern fn vkCreateBuffer(
 
 pub extern fn vkDestroyBuffer(
     device: Device,
-    buffer: ?Buffer,
+    buffer: Buffer,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -4472,7 +4469,7 @@ pub extern fn vkCreateBufferView(
 
 pub extern fn vkDestroyBufferView(
     device: Device,
-    bufferView: ?BufferView,
+    bufferView: BufferView,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -4485,7 +4482,7 @@ pub extern fn vkCreateImage(
 
 pub extern fn vkDestroyImage(
     device: Device,
-    image: ?Image,
+    image: Image,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -4505,7 +4502,7 @@ pub extern fn vkCreateImageView(
 
 pub extern fn vkDestroyImageView(
     device: Device,
-    imageView: ?ImageView,
+    imageView: ImageView,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -4518,7 +4515,7 @@ pub extern fn vkCreateShaderModule(
 
 pub extern fn vkDestroyShaderModule(
     device: Device,
-    shaderModule: ?ShaderModule,
+    shaderModule: ShaderModule,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -4531,7 +4528,7 @@ pub extern fn vkCreatePipelineCache(
 
 pub extern fn vkDestroyPipelineCache(
     device: Device,
-    pipelineCache: ?PipelineCache,
+    pipelineCache: PipelineCache,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -4539,7 +4536,7 @@ pub extern fn vkGetPipelineCacheData(
     device: Device,
     pipelineCache: PipelineCache,
     pDataSize: *usize,
-    pData: ?*c_void,
+    pData: ?*anyopaque,
 ) callconv(CallConv) Result;
 
 pub extern fn vkMergePipelineCaches(
@@ -4551,7 +4548,7 @@ pub extern fn vkMergePipelineCaches(
 
 pub extern fn vkCreateGraphicsPipelines(
     device: Device,
-    pipelineCache: ?PipelineCache,
+    pipelineCache: PipelineCache,
     createInfoCount: u32,
     pCreateInfos: [*]const GraphicsPipelineCreateInfo,
     pAllocator: ?*const AllocationCallbacks,
@@ -4560,7 +4557,7 @@ pub extern fn vkCreateGraphicsPipelines(
 
 pub extern fn vkCreateComputePipelines(
     device: Device,
-    pipelineCache: ?PipelineCache,
+    pipelineCache: PipelineCache,
     createInfoCount: u32,
     pCreateInfos: [*]const ComputePipelineCreateInfo,
     pAllocator: ?*const AllocationCallbacks,
@@ -4569,7 +4566,7 @@ pub extern fn vkCreateComputePipelines(
 
 pub extern fn vkDestroyPipeline(
     device: Device,
-    pipeline: ?Pipeline,
+    pipeline: Pipeline,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -4582,7 +4579,7 @@ pub extern fn vkCreatePipelineLayout(
 
 pub extern fn vkDestroyPipelineLayout(
     device: Device,
-    pipelineLayout: ?PipelineLayout,
+    pipelineLayout: PipelineLayout,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -4595,7 +4592,7 @@ pub extern fn vkCreateSampler(
 
 pub extern fn vkDestroySampler(
     device: Device,
-    sampler: ?Sampler,
+    sampler: Sampler,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -4608,7 +4605,7 @@ pub extern fn vkCreateDescriptorSetLayout(
 
 pub extern fn vkDestroyDescriptorSetLayout(
     device: Device,
-    descriptorSetLayout: ?DescriptorSetLayout,
+    descriptorSetLayout: DescriptorSetLayout,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -4621,7 +4618,7 @@ pub extern fn vkCreateDescriptorPool(
 
 pub extern fn vkDestroyDescriptorPool(
     device: Device,
-    descriptorPool: ?DescriptorPool,
+    descriptorPool: DescriptorPool,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -4661,7 +4658,7 @@ pub extern fn vkCreateFramebuffer(
 
 pub extern fn vkDestroyFramebuffer(
     device: Device,
-    framebuffer: ?Framebuffer,
+    framebuffer: Framebuffer,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -4674,7 +4671,7 @@ pub extern fn vkCreateRenderPass(
 
 pub extern fn vkDestroyRenderPass(
     device: Device,
-    renderPass: ?RenderPass,
+    renderPass: RenderPass,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -4693,7 +4690,7 @@ pub extern fn vkCreateCommandPool(
 
 pub extern fn vkDestroyCommandPool(
     device: Device,
-    commandPool: ?CommandPool,
+    commandPool: CommandPool,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -4762,7 +4759,7 @@ pub extern fn vkCmdSetDepthBias(
 
 pub extern fn vkCmdSetBlendConstants(
     commandBuffer: CommandBuffer,
-    blendConstants: *const [4]f32,
+    blendConstants: *const[4]f32,
 ) callconv(CallConv) void;
 
 pub extern fn vkCmdSetDepthBounds(
@@ -4913,7 +4910,7 @@ pub extern fn vkCmdUpdateBuffer(
     dstBuffer: Buffer,
     dstOffset: DeviceSize,
     dataSize: DeviceSize,
-    pData: ?*const c_void,
+    pData: ?*const anyopaque,
 ) callconv(CallConv) void;
 
 pub extern fn vkCmdFillBuffer(
@@ -5043,7 +5040,7 @@ pub extern fn vkCmdPushConstants(
     stageFlags: ShaderStageFlags.IntType,
     offset: u32,
     size: u32,
-    pValues: ?*const c_void,
+    pValues: ?*const anyopaque,
 ) callconv(CallConv) void;
 
 pub extern fn vkCmdBeginRenderPass(
@@ -5064,7 +5061,8 @@ pub extern fn vkCmdExecuteCommands(
     commandBufferCount: u32,
     pCommandBuffers: [*]const CommandBuffer,
 ) callconv(CallConv) void;
-pub fn CreateInstance(createInfo: InstanceCreateInfo, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_INITIALIZATION_FAILED, VK_LAYER_NOT_PRESENT, VK_EXTENSION_NOT_PRESENT, VK_INCOMPATIBLE_DRIVER, VK_UNDOCUMENTED_ERROR }!Instance {
+
+pub inline fn CreateInstance(createInfo: InstanceCreateInfo, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_INITIALIZATION_FAILED,VK_LAYER_NOT_PRESENT,VK_EXTENSION_NOT_PRESENT,VK_INCOMPATIBLE_DRIVER,VK_UNDOCUMENTED_ERROR}!Instance {
     var out_instance: Instance = undefined;
     const result = vkCreateInstance(&createInfo, pAllocator, &out_instance);
     if (@bitCast(c_int, result) < 0) {
@@ -5087,7 +5085,7 @@ pub const EnumeratePhysicalDevicesResult = struct {
     result: Result,
     physicalDevices: []PhysicalDevice,
 };
-pub fn EnumeratePhysicalDevices(instance: Instance, physicalDevices: []PhysicalDevice) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_INITIALIZATION_FAILED, VK_UNDOCUMENTED_ERROR }!EnumeratePhysicalDevicesResult {
+pub inline fn EnumeratePhysicalDevices(instance: Instance, physicalDevices: []PhysicalDevice) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_INITIALIZATION_FAILED,VK_UNDOCUMENTED_ERROR}!EnumeratePhysicalDevicesResult {
     var returnValues: EnumeratePhysicalDevicesResult = undefined;
     var physicalDeviceCount: u32 = @intCast(u32, physicalDevices.len);
     const result = vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, physicalDevices.ptr);
@@ -5103,7 +5101,7 @@ pub fn EnumeratePhysicalDevices(instance: Instance, physicalDevices: []PhysicalD
     returnValues.result = result;
     return returnValues;
 }
-pub fn EnumeratePhysicalDevicesCount(instance: Instance) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_INITIALIZATION_FAILED, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn EnumeratePhysicalDevicesCount(instance: Instance) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_INITIALIZATION_FAILED,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_physicalDeviceCount: u32 = undefined;
     const result = vkEnumeratePhysicalDevices(instance, &out_physicalDeviceCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -5116,17 +5114,20 @@ pub fn EnumeratePhysicalDevicesCount(instance: Instance) callconv(.Inline) error
     }
     return out_physicalDeviceCount;
 }
-pub fn GetPhysicalDeviceFeatures(physicalDevice: PhysicalDevice) callconv(.Inline) PhysicalDeviceFeatures {
+
+pub inline fn GetPhysicalDeviceFeatures(physicalDevice: PhysicalDevice) PhysicalDeviceFeatures {
     var out_features: PhysicalDeviceFeatures = undefined;
     vkGetPhysicalDeviceFeatures(physicalDevice, &out_features);
     return out_features;
 }
-pub fn GetPhysicalDeviceFormatProperties(physicalDevice: PhysicalDevice, format: Format) callconv(.Inline) FormatProperties {
+
+pub inline fn GetPhysicalDeviceFormatProperties(physicalDevice: PhysicalDevice, format: Format) FormatProperties {
     var out_formatProperties: FormatProperties = undefined;
     vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &out_formatProperties);
     return out_formatProperties;
 }
-pub fn GetPhysicalDeviceImageFormatProperties(physicalDevice: PhysicalDevice, format: Format, inType: ImageType, tiling: ImageTiling, usage: ImageUsageFlags, flags: ImageCreateFlags) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_FORMAT_NOT_SUPPORTED, VK_UNDOCUMENTED_ERROR }!ImageFormatProperties {
+
+pub inline fn GetPhysicalDeviceImageFormatProperties(physicalDevice: PhysicalDevice, format: Format, inType: ImageType, tiling: ImageTiling, usage: ImageUsageFlags, flags: ImageCreateFlags) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_FORMAT_NOT_SUPPORTED,VK_UNDOCUMENTED_ERROR}!ImageFormatProperties {
     var out_imageFormatProperties: ImageFormatProperties = undefined;
     const result = vkGetPhysicalDeviceImageFormatProperties(physicalDevice, format, inType, tiling, usage.toInt(), flags.toInt(), &out_imageFormatProperties);
     if (@bitCast(c_int, result) < 0) {
@@ -5139,24 +5140,27 @@ pub fn GetPhysicalDeviceImageFormatProperties(physicalDevice: PhysicalDevice, fo
     }
     return out_imageFormatProperties;
 }
-pub fn GetPhysicalDeviceProperties(physicalDevice: PhysicalDevice) callconv(.Inline) PhysicalDeviceProperties {
+
+pub inline fn GetPhysicalDeviceProperties(physicalDevice: PhysicalDevice) PhysicalDeviceProperties {
     var out_properties: PhysicalDeviceProperties = undefined;
     vkGetPhysicalDeviceProperties(physicalDevice, &out_properties);
     return out_properties;
 }
-pub fn GetPhysicalDeviceQueueFamilyProperties(physicalDevice: PhysicalDevice, queueFamilyProperties: []QueueFamilyProperties) callconv(.Inline) []QueueFamilyProperties {
+
+pub inline fn GetPhysicalDeviceQueueFamilyProperties(physicalDevice: PhysicalDevice, queueFamilyProperties: []QueueFamilyProperties) []QueueFamilyProperties {
     var out_queueFamilyProperties: []QueueFamilyProperties = undefined;
     var queueFamilyPropertyCount: u32 = @intCast(u32, queueFamilyProperties.len);
     vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyPropertyCount, queueFamilyProperties.ptr);
     out_queueFamilyProperties = queueFamilyProperties[0..queueFamilyPropertyCount];
     return out_queueFamilyProperties;
 }
-pub fn GetPhysicalDeviceQueueFamilyPropertiesCount(physicalDevice: PhysicalDevice) callconv(.Inline) u32 {
+pub inline fn GetPhysicalDeviceQueueFamilyPropertiesCount(physicalDevice: PhysicalDevice) u32 {
     var out_queueFamilyPropertyCount: u32 = undefined;
     vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &out_queueFamilyPropertyCount, null);
     return out_queueFamilyPropertyCount;
 }
-pub fn GetPhysicalDeviceMemoryProperties(physicalDevice: PhysicalDevice) callconv(.Inline) PhysicalDeviceMemoryProperties {
+
+pub inline fn GetPhysicalDeviceMemoryProperties(physicalDevice: PhysicalDevice) PhysicalDeviceMemoryProperties {
     var out_memoryProperties: PhysicalDeviceMemoryProperties = undefined;
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &out_memoryProperties);
     return out_memoryProperties;
@@ -5164,7 +5168,8 @@ pub fn GetPhysicalDeviceMemoryProperties(physicalDevice: PhysicalDevice) callcon
 
 pub const GetInstanceProcAddr = vkGetInstanceProcAddr;
 pub const GetDeviceProcAddr = vkGetDeviceProcAddr;
-pub fn CreateDevice(physicalDevice: PhysicalDevice, createInfo: DeviceCreateInfo, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_INITIALIZATION_FAILED, VK_EXTENSION_NOT_PRESENT, VK_FEATURE_NOT_PRESENT, VK_TOO_MANY_OBJECTS, VK_DEVICE_LOST, VK_UNDOCUMENTED_ERROR }!Device {
+
+pub inline fn CreateDevice(physicalDevice: PhysicalDevice, createInfo: DeviceCreateInfo, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_INITIALIZATION_FAILED,VK_EXTENSION_NOT_PRESENT,VK_FEATURE_NOT_PRESENT,VK_TOO_MANY_OBJECTS,VK_DEVICE_LOST,VK_UNDOCUMENTED_ERROR}!Device {
     var out_device: Device = undefined;
     const result = vkCreateDevice(physicalDevice, &createInfo, pAllocator, &out_device);
     if (@bitCast(c_int, result) < 0) {
@@ -5188,7 +5193,7 @@ pub const EnumerateInstanceExtensionPropertiesResult = struct {
     result: Result,
     properties: []ExtensionProperties,
 };
-pub fn EnumerateInstanceExtensionProperties(pLayerName: ?CString, properties: []ExtensionProperties) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_LAYER_NOT_PRESENT, VK_UNDOCUMENTED_ERROR }!EnumerateInstanceExtensionPropertiesResult {
+pub inline fn EnumerateInstanceExtensionProperties(pLayerName: ?CString, properties: []ExtensionProperties) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_LAYER_NOT_PRESENT,VK_UNDOCUMENTED_ERROR}!EnumerateInstanceExtensionPropertiesResult {
     var returnValues: EnumerateInstanceExtensionPropertiesResult = undefined;
     var propertyCount: u32 = @intCast(u32, properties.len);
     const result = vkEnumerateInstanceExtensionProperties(pLayerName, &propertyCount, properties.ptr);
@@ -5204,7 +5209,7 @@ pub fn EnumerateInstanceExtensionProperties(pLayerName: ?CString, properties: []
     returnValues.result = result;
     return returnValues;
 }
-pub fn EnumerateInstanceExtensionPropertiesCount(pLayerName: ?CString) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_LAYER_NOT_PRESENT, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn EnumerateInstanceExtensionPropertiesCount(pLayerName: ?CString) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_LAYER_NOT_PRESENT,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_propertyCount: u32 = undefined;
     const result = vkEnumerateInstanceExtensionProperties(pLayerName, &out_propertyCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -5222,7 +5227,7 @@ pub const EnumerateDeviceExtensionPropertiesResult = struct {
     result: Result,
     properties: []ExtensionProperties,
 };
-pub fn EnumerateDeviceExtensionProperties(physicalDevice: PhysicalDevice, pLayerName: ?CString, properties: []ExtensionProperties) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_LAYER_NOT_PRESENT, VK_UNDOCUMENTED_ERROR }!EnumerateDeviceExtensionPropertiesResult {
+pub inline fn EnumerateDeviceExtensionProperties(physicalDevice: PhysicalDevice, pLayerName: ?CString, properties: []ExtensionProperties) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_LAYER_NOT_PRESENT,VK_UNDOCUMENTED_ERROR}!EnumerateDeviceExtensionPropertiesResult {
     var returnValues: EnumerateDeviceExtensionPropertiesResult = undefined;
     var propertyCount: u32 = @intCast(u32, properties.len);
     const result = vkEnumerateDeviceExtensionProperties(physicalDevice, pLayerName, &propertyCount, properties.ptr);
@@ -5238,7 +5243,7 @@ pub fn EnumerateDeviceExtensionProperties(physicalDevice: PhysicalDevice, pLayer
     returnValues.result = result;
     return returnValues;
 }
-pub fn EnumerateDeviceExtensionPropertiesCount(physicalDevice: PhysicalDevice, pLayerName: ?CString) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_LAYER_NOT_PRESENT, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn EnumerateDeviceExtensionPropertiesCount(physicalDevice: PhysicalDevice, pLayerName: ?CString) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_LAYER_NOT_PRESENT,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_propertyCount: u32 = undefined;
     const result = vkEnumerateDeviceExtensionProperties(physicalDevice, pLayerName, &out_propertyCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -5256,7 +5261,7 @@ pub const EnumerateInstanceLayerPropertiesResult = struct {
     result: Result,
     properties: []LayerProperties,
 };
-pub fn EnumerateInstanceLayerProperties(properties: []LayerProperties) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!EnumerateInstanceLayerPropertiesResult {
+pub inline fn EnumerateInstanceLayerProperties(properties: []LayerProperties) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!EnumerateInstanceLayerPropertiesResult {
     var returnValues: EnumerateInstanceLayerPropertiesResult = undefined;
     var propertyCount: u32 = @intCast(u32, properties.len);
     const result = vkEnumerateInstanceLayerProperties(&propertyCount, properties.ptr);
@@ -5271,7 +5276,7 @@ pub fn EnumerateInstanceLayerProperties(properties: []LayerProperties) callconv(
     returnValues.result = result;
     return returnValues;
 }
-pub fn EnumerateInstanceLayerPropertiesCount() callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn EnumerateInstanceLayerPropertiesCount() error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_propertyCount: u32 = undefined;
     const result = vkEnumerateInstanceLayerProperties(&out_propertyCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -5288,7 +5293,7 @@ pub const EnumerateDeviceLayerPropertiesResult = struct {
     result: Result,
     properties: []LayerProperties,
 };
-pub fn EnumerateDeviceLayerProperties(physicalDevice: PhysicalDevice, properties: []LayerProperties) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!EnumerateDeviceLayerPropertiesResult {
+pub inline fn EnumerateDeviceLayerProperties(physicalDevice: PhysicalDevice, properties: []LayerProperties) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!EnumerateDeviceLayerPropertiesResult {
     var returnValues: EnumerateDeviceLayerPropertiesResult = undefined;
     var propertyCount: u32 = @intCast(u32, properties.len);
     const result = vkEnumerateDeviceLayerProperties(physicalDevice, &propertyCount, properties.ptr);
@@ -5303,7 +5308,7 @@ pub fn EnumerateDeviceLayerProperties(physicalDevice: PhysicalDevice, properties
     returnValues.result = result;
     return returnValues;
 }
-pub fn EnumerateDeviceLayerPropertiesCount(physicalDevice: PhysicalDevice) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn EnumerateDeviceLayerPropertiesCount(physicalDevice: PhysicalDevice) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_propertyCount: u32 = undefined;
     const result = vkEnumerateDeviceLayerProperties(physicalDevice, &out_propertyCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -5315,12 +5320,14 @@ pub fn EnumerateDeviceLayerPropertiesCount(physicalDevice: PhysicalDevice) callc
     }
     return out_propertyCount;
 }
-pub fn GetDeviceQueue(device: Device, queueFamilyIndex: u32, queueIndex: u32) callconv(.Inline) Queue {
+
+pub inline fn GetDeviceQueue(device: Device, queueFamilyIndex: u32, queueIndex: u32) Queue {
     var out_queue: Queue = undefined;
     vkGetDeviceQueue(device, queueFamilyIndex, queueIndex, &out_queue);
     return out_queue;
 }
-pub fn QueueSubmit(queue: Queue, submits: []const SubmitInfo, fence: ?Fence) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_DEVICE_LOST, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn QueueSubmit(queue: Queue, submits: []const SubmitInfo, fence: Fence) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_DEVICE_LOST,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkQueueSubmit(queue, @intCast(u32, submits.len), submits.ptr, fence);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -5331,7 +5338,8 @@ pub fn QueueSubmit(queue: Queue, submits: []const SubmitInfo, fence: ?Fence) cal
         };
     }
 }
-pub fn QueueWaitIdle(queue: Queue) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_DEVICE_LOST, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn QueueWaitIdle(queue: Queue) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_DEVICE_LOST,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkQueueWaitIdle(queue);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -5342,7 +5350,8 @@ pub fn QueueWaitIdle(queue: Queue) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMOR
         };
     }
 }
-pub fn DeviceWaitIdle(device: Device) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_DEVICE_LOST, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn DeviceWaitIdle(device: Device) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_DEVICE_LOST,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkDeviceWaitIdle(device);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -5353,7 +5362,8 @@ pub fn DeviceWaitIdle(device: Device) callconv(.Inline) error{ VK_OUT_OF_HOST_ME
         };
     }
 }
-pub fn AllocateMemory(device: Device, allocateInfo: MemoryAllocateInfo, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_TOO_MANY_OBJECTS, VK_INVALID_EXTERNAL_HANDLE, VK_INVALID_OPAQUE_CAPTURE_ADDRESS, VK_UNDOCUMENTED_ERROR }!DeviceMemory {
+
+pub inline fn AllocateMemory(device: Device, allocateInfo: MemoryAllocateInfo, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_TOO_MANY_OBJECTS,VK_INVALID_EXTERNAL_HANDLE,VK_INVALID_OPAQUE_CAPTURE_ADDRESS,VK_UNDOCUMENTED_ERROR}!DeviceMemory {
     var out_memory: DeviceMemory = undefined;
     const result = vkAllocateMemory(device, &allocateInfo, pAllocator, &out_memory);
     if (@bitCast(c_int, result) < 0) {
@@ -5370,7 +5380,8 @@ pub fn AllocateMemory(device: Device, allocateInfo: MemoryAllocateInfo, pAllocat
 }
 
 pub const FreeMemory = vkFreeMemory;
-pub fn MapMemory(device: Device, memory: DeviceMemory, offset: DeviceSize, size: DeviceSize, flags: MemoryMapFlags, ppData: ?**c_void) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_MEMORY_MAP_FAILED, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn MapMemory(device: Device, memory: DeviceMemory, offset: DeviceSize, size: DeviceSize, flags: MemoryMapFlags, ppData: ?**anyopaque) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_MEMORY_MAP_FAILED,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkMapMemory(device, memory, offset, size, flags.toInt(), ppData);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -5383,7 +5394,8 @@ pub fn MapMemory(device: Device, memory: DeviceMemory, offset: DeviceSize, size:
 }
 
 pub const UnmapMemory = vkUnmapMemory;
-pub fn FlushMappedMemoryRanges(device: Device, memoryRanges: []const MappedMemoryRange) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn FlushMappedMemoryRanges(device: Device, memoryRanges: []const MappedMemoryRange) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkFlushMappedMemoryRanges(device, @intCast(u32, memoryRanges.len), memoryRanges.ptr);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -5393,7 +5405,8 @@ pub fn FlushMappedMemoryRanges(device: Device, memoryRanges: []const MappedMemor
         };
     }
 }
-pub fn InvalidateMappedMemoryRanges(device: Device, memoryRanges: []const MappedMemoryRange) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn InvalidateMappedMemoryRanges(device: Device, memoryRanges: []const MappedMemoryRange) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkInvalidateMappedMemoryRanges(device, @intCast(u32, memoryRanges.len), memoryRanges.ptr);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -5403,12 +5416,14 @@ pub fn InvalidateMappedMemoryRanges(device: Device, memoryRanges: []const Mapped
         };
     }
 }
-pub fn GetDeviceMemoryCommitment(device: Device, memory: DeviceMemory) callconv(.Inline) DeviceSize {
+
+pub inline fn GetDeviceMemoryCommitment(device: Device, memory: DeviceMemory) DeviceSize {
     var out_committedMemoryInBytes: DeviceSize = undefined;
     vkGetDeviceMemoryCommitment(device, memory, &out_committedMemoryInBytes);
     return out_committedMemoryInBytes;
 }
-pub fn BindBufferMemory(device: Device, buffer: Buffer, memory: DeviceMemory, memoryOffset: DeviceSize) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_INVALID_OPAQUE_CAPTURE_ADDRESS, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn BindBufferMemory(device: Device, buffer: Buffer, memory: DeviceMemory, memoryOffset: DeviceSize) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_INVALID_OPAQUE_CAPTURE_ADDRESS,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkBindBufferMemory(device, buffer, memory, memoryOffset);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -5419,7 +5434,8 @@ pub fn BindBufferMemory(device: Device, buffer: Buffer, memory: DeviceMemory, me
         };
     }
 }
-pub fn BindImageMemory(device: Device, image: Image, memory: DeviceMemory, memoryOffset: DeviceSize) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn BindImageMemory(device: Device, image: Image, memory: DeviceMemory, memoryOffset: DeviceSize) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkBindImageMemory(device, image, memory, memoryOffset);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -5429,41 +5445,46 @@ pub fn BindImageMemory(device: Device, image: Image, memory: DeviceMemory, memor
         };
     }
 }
-pub fn GetBufferMemoryRequirements(device: Device, buffer: Buffer) callconv(.Inline) MemoryRequirements {
+
+pub inline fn GetBufferMemoryRequirements(device: Device, buffer: Buffer) MemoryRequirements {
     var out_memoryRequirements: MemoryRequirements = undefined;
     vkGetBufferMemoryRequirements(device, buffer, &out_memoryRequirements);
     return out_memoryRequirements;
 }
-pub fn GetImageMemoryRequirements(device: Device, image: Image) callconv(.Inline) MemoryRequirements {
+
+pub inline fn GetImageMemoryRequirements(device: Device, image: Image) MemoryRequirements {
     var out_memoryRequirements: MemoryRequirements = undefined;
     vkGetImageMemoryRequirements(device, image, &out_memoryRequirements);
     return out_memoryRequirements;
 }
-pub fn GetImageSparseMemoryRequirements(device: Device, image: Image, sparseMemoryRequirements: []SparseImageMemoryRequirements) callconv(.Inline) []SparseImageMemoryRequirements {
+
+pub inline fn GetImageSparseMemoryRequirements(device: Device, image: Image, sparseMemoryRequirements: []SparseImageMemoryRequirements) []SparseImageMemoryRequirements {
     var out_sparseMemoryRequirements: []SparseImageMemoryRequirements = undefined;
     var sparseMemoryRequirementCount: u32 = @intCast(u32, sparseMemoryRequirements.len);
     vkGetImageSparseMemoryRequirements(device, image, &sparseMemoryRequirementCount, sparseMemoryRequirements.ptr);
     out_sparseMemoryRequirements = sparseMemoryRequirements[0..sparseMemoryRequirementCount];
     return out_sparseMemoryRequirements;
 }
-pub fn GetImageSparseMemoryRequirementsCount(device: Device, image: Image) callconv(.Inline) u32 {
+pub inline fn GetImageSparseMemoryRequirementsCount(device: Device, image: Image) u32 {
     var out_sparseMemoryRequirementCount: u32 = undefined;
     vkGetImageSparseMemoryRequirements(device, image, &out_sparseMemoryRequirementCount, null);
     return out_sparseMemoryRequirementCount;
 }
-pub fn GetPhysicalDeviceSparseImageFormatProperties(physicalDevice: PhysicalDevice, format: Format, inType: ImageType, samples: SampleCountFlags, usage: ImageUsageFlags, tiling: ImageTiling, properties: []SparseImageFormatProperties) callconv(.Inline) []SparseImageFormatProperties {
+
+pub inline fn GetPhysicalDeviceSparseImageFormatProperties(physicalDevice: PhysicalDevice, format: Format, inType: ImageType, samples: SampleCountFlags, usage: ImageUsageFlags, tiling: ImageTiling, properties: []SparseImageFormatProperties) []SparseImageFormatProperties {
     var out_properties: []SparseImageFormatProperties = undefined;
     var propertyCount: u32 = @intCast(u32, properties.len);
     vkGetPhysicalDeviceSparseImageFormatProperties(physicalDevice, format, inType, samples.toInt(), usage.toInt(), tiling, &propertyCount, properties.ptr);
     out_properties = properties[0..propertyCount];
     return out_properties;
 }
-pub fn GetPhysicalDeviceSparseImageFormatPropertiesCount(physicalDevice: PhysicalDevice, format: Format, inType: ImageType, samples: SampleCountFlags, usage: ImageUsageFlags, tiling: ImageTiling) callconv(.Inline) u32 {
+pub inline fn GetPhysicalDeviceSparseImageFormatPropertiesCount(physicalDevice: PhysicalDevice, format: Format, inType: ImageType, samples: SampleCountFlags, usage: ImageUsageFlags, tiling: ImageTiling) u32 {
     var out_propertyCount: u32 = undefined;
     vkGetPhysicalDeviceSparseImageFormatProperties(physicalDevice, format, inType, samples.toInt(), usage.toInt(), tiling, &out_propertyCount, null);
     return out_propertyCount;
 }
-pub fn QueueBindSparse(queue: Queue, bindInfo: []const BindSparseInfo, fence: ?Fence) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_DEVICE_LOST, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn QueueBindSparse(queue: Queue, bindInfo: []const BindSparseInfo, fence: Fence) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_DEVICE_LOST,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkQueueBindSparse(queue, @intCast(u32, bindInfo.len), bindInfo.ptr, fence);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -5474,7 +5495,8 @@ pub fn QueueBindSparse(queue: Queue, bindInfo: []const BindSparseInfo, fence: ?F
         };
     }
 }
-pub fn CreateFence(device: Device, createInfo: FenceCreateInfo, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!Fence {
+
+pub inline fn CreateFence(device: Device, createInfo: FenceCreateInfo, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!Fence {
     var out_fence: Fence = undefined;
     const result = vkCreateFence(device, &createInfo, pAllocator, &out_fence);
     if (@bitCast(c_int, result) < 0) {
@@ -5488,7 +5510,8 @@ pub fn CreateFence(device: Device, createInfo: FenceCreateInfo, pAllocator: ?*co
 }
 
 pub const DestroyFence = vkDestroyFence;
-pub fn ResetFences(device: Device, fences: []const Fence) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn ResetFences(device: Device, fences: []const Fence) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkResetFences(device, @intCast(u32, fences.len), fences.ptr);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -5498,7 +5521,8 @@ pub fn ResetFences(device: Device, fences: []const Fence) callconv(.Inline) erro
         };
     }
 }
-pub fn GetFenceStatus(device: Device, fence: Fence) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_DEVICE_LOST, VK_UNDOCUMENTED_ERROR }!Result {
+
+pub inline fn GetFenceStatus(device: Device, fence: Fence) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_DEVICE_LOST,VK_UNDOCUMENTED_ERROR}!Result {
     const result = vkGetFenceStatus(device, fence);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -5510,7 +5534,8 @@ pub fn GetFenceStatus(device: Device, fence: Fence) callconv(.Inline) error{ VK_
     }
     return result;
 }
-pub fn WaitForFences(device: Device, fences: []const Fence, waitAll: Bool32, timeout: u64) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_DEVICE_LOST, VK_UNDOCUMENTED_ERROR }!Result {
+
+pub inline fn WaitForFences(device: Device, fences: []const Fence, waitAll: Bool32, timeout: u64) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_DEVICE_LOST,VK_UNDOCUMENTED_ERROR}!Result {
     const result = vkWaitForFences(device, @intCast(u32, fences.len), fences.ptr, waitAll, timeout);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -5522,7 +5547,8 @@ pub fn WaitForFences(device: Device, fences: []const Fence, waitAll: Bool32, tim
     }
     return result;
 }
-pub fn CreateSemaphore(device: Device, createInfo: SemaphoreCreateInfo, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!Semaphore {
+
+pub inline fn CreateSemaphore(device: Device, createInfo: SemaphoreCreateInfo, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!Semaphore {
     var out_semaphore: Semaphore = undefined;
     const result = vkCreateSemaphore(device, &createInfo, pAllocator, &out_semaphore);
     if (@bitCast(c_int, result) < 0) {
@@ -5536,7 +5562,8 @@ pub fn CreateSemaphore(device: Device, createInfo: SemaphoreCreateInfo, pAllocat
 }
 
 pub const DestroySemaphore = vkDestroySemaphore;
-pub fn CreateEvent(device: Device, createInfo: EventCreateInfo, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!Event {
+
+pub inline fn CreateEvent(device: Device, createInfo: EventCreateInfo, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!Event {
     var out_event: Event = undefined;
     const result = vkCreateEvent(device, &createInfo, pAllocator, &out_event);
     if (@bitCast(c_int, result) < 0) {
@@ -5550,7 +5577,8 @@ pub fn CreateEvent(device: Device, createInfo: EventCreateInfo, pAllocator: ?*co
 }
 
 pub const DestroyEvent = vkDestroyEvent;
-pub fn GetEventStatus(device: Device, event: Event) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_DEVICE_LOST, VK_UNDOCUMENTED_ERROR }!Result {
+
+pub inline fn GetEventStatus(device: Device, event: Event) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_DEVICE_LOST,VK_UNDOCUMENTED_ERROR}!Result {
     const result = vkGetEventStatus(device, event);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -5562,7 +5590,8 @@ pub fn GetEventStatus(device: Device, event: Event) callconv(.Inline) error{ VK_
     }
     return result;
 }
-pub fn SetEvent(device: Device, event: Event) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn SetEvent(device: Device, event: Event) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkSetEvent(device, event);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -5572,7 +5601,8 @@ pub fn SetEvent(device: Device, event: Event) callconv(.Inline) error{ VK_OUT_OF
         };
     }
 }
-pub fn ResetEvent(device: Device, event: Event) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn ResetEvent(device: Device, event: Event) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkResetEvent(device, event);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -5582,7 +5612,8 @@ pub fn ResetEvent(device: Device, event: Event) callconv(.Inline) error{ VK_OUT_
         };
     }
 }
-pub fn CreateQueryPool(device: Device, createInfo: QueryPoolCreateInfo, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!QueryPool {
+
+pub inline fn CreateQueryPool(device: Device, createInfo: QueryPoolCreateInfo, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!QueryPool {
     var out_queryPool: QueryPool = undefined;
     const result = vkCreateQueryPool(device, &createInfo, pAllocator, &out_queryPool);
     if (@bitCast(c_int, result) < 0) {
@@ -5596,7 +5627,8 @@ pub fn CreateQueryPool(device: Device, createInfo: QueryPoolCreateInfo, pAllocat
 }
 
 pub const DestroyQueryPool = vkDestroyQueryPool;
-pub fn GetQueryPoolResults(device: Device, queryPool: QueryPool, firstQuery: u32, queryCount: u32, data: []u8, stride: DeviceSize, flags: QueryResultFlags) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_DEVICE_LOST, VK_UNDOCUMENTED_ERROR }!Result {
+
+pub inline fn GetQueryPoolResults(device: Device, queryPool: QueryPool, firstQuery: u32, queryCount: u32, data: []u8, stride: DeviceSize, flags: QueryResultFlags) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_DEVICE_LOST,VK_UNDOCUMENTED_ERROR}!Result {
     const result = vkGetQueryPoolResults(device, queryPool, firstQuery, queryCount, @intCast(usize, data.len), data.ptr, stride, flags.toInt());
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -5608,7 +5640,8 @@ pub fn GetQueryPoolResults(device: Device, queryPool: QueryPool, firstQuery: u32
     }
     return result;
 }
-pub fn CreateBuffer(device: Device, createInfo: BufferCreateInfo, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_INVALID_OPAQUE_CAPTURE_ADDRESS, VK_UNDOCUMENTED_ERROR }!Buffer {
+
+pub inline fn CreateBuffer(device: Device, createInfo: BufferCreateInfo, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_INVALID_OPAQUE_CAPTURE_ADDRESS,VK_UNDOCUMENTED_ERROR}!Buffer {
     var out_buffer: Buffer = undefined;
     const result = vkCreateBuffer(device, &createInfo, pAllocator, &out_buffer);
     if (@bitCast(c_int, result) < 0) {
@@ -5623,7 +5656,8 @@ pub fn CreateBuffer(device: Device, createInfo: BufferCreateInfo, pAllocator: ?*
 }
 
 pub const DestroyBuffer = vkDestroyBuffer;
-pub fn CreateBufferView(device: Device, createInfo: BufferViewCreateInfo, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!BufferView {
+
+pub inline fn CreateBufferView(device: Device, createInfo: BufferViewCreateInfo, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!BufferView {
     var out_view: BufferView = undefined;
     const result = vkCreateBufferView(device, &createInfo, pAllocator, &out_view);
     if (@bitCast(c_int, result) < 0) {
@@ -5637,7 +5671,8 @@ pub fn CreateBufferView(device: Device, createInfo: BufferViewCreateInfo, pAlloc
 }
 
 pub const DestroyBufferView = vkDestroyBufferView;
-pub fn CreateImage(device: Device, createInfo: ImageCreateInfo, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!Image {
+
+pub inline fn CreateImage(device: Device, createInfo: ImageCreateInfo, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!Image {
     var out_image: Image = undefined;
     const result = vkCreateImage(device, &createInfo, pAllocator, &out_image);
     if (@bitCast(c_int, result) < 0) {
@@ -5651,12 +5686,14 @@ pub fn CreateImage(device: Device, createInfo: ImageCreateInfo, pAllocator: ?*co
 }
 
 pub const DestroyImage = vkDestroyImage;
-pub fn GetImageSubresourceLayout(device: Device, image: Image, subresource: ImageSubresource) callconv(.Inline) SubresourceLayout {
+
+pub inline fn GetImageSubresourceLayout(device: Device, image: Image, subresource: ImageSubresource) SubresourceLayout {
     var out_layout: SubresourceLayout = undefined;
     vkGetImageSubresourceLayout(device, image, &subresource, &out_layout);
     return out_layout;
 }
-pub fn CreateImageView(device: Device, createInfo: ImageViewCreateInfo, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!ImageView {
+
+pub inline fn CreateImageView(device: Device, createInfo: ImageViewCreateInfo, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!ImageView {
     var out_view: ImageView = undefined;
     const result = vkCreateImageView(device, &createInfo, pAllocator, &out_view);
     if (@bitCast(c_int, result) < 0) {
@@ -5670,7 +5707,8 @@ pub fn CreateImageView(device: Device, createInfo: ImageViewCreateInfo, pAllocat
 }
 
 pub const DestroyImageView = vkDestroyImageView;
-pub fn CreateShaderModule(device: Device, createInfo: ShaderModuleCreateInfo, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_INVALID_SHADER_NV, VK_UNDOCUMENTED_ERROR }!ShaderModule {
+
+pub inline fn CreateShaderModule(device: Device, createInfo: ShaderModuleCreateInfo, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_INVALID_SHADER_NV,VK_UNDOCUMENTED_ERROR}!ShaderModule {
     var out_shaderModule: ShaderModule = undefined;
     const result = vkCreateShaderModule(device, &createInfo, pAllocator, &out_shaderModule);
     if (@bitCast(c_int, result) < 0) {
@@ -5685,7 +5723,8 @@ pub fn CreateShaderModule(device: Device, createInfo: ShaderModuleCreateInfo, pA
 }
 
 pub const DestroyShaderModule = vkDestroyShaderModule;
-pub fn CreatePipelineCache(device: Device, createInfo: PipelineCacheCreateInfo, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!PipelineCache {
+
+pub inline fn CreatePipelineCache(device: Device, createInfo: PipelineCacheCreateInfo, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!PipelineCache {
     var out_pipelineCache: PipelineCache = undefined;
     const result = vkCreatePipelineCache(device, &createInfo, pAllocator, &out_pipelineCache);
     if (@bitCast(c_int, result) < 0) {
@@ -5704,7 +5743,7 @@ pub const GetPipelineCacheDataResult = struct {
     result: Result,
     data: []u8,
 };
-pub fn GetPipelineCacheData(device: Device, pipelineCache: PipelineCache, data: []u8) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!GetPipelineCacheDataResult {
+pub inline fn GetPipelineCacheData(device: Device, pipelineCache: PipelineCache, data: []u8) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!GetPipelineCacheDataResult {
     var returnValues: GetPipelineCacheDataResult = undefined;
     var dataSize: usize = @intCast(usize, data.len);
     const result = vkGetPipelineCacheData(device, pipelineCache, &dataSize, data.ptr);
@@ -5719,7 +5758,7 @@ pub fn GetPipelineCacheData(device: Device, pipelineCache: PipelineCache, data: 
     returnValues.result = result;
     return returnValues;
 }
-pub fn GetPipelineCacheDataCount(device: Device, pipelineCache: PipelineCache) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!usize {
+pub inline fn GetPipelineCacheDataCount(device: Device, pipelineCache: PipelineCache) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!usize {
     var out_dataSize: usize = undefined;
     const result = vkGetPipelineCacheData(device, pipelineCache, &out_dataSize, null);
     if (@bitCast(c_int, result) < 0) {
@@ -5731,7 +5770,8 @@ pub fn GetPipelineCacheDataCount(device: Device, pipelineCache: PipelineCache) c
     }
     return out_dataSize;
 }
-pub fn MergePipelineCaches(device: Device, dstCache: PipelineCache, srcCaches: []const PipelineCache) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn MergePipelineCaches(device: Device, dstCache: PipelineCache, srcCaches: []const PipelineCache) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkMergePipelineCaches(device, dstCache, @intCast(u32, srcCaches.len), srcCaches.ptr);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -5741,7 +5781,8 @@ pub fn MergePipelineCaches(device: Device, dstCache: PipelineCache, srcCaches: [
         };
     }
 }
-pub fn CreateGraphicsPipelines(device: Device, pipelineCache: ?PipelineCache, createInfos: []const GraphicsPipelineCreateInfo, pAllocator: ?*const AllocationCallbacks, pipelines: []Pipeline) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_INVALID_SHADER_NV, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn CreateGraphicsPipelines(device: Device, pipelineCache: PipelineCache, createInfos: []const GraphicsPipelineCreateInfo, pAllocator: ?*const AllocationCallbacks, pipelines: []Pipeline) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_INVALID_SHADER_NV,VK_UNDOCUMENTED_ERROR}!void {
     assert(pipelines.len >= createInfos.len);
     const result = vkCreateGraphicsPipelines(device, pipelineCache, @intCast(u32, createInfos.len), createInfos.ptr, pAllocator, pipelines.ptr);
     if (@bitCast(c_int, result) < 0) {
@@ -5753,7 +5794,8 @@ pub fn CreateGraphicsPipelines(device: Device, pipelineCache: ?PipelineCache, cr
         };
     }
 }
-pub fn CreateComputePipelines(device: Device, pipelineCache: ?PipelineCache, createInfos: []const ComputePipelineCreateInfo, pAllocator: ?*const AllocationCallbacks, pipelines: []Pipeline) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_INVALID_SHADER_NV, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn CreateComputePipelines(device: Device, pipelineCache: PipelineCache, createInfos: []const ComputePipelineCreateInfo, pAllocator: ?*const AllocationCallbacks, pipelines: []Pipeline) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_INVALID_SHADER_NV,VK_UNDOCUMENTED_ERROR}!void {
     assert(pipelines.len >= createInfos.len);
     const result = vkCreateComputePipelines(device, pipelineCache, @intCast(u32, createInfos.len), createInfos.ptr, pAllocator, pipelines.ptr);
     if (@bitCast(c_int, result) < 0) {
@@ -5767,7 +5809,8 @@ pub fn CreateComputePipelines(device: Device, pipelineCache: ?PipelineCache, cre
 }
 
 pub const DestroyPipeline = vkDestroyPipeline;
-pub fn CreatePipelineLayout(device: Device, createInfo: PipelineLayoutCreateInfo, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!PipelineLayout {
+
+pub inline fn CreatePipelineLayout(device: Device, createInfo: PipelineLayoutCreateInfo, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!PipelineLayout {
     var out_pipelineLayout: PipelineLayout = undefined;
     const result = vkCreatePipelineLayout(device, &createInfo, pAllocator, &out_pipelineLayout);
     if (@bitCast(c_int, result) < 0) {
@@ -5781,7 +5824,8 @@ pub fn CreatePipelineLayout(device: Device, createInfo: PipelineLayoutCreateInfo
 }
 
 pub const DestroyPipelineLayout = vkDestroyPipelineLayout;
-pub fn CreateSampler(device: Device, createInfo: SamplerCreateInfo, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_TOO_MANY_OBJECTS, VK_UNDOCUMENTED_ERROR }!Sampler {
+
+pub inline fn CreateSampler(device: Device, createInfo: SamplerCreateInfo, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_TOO_MANY_OBJECTS,VK_UNDOCUMENTED_ERROR}!Sampler {
     var out_sampler: Sampler = undefined;
     const result = vkCreateSampler(device, &createInfo, pAllocator, &out_sampler);
     if (@bitCast(c_int, result) < 0) {
@@ -5796,7 +5840,8 @@ pub fn CreateSampler(device: Device, createInfo: SamplerCreateInfo, pAllocator: 
 }
 
 pub const DestroySampler = vkDestroySampler;
-pub fn CreateDescriptorSetLayout(device: Device, createInfo: DescriptorSetLayoutCreateInfo, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!DescriptorSetLayout {
+
+pub inline fn CreateDescriptorSetLayout(device: Device, createInfo: DescriptorSetLayoutCreateInfo, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!DescriptorSetLayout {
     var out_setLayout: DescriptorSetLayout = undefined;
     const result = vkCreateDescriptorSetLayout(device, &createInfo, pAllocator, &out_setLayout);
     if (@bitCast(c_int, result) < 0) {
@@ -5810,7 +5855,8 @@ pub fn CreateDescriptorSetLayout(device: Device, createInfo: DescriptorSetLayout
 }
 
 pub const DestroyDescriptorSetLayout = vkDestroyDescriptorSetLayout;
-pub fn CreateDescriptorPool(device: Device, createInfo: DescriptorPoolCreateInfo, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_FRAGMENTATION, VK_UNDOCUMENTED_ERROR }!DescriptorPool {
+
+pub inline fn CreateDescriptorPool(device: Device, createInfo: DescriptorPoolCreateInfo, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_FRAGMENTATION,VK_UNDOCUMENTED_ERROR}!DescriptorPool {
     var out_descriptorPool: DescriptorPool = undefined;
     const result = vkCreateDescriptorPool(device, &createInfo, pAllocator, &out_descriptorPool);
     if (@bitCast(c_int, result) < 0) {
@@ -5825,13 +5871,15 @@ pub fn CreateDescriptorPool(device: Device, createInfo: DescriptorPoolCreateInfo
 }
 
 pub const DestroyDescriptorPool = vkDestroyDescriptorPool;
-pub fn ResetDescriptorPool(device: Device, descriptorPool: DescriptorPool, flags: DescriptorPoolResetFlags) callconv(.Inline) error{VK_UNDOCUMENTED_ERROR}!void {
+
+pub inline fn ResetDescriptorPool(device: Device, descriptorPool: DescriptorPool, flags: DescriptorPoolResetFlags) error{VK_UNDOCUMENTED_ERROR}!void {
     const result = vkResetDescriptorPool(device, descriptorPool, flags.toInt());
     if (@bitCast(c_int, result) < 0) {
         return error.VK_UNDOCUMENTED_ERROR;
     }
 }
-pub fn AllocateDescriptorSets(device: Device, allocateInfo: DescriptorSetAllocateInfo, descriptorSets: []DescriptorSet) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_FRAGMENTED_POOL, VK_OUT_OF_POOL_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn AllocateDescriptorSets(device: Device, allocateInfo: DescriptorSetAllocateInfo, descriptorSets: []DescriptorSet) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_FRAGMENTED_POOL,VK_OUT_OF_POOL_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     assert(descriptorSets.len >= allocateInfo.descriptorSetCount);
     const result = vkAllocateDescriptorSets(device, &allocateInfo, descriptorSets.ptr);
     if (@bitCast(c_int, result) < 0) {
@@ -5844,16 +5892,19 @@ pub fn AllocateDescriptorSets(device: Device, allocateInfo: DescriptorSetAllocat
         };
     }
 }
-pub fn FreeDescriptorSets(device: Device, descriptorPool: DescriptorPool, descriptorSets: []const DescriptorSet) callconv(.Inline) error{VK_UNDOCUMENTED_ERROR}!void {
+
+pub inline fn FreeDescriptorSets(device: Device, descriptorPool: DescriptorPool, descriptorSets: []const DescriptorSet) error{VK_UNDOCUMENTED_ERROR}!void {
     const result = vkFreeDescriptorSets(device, descriptorPool, @intCast(u32, descriptorSets.len), descriptorSets.ptr);
     if (@bitCast(c_int, result) < 0) {
         return error.VK_UNDOCUMENTED_ERROR;
     }
 }
-pub fn UpdateDescriptorSets(device: Device, descriptorWrites: []const WriteDescriptorSet, descriptorCopies: []const CopyDescriptorSet) callconv(.Inline) void {
+
+pub inline fn UpdateDescriptorSets(device: Device, descriptorWrites: []const WriteDescriptorSet, descriptorCopies: []const CopyDescriptorSet) void {
     vkUpdateDescriptorSets(device, @intCast(u32, descriptorWrites.len), descriptorWrites.ptr, @intCast(u32, descriptorCopies.len), descriptorCopies.ptr);
 }
-pub fn CreateFramebuffer(device: Device, createInfo: FramebufferCreateInfo, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!Framebuffer {
+
+pub inline fn CreateFramebuffer(device: Device, createInfo: FramebufferCreateInfo, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!Framebuffer {
     var out_framebuffer: Framebuffer = undefined;
     const result = vkCreateFramebuffer(device, &createInfo, pAllocator, &out_framebuffer);
     if (@bitCast(c_int, result) < 0) {
@@ -5867,7 +5918,8 @@ pub fn CreateFramebuffer(device: Device, createInfo: FramebufferCreateInfo, pAll
 }
 
 pub const DestroyFramebuffer = vkDestroyFramebuffer;
-pub fn CreateRenderPass(device: Device, createInfo: RenderPassCreateInfo, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!RenderPass {
+
+pub inline fn CreateRenderPass(device: Device, createInfo: RenderPassCreateInfo, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!RenderPass {
     var out_renderPass: RenderPass = undefined;
     const result = vkCreateRenderPass(device, &createInfo, pAllocator, &out_renderPass);
     if (@bitCast(c_int, result) < 0) {
@@ -5881,12 +5933,14 @@ pub fn CreateRenderPass(device: Device, createInfo: RenderPassCreateInfo, pAlloc
 }
 
 pub const DestroyRenderPass = vkDestroyRenderPass;
-pub fn GetRenderAreaGranularity(device: Device, renderPass: RenderPass) callconv(.Inline) Extent2D {
+
+pub inline fn GetRenderAreaGranularity(device: Device, renderPass: RenderPass) Extent2D {
     var out_granularity: Extent2D = undefined;
     vkGetRenderAreaGranularity(device, renderPass, &out_granularity);
     return out_granularity;
 }
-pub fn CreateCommandPool(device: Device, createInfo: CommandPoolCreateInfo, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!CommandPool {
+
+pub inline fn CreateCommandPool(device: Device, createInfo: CommandPoolCreateInfo, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!CommandPool {
     var out_commandPool: CommandPool = undefined;
     const result = vkCreateCommandPool(device, &createInfo, pAllocator, &out_commandPool);
     if (@bitCast(c_int, result) < 0) {
@@ -5900,7 +5954,8 @@ pub fn CreateCommandPool(device: Device, createInfo: CommandPoolCreateInfo, pAll
 }
 
 pub const DestroyCommandPool = vkDestroyCommandPool;
-pub fn ResetCommandPool(device: Device, commandPool: CommandPool, flags: CommandPoolResetFlags) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn ResetCommandPool(device: Device, commandPool: CommandPool, flags: CommandPoolResetFlags) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkResetCommandPool(device, commandPool, flags.toInt());
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -5910,7 +5965,8 @@ pub fn ResetCommandPool(device: Device, commandPool: CommandPool, flags: Command
         };
     }
 }
-pub fn AllocateCommandBuffers(device: Device, allocateInfo: CommandBufferAllocateInfo, commandBuffers: []CommandBuffer) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn AllocateCommandBuffers(device: Device, allocateInfo: CommandBufferAllocateInfo, commandBuffers: []CommandBuffer) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     assert(commandBuffers.len >= allocateInfo.commandBufferCount);
     const result = vkAllocateCommandBuffers(device, &allocateInfo, commandBuffers.ptr);
     if (@bitCast(c_int, result) < 0) {
@@ -5921,10 +5977,12 @@ pub fn AllocateCommandBuffers(device: Device, allocateInfo: CommandBufferAllocat
         };
     }
 }
-pub fn FreeCommandBuffers(device: Device, commandPool: CommandPool, commandBuffers: []const CommandBuffer) callconv(.Inline) void {
+
+pub inline fn FreeCommandBuffers(device: Device, commandPool: CommandPool, commandBuffers: []const CommandBuffer) void {
     vkFreeCommandBuffers(device, commandPool, @intCast(u32, commandBuffers.len), commandBuffers.ptr);
 }
-pub fn BeginCommandBuffer(commandBuffer: CommandBuffer, beginInfo: CommandBufferBeginInfo) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn BeginCommandBuffer(commandBuffer: CommandBuffer, beginInfo: CommandBufferBeginInfo) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -5934,7 +5992,8 @@ pub fn BeginCommandBuffer(commandBuffer: CommandBuffer, beginInfo: CommandBuffer
         };
     }
 }
-pub fn EndCommandBuffer(commandBuffer: CommandBuffer) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn EndCommandBuffer(commandBuffer: CommandBuffer) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkEndCommandBuffer(commandBuffer);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -5944,7 +6003,8 @@ pub fn EndCommandBuffer(commandBuffer: CommandBuffer) callconv(.Inline) error{ V
         };
     }
 }
-pub fn ResetCommandBuffer(commandBuffer: CommandBuffer, flags: CommandBufferResetFlags) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn ResetCommandBuffer(commandBuffer: CommandBuffer, flags: CommandBufferResetFlags) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkResetCommandBuffer(commandBuffer, flags.toInt());
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -5956,35 +6016,43 @@ pub fn ResetCommandBuffer(commandBuffer: CommandBuffer, flags: CommandBufferRese
 }
 
 pub const CmdBindPipeline = vkCmdBindPipeline;
-pub fn CmdSetViewport(commandBuffer: CommandBuffer, firstViewport: u32, viewports: []const Viewport) callconv(.Inline) void {
+
+pub inline fn CmdSetViewport(commandBuffer: CommandBuffer, firstViewport: u32, viewports: []const Viewport) void {
     vkCmdSetViewport(commandBuffer, firstViewport, @intCast(u32, viewports.len), viewports.ptr);
 }
-pub fn CmdSetScissor(commandBuffer: CommandBuffer, firstScissor: u32, scissors: []const Rect2D) callconv(.Inline) void {
+
+pub inline fn CmdSetScissor(commandBuffer: CommandBuffer, firstScissor: u32, scissors: []const Rect2D) void {
     vkCmdSetScissor(commandBuffer, firstScissor, @intCast(u32, scissors.len), scissors.ptr);
 }
 
 pub const CmdSetLineWidth = vkCmdSetLineWidth;
 pub const CmdSetDepthBias = vkCmdSetDepthBias;
-pub fn CmdSetBlendConstants(commandBuffer: CommandBuffer, blendConstants: [4]f32) callconv(.Inline) void {
+
+pub inline fn CmdSetBlendConstants(commandBuffer: CommandBuffer, blendConstants: [4]f32) void {
     vkCmdSetBlendConstants(commandBuffer, &blendConstants);
 }
 
 pub const CmdSetDepthBounds = vkCmdSetDepthBounds;
-pub fn CmdSetStencilCompareMask(commandBuffer: CommandBuffer, faceMask: StencilFaceFlags, compareMask: u32) callconv(.Inline) void {
+
+pub inline fn CmdSetStencilCompareMask(commandBuffer: CommandBuffer, faceMask: StencilFaceFlags, compareMask: u32) void {
     vkCmdSetStencilCompareMask(commandBuffer, faceMask.toInt(), compareMask);
 }
-pub fn CmdSetStencilWriteMask(commandBuffer: CommandBuffer, faceMask: StencilFaceFlags, writeMask: u32) callconv(.Inline) void {
+
+pub inline fn CmdSetStencilWriteMask(commandBuffer: CommandBuffer, faceMask: StencilFaceFlags, writeMask: u32) void {
     vkCmdSetStencilWriteMask(commandBuffer, faceMask.toInt(), writeMask);
 }
-pub fn CmdSetStencilReference(commandBuffer: CommandBuffer, faceMask: StencilFaceFlags, reference: u32) callconv(.Inline) void {
+
+pub inline fn CmdSetStencilReference(commandBuffer: CommandBuffer, faceMask: StencilFaceFlags, reference: u32) void {
     vkCmdSetStencilReference(commandBuffer, faceMask.toInt(), reference);
 }
-pub fn CmdBindDescriptorSets(commandBuffer: CommandBuffer, pipelineBindPoint: PipelineBindPoint, layout: PipelineLayout, firstSet: u32, descriptorSets: []const DescriptorSet, dynamicOffsets: []const u32) callconv(.Inline) void {
+
+pub inline fn CmdBindDescriptorSets(commandBuffer: CommandBuffer, pipelineBindPoint: PipelineBindPoint, layout: PipelineLayout, firstSet: u32, descriptorSets: []const DescriptorSet, dynamicOffsets: []const u32) void {
     vkCmdBindDescriptorSets(commandBuffer, pipelineBindPoint, layout, firstSet, @intCast(u32, descriptorSets.len), descriptorSets.ptr, @intCast(u32, dynamicOffsets.len), dynamicOffsets.ptr);
 }
 
 pub const CmdBindIndexBuffer = vkCmdBindIndexBuffer;
-pub fn CmdBindVertexBuffers(commandBuffer: CommandBuffer, firstBinding: u32, buffers: []const Buffer, offsets: []const DeviceSize) callconv(.Inline) void {
+
+pub inline fn CmdBindVertexBuffers(commandBuffer: CommandBuffer, firstBinding: u32, buffers: []const Buffer, offsets: []const DeviceSize) void {
     assert(offsets.len >= buffers.len);
     vkCmdBindVertexBuffers(commandBuffer, firstBinding, @intCast(u32, buffers.len), buffers.ptr, offsets.ptr);
 }
@@ -5995,87 +6063,108 @@ pub const CmdDrawIndirect = vkCmdDrawIndirect;
 pub const CmdDrawIndexedIndirect = vkCmdDrawIndexedIndirect;
 pub const CmdDispatch = vkCmdDispatch;
 pub const CmdDispatchIndirect = vkCmdDispatchIndirect;
-pub fn CmdCopyBuffer(commandBuffer: CommandBuffer, srcBuffer: Buffer, dstBuffer: Buffer, regions: []const BufferCopy) callconv(.Inline) void {
+
+pub inline fn CmdCopyBuffer(commandBuffer: CommandBuffer, srcBuffer: Buffer, dstBuffer: Buffer, regions: []const BufferCopy) void {
     vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, @intCast(u32, regions.len), regions.ptr);
 }
-pub fn CmdCopyImage(commandBuffer: CommandBuffer, srcImage: Image, srcImageLayout: ImageLayout, dstImage: Image, dstImageLayout: ImageLayout, regions: []const ImageCopy) callconv(.Inline) void {
+
+pub inline fn CmdCopyImage(commandBuffer: CommandBuffer, srcImage: Image, srcImageLayout: ImageLayout, dstImage: Image, dstImageLayout: ImageLayout, regions: []const ImageCopy) void {
     vkCmdCopyImage(commandBuffer, srcImage, srcImageLayout, dstImage, dstImageLayout, @intCast(u32, regions.len), regions.ptr);
 }
-pub fn CmdBlitImage(commandBuffer: CommandBuffer, srcImage: Image, srcImageLayout: ImageLayout, dstImage: Image, dstImageLayout: ImageLayout, regions: []const ImageBlit, filter: Filter) callconv(.Inline) void {
+
+pub inline fn CmdBlitImage(commandBuffer: CommandBuffer, srcImage: Image, srcImageLayout: ImageLayout, dstImage: Image, dstImageLayout: ImageLayout, regions: []const ImageBlit, filter: Filter) void {
     vkCmdBlitImage(commandBuffer, srcImage, srcImageLayout, dstImage, dstImageLayout, @intCast(u32, regions.len), regions.ptr, filter);
 }
-pub fn CmdCopyBufferToImage(commandBuffer: CommandBuffer, srcBuffer: Buffer, dstImage: Image, dstImageLayout: ImageLayout, regions: []const BufferImageCopy) callconv(.Inline) void {
+
+pub inline fn CmdCopyBufferToImage(commandBuffer: CommandBuffer, srcBuffer: Buffer, dstImage: Image, dstImageLayout: ImageLayout, regions: []const BufferImageCopy) void {
     vkCmdCopyBufferToImage(commandBuffer, srcBuffer, dstImage, dstImageLayout, @intCast(u32, regions.len), regions.ptr);
 }
-pub fn CmdCopyImageToBuffer(commandBuffer: CommandBuffer, srcImage: Image, srcImageLayout: ImageLayout, dstBuffer: Buffer, regions: []const BufferImageCopy) callconv(.Inline) void {
+
+pub inline fn CmdCopyImageToBuffer(commandBuffer: CommandBuffer, srcImage: Image, srcImageLayout: ImageLayout, dstBuffer: Buffer, regions: []const BufferImageCopy) void {
     vkCmdCopyImageToBuffer(commandBuffer, srcImage, srcImageLayout, dstBuffer, @intCast(u32, regions.len), regions.ptr);
 }
-pub fn CmdUpdateBuffer(commandBuffer: CommandBuffer, dstBuffer: Buffer, dstOffset: DeviceSize, data: []const u8) callconv(.Inline) void {
+
+pub inline fn CmdUpdateBuffer(commandBuffer: CommandBuffer, dstBuffer: Buffer, dstOffset: DeviceSize, data: []const u8) void {
     vkCmdUpdateBuffer(commandBuffer, dstBuffer, dstOffset, @intCast(DeviceSize, data.len), data.ptr);
 }
 
 pub const CmdFillBuffer = vkCmdFillBuffer;
-pub fn CmdClearColorImage(commandBuffer: CommandBuffer, image: Image, imageLayout: ImageLayout, color: ClearColorValue, ranges: []const ImageSubresourceRange) callconv(.Inline) void {
+
+pub inline fn CmdClearColorImage(commandBuffer: CommandBuffer, image: Image, imageLayout: ImageLayout, color: ClearColorValue, ranges: []const ImageSubresourceRange) void {
     vkCmdClearColorImage(commandBuffer, image, imageLayout, &color, @intCast(u32, ranges.len), ranges.ptr);
 }
-pub fn CmdClearDepthStencilImage(commandBuffer: CommandBuffer, image: Image, imageLayout: ImageLayout, depthStencil: ClearDepthStencilValue, ranges: []const ImageSubresourceRange) callconv(.Inline) void {
+
+pub inline fn CmdClearDepthStencilImage(commandBuffer: CommandBuffer, image: Image, imageLayout: ImageLayout, depthStencil: ClearDepthStencilValue, ranges: []const ImageSubresourceRange) void {
     vkCmdClearDepthStencilImage(commandBuffer, image, imageLayout, &depthStencil, @intCast(u32, ranges.len), ranges.ptr);
 }
-pub fn CmdClearAttachments(commandBuffer: CommandBuffer, attachments: []const ClearAttachment, rects: []const ClearRect) callconv(.Inline) void {
+
+pub inline fn CmdClearAttachments(commandBuffer: CommandBuffer, attachments: []const ClearAttachment, rects: []const ClearRect) void {
     vkCmdClearAttachments(commandBuffer, @intCast(u32, attachments.len), attachments.ptr, @intCast(u32, rects.len), rects.ptr);
 }
-pub fn CmdResolveImage(commandBuffer: CommandBuffer, srcImage: Image, srcImageLayout: ImageLayout, dstImage: Image, dstImageLayout: ImageLayout, regions: []const ImageResolve) callconv(.Inline) void {
+
+pub inline fn CmdResolveImage(commandBuffer: CommandBuffer, srcImage: Image, srcImageLayout: ImageLayout, dstImage: Image, dstImageLayout: ImageLayout, regions: []const ImageResolve) void {
     vkCmdResolveImage(commandBuffer, srcImage, srcImageLayout, dstImage, dstImageLayout, @intCast(u32, regions.len), regions.ptr);
 }
-pub fn CmdSetEvent(commandBuffer: CommandBuffer, event: Event, stageMask: PipelineStageFlags) callconv(.Inline) void {
+
+pub inline fn CmdSetEvent(commandBuffer: CommandBuffer, event: Event, stageMask: PipelineStageFlags) void {
     vkCmdSetEvent(commandBuffer, event, stageMask.toInt());
 }
-pub fn CmdResetEvent(commandBuffer: CommandBuffer, event: Event, stageMask: PipelineStageFlags) callconv(.Inline) void {
+
+pub inline fn CmdResetEvent(commandBuffer: CommandBuffer, event: Event, stageMask: PipelineStageFlags) void {
     vkCmdResetEvent(commandBuffer, event, stageMask.toInt());
 }
-pub fn CmdWaitEvents(commandBuffer: CommandBuffer, events: []const Event, srcStageMask: PipelineStageFlags, dstStageMask: PipelineStageFlags, memoryBarriers: []const MemoryBarrier, bufferMemoryBarriers: []const BufferMemoryBarrier, imageMemoryBarriers: []const ImageMemoryBarrier) callconv(.Inline) void {
+
+pub inline fn CmdWaitEvents(commandBuffer: CommandBuffer, events: []const Event, srcStageMask: PipelineStageFlags, dstStageMask: PipelineStageFlags, memoryBarriers: []const MemoryBarrier, bufferMemoryBarriers: []const BufferMemoryBarrier, imageMemoryBarriers: []const ImageMemoryBarrier) void {
     vkCmdWaitEvents(commandBuffer, @intCast(u32, events.len), events.ptr, srcStageMask.toInt(), dstStageMask.toInt(), @intCast(u32, memoryBarriers.len), memoryBarriers.ptr, @intCast(u32, bufferMemoryBarriers.len), bufferMemoryBarriers.ptr, @intCast(u32, imageMemoryBarriers.len), imageMemoryBarriers.ptr);
 }
-pub fn CmdPipelineBarrier(commandBuffer: CommandBuffer, srcStageMask: PipelineStageFlags, dstStageMask: PipelineStageFlags, dependencyFlags: DependencyFlags, memoryBarriers: []const MemoryBarrier, bufferMemoryBarriers: []const BufferMemoryBarrier, imageMemoryBarriers: []const ImageMemoryBarrier) callconv(.Inline) void {
+
+pub inline fn CmdPipelineBarrier(commandBuffer: CommandBuffer, srcStageMask: PipelineStageFlags, dstStageMask: PipelineStageFlags, dependencyFlags: DependencyFlags, memoryBarriers: []const MemoryBarrier, bufferMemoryBarriers: []const BufferMemoryBarrier, imageMemoryBarriers: []const ImageMemoryBarrier) void {
     vkCmdPipelineBarrier(commandBuffer, srcStageMask.toInt(), dstStageMask.toInt(), dependencyFlags.toInt(), @intCast(u32, memoryBarriers.len), memoryBarriers.ptr, @intCast(u32, bufferMemoryBarriers.len), bufferMemoryBarriers.ptr, @intCast(u32, imageMemoryBarriers.len), imageMemoryBarriers.ptr);
 }
-pub fn CmdBeginQuery(commandBuffer: CommandBuffer, queryPool: QueryPool, query: u32, flags: QueryControlFlags) callconv(.Inline) void {
+
+pub inline fn CmdBeginQuery(commandBuffer: CommandBuffer, queryPool: QueryPool, query: u32, flags: QueryControlFlags) void {
     vkCmdBeginQuery(commandBuffer, queryPool, query, flags.toInt());
 }
 
 pub const CmdEndQuery = vkCmdEndQuery;
 pub const CmdResetQueryPool = vkCmdResetQueryPool;
-pub fn CmdWriteTimestamp(commandBuffer: CommandBuffer, pipelineStage: PipelineStageFlags, queryPool: QueryPool, query: u32) callconv(.Inline) void {
+
+pub inline fn CmdWriteTimestamp(commandBuffer: CommandBuffer, pipelineStage: PipelineStageFlags, queryPool: QueryPool, query: u32) void {
     vkCmdWriteTimestamp(commandBuffer, pipelineStage.toInt(), queryPool, query);
 }
-pub fn CmdCopyQueryPoolResults(commandBuffer: CommandBuffer, queryPool: QueryPool, firstQuery: u32, queryCount: u32, dstBuffer: Buffer, dstOffset: DeviceSize, stride: DeviceSize, flags: QueryResultFlags) callconv(.Inline) void {
+
+pub inline fn CmdCopyQueryPoolResults(commandBuffer: CommandBuffer, queryPool: QueryPool, firstQuery: u32, queryCount: u32, dstBuffer: Buffer, dstOffset: DeviceSize, stride: DeviceSize, flags: QueryResultFlags) void {
     vkCmdCopyQueryPoolResults(commandBuffer, queryPool, firstQuery, queryCount, dstBuffer, dstOffset, stride, flags.toInt());
 }
-pub fn CmdPushConstants(commandBuffer: CommandBuffer, layout: PipelineLayout, stageFlags: ShaderStageFlags, offset: u32, values: []const u8) callconv(.Inline) void {
+
+pub inline fn CmdPushConstants(commandBuffer: CommandBuffer, layout: PipelineLayout, stageFlags: ShaderStageFlags, offset: u32, values: []const u8) void {
     vkCmdPushConstants(commandBuffer, layout, stageFlags.toInt(), offset, @intCast(u32, values.len), values.ptr);
 }
-pub fn CmdBeginRenderPass(commandBuffer: CommandBuffer, renderPassBegin: RenderPassBeginInfo, contents: SubpassContents) callconv(.Inline) void {
+
+pub inline fn CmdBeginRenderPass(commandBuffer: CommandBuffer, renderPassBegin: RenderPassBeginInfo, contents: SubpassContents) void {
     vkCmdBeginRenderPass(commandBuffer, &renderPassBegin, contents);
 }
 
 pub const CmdNextSubpass = vkCmdNextSubpass;
 pub const CmdEndRenderPass = vkCmdEndRenderPass;
-pub fn CmdExecuteCommands(commandBuffer: CommandBuffer, commandBuffers: []const CommandBuffer) callconv(.Inline) void {
+
+pub inline fn CmdExecuteCommands(commandBuffer: CommandBuffer, commandBuffers: []const CommandBuffer) void {
     vkCmdExecuteCommands(commandBuffer, @intCast(u32, commandBuffers.len), commandBuffers.ptr);
 }
 
+
 pub const VERSION_1_1 = 1;
 // Vulkan 1.1 version number
-pub const API_VERSION_1_1 = MAKE_VERSION(1, 1, 0); // Patch version should always be set to 0
+pub const API_VERSION_1_1 = MAKE_VERSION(1, 1, 0);// Patch version should always be set to 0
 
-pub const SamplerYcbcrConversion = *opaque {};
-pub const DescriptorUpdateTemplate = *opaque {};
+pub const SamplerYcbcrConversion = enum(u64) { Null = 0, _ };
+pub const DescriptorUpdateTemplate = enum(u64) { Null = 0, _ };
 
 pub const MAX_DEVICE_GROUP_SIZE = 32;
 pub const LUID_SIZE = 8;
-pub const QUEUE_FAMILY_EXTERNAL = (~@as(u32, 0) - 1);
+pub const QUEUE_FAMILY_EXTERNAL = (~@as(u32, 0)-1);
 
-pub const PointClippingBehavior = extern enum(i32) {
+pub const PointClippingBehavior = enum(i32) {
     ALL_CLIP_PLANES = 0,
     USER_CLIP_PLANES_ONLY = 1,
     _,
@@ -6085,7 +6174,7 @@ pub const PointClippingBehavior = extern enum(i32) {
     pub const USER_CLIP_PLANES_ONLY_KHR = Self.USER_CLIP_PLANES_ONLY;
 };
 
-pub const TessellationDomainOrigin = extern enum(i32) {
+pub const TessellationDomainOrigin = enum(i32) {
     UPPER_LEFT = 0,
     LOWER_LEFT = 1,
     _,
@@ -6095,7 +6184,7 @@ pub const TessellationDomainOrigin = extern enum(i32) {
     pub const LOWER_LEFT_KHR = Self.LOWER_LEFT;
 };
 
-pub const SamplerYcbcrModelConversion = extern enum(i32) {
+pub const SamplerYcbcrModelConversion = enum(i32) {
     RGB_IDENTITY = 0,
     YCBCR_IDENTITY = 1,
     YCBCR_709 = 2,
@@ -6111,7 +6200,7 @@ pub const SamplerYcbcrModelConversion = extern enum(i32) {
     pub const YCBCR_2020_KHR = Self.YCBCR_2020;
 };
 
-pub const SamplerYcbcrRange = extern enum(i32) {
+pub const SamplerYcbcrRange = enum(i32) {
     ITU_FULL = 0,
     ITU_NARROW = 1,
     _,
@@ -6121,7 +6210,7 @@ pub const SamplerYcbcrRange = extern enum(i32) {
     pub const ITU_NARROW_KHR = Self.ITU_NARROW;
 };
 
-pub const ChromaLocation = extern enum(i32) {
+pub const ChromaLocation = enum(i32) {
     COSITED_EVEN = 0,
     MIDPOINT = 1,
     _,
@@ -6131,7 +6220,7 @@ pub const ChromaLocation = extern enum(i32) {
     pub const MIDPOINT_KHR = Self.MIDPOINT;
 };
 
-pub const DescriptorUpdateTemplateType = extern enum(i32) {
+pub const DescriptorUpdateTemplateType = enum(i32) {
     DESCRIPTOR_SET = 0,
     PUSH_DESCRIPTORS_KHR = 1,
     _,
@@ -6611,7 +6700,7 @@ pub const ExternalSemaphoreFeatureFlags = packed struct {
 
 pub const PhysicalDeviceSubgroupProperties = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_SUBGROUP_PROPERTIES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     subgroupSize: u32,
     supportedStages: ShaderStageFlags align(4),
     supportedOperations: SubgroupFeatureFlags align(4),
@@ -6620,7 +6709,7 @@ pub const PhysicalDeviceSubgroupProperties = extern struct {
 
 pub const BindBufferMemoryInfo = extern struct {
     sType: StructureType = .BIND_BUFFER_MEMORY_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     buffer: Buffer,
     memory: DeviceMemory,
     memoryOffset: DeviceSize,
@@ -6628,7 +6717,7 @@ pub const BindBufferMemoryInfo = extern struct {
 
 pub const BindImageMemoryInfo = extern struct {
     sType: StructureType = .BIND_IMAGE_MEMORY_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     image: Image,
     memory: DeviceMemory,
     memoryOffset: DeviceSize,
@@ -6636,7 +6725,7 @@ pub const BindImageMemoryInfo = extern struct {
 
 pub const PhysicalDevice16BitStorageFeatures = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     storageBuffer16BitAccess: Bool32,
     uniformAndStorageBuffer16BitAccess: Bool32,
     storagePushConstant16: Bool32,
@@ -6645,28 +6734,28 @@ pub const PhysicalDevice16BitStorageFeatures = extern struct {
 
 pub const MemoryDedicatedRequirements = extern struct {
     sType: StructureType = .MEMORY_DEDICATED_REQUIREMENTS,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     prefersDedicatedAllocation: Bool32,
     requiresDedicatedAllocation: Bool32,
 };
 
 pub const MemoryDedicatedAllocateInfo = extern struct {
     sType: StructureType = .MEMORY_DEDICATED_ALLOCATE_INFO,
-    pNext: ?*const c_void = null,
-    image: ?Image = null,
-    buffer: ?Buffer = null,
+    pNext: ?*const anyopaque = null,
+    image: Image = Image.Null,
+    buffer: Buffer = Buffer.Null,
 };
 
 pub const MemoryAllocateFlagsInfo = extern struct {
     sType: StructureType = .MEMORY_ALLOCATE_FLAGS_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: MemoryAllocateFlags align(4) = MemoryAllocateFlags{},
     deviceMask: u32,
 };
 
 pub const DeviceGroupRenderPassBeginInfo = extern struct {
     sType: StructureType = .DEVICE_GROUP_RENDER_PASS_BEGIN_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     deviceMask: u32,
     deviceRenderAreaCount: u32 = 0,
     pDeviceRenderAreas: [*]const Rect2D = undefined,
@@ -6674,13 +6763,13 @@ pub const DeviceGroupRenderPassBeginInfo = extern struct {
 
 pub const DeviceGroupCommandBufferBeginInfo = extern struct {
     sType: StructureType = .DEVICE_GROUP_COMMAND_BUFFER_BEGIN_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     deviceMask: u32,
 };
 
 pub const DeviceGroupSubmitInfo = extern struct {
     sType: StructureType = .DEVICE_GROUP_SUBMIT_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     waitSemaphoreCount: u32 = 0,
     pWaitSemaphoreDeviceIndices: [*]const u32 = undefined,
     commandBufferCount: u32 = 0,
@@ -6691,21 +6780,21 @@ pub const DeviceGroupSubmitInfo = extern struct {
 
 pub const DeviceGroupBindSparseInfo = extern struct {
     sType: StructureType = .DEVICE_GROUP_BIND_SPARSE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     resourceDeviceIndex: u32,
     memoryDeviceIndex: u32,
 };
 
 pub const BindBufferMemoryDeviceGroupInfo = extern struct {
     sType: StructureType = .BIND_BUFFER_MEMORY_DEVICE_GROUP_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     deviceIndexCount: u32 = 0,
     pDeviceIndices: [*]const u32 = undefined,
 };
 
 pub const BindImageMemoryDeviceGroupInfo = extern struct {
     sType: StructureType = .BIND_IMAGE_MEMORY_DEVICE_GROUP_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     deviceIndexCount: u32 = 0,
     pDeviceIndices: [*]const u32 = undefined,
     splitInstanceBindRegionCount: u32 = 0,
@@ -6714,7 +6803,7 @@ pub const BindImageMemoryDeviceGroupInfo = extern struct {
 
 pub const PhysicalDeviceGroupProperties = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_GROUP_PROPERTIES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     physicalDeviceCount: u32,
     physicalDevices: [MAX_DEVICE_GROUP_SIZE]PhysicalDevice,
     subsetAllocation: Bool32,
@@ -6722,32 +6811,32 @@ pub const PhysicalDeviceGroupProperties = extern struct {
 
 pub const DeviceGroupDeviceCreateInfo = extern struct {
     sType: StructureType = .DEVICE_GROUP_DEVICE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     physicalDeviceCount: u32 = 0,
     pPhysicalDevices: [*]const PhysicalDevice = undefined,
 };
 
 pub const BufferMemoryRequirementsInfo2 = extern struct {
     sType: StructureType = .BUFFER_MEMORY_REQUIREMENTS_INFO_2,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     buffer: Buffer,
 };
 
 pub const ImageMemoryRequirementsInfo2 = extern struct {
     sType: StructureType = .IMAGE_MEMORY_REQUIREMENTS_INFO_2,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     image: Image,
 };
 
 pub const ImageSparseMemoryRequirementsInfo2 = extern struct {
     sType: StructureType = .IMAGE_SPARSE_MEMORY_REQUIREMENTS_INFO_2,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     image: Image,
 };
 
 pub const MemoryRequirements2 = extern struct {
     sType: StructureType = .MEMORY_REQUIREMENTS_2,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     memoryRequirements: MemoryRequirements,
 };
 
@@ -6755,37 +6844,37 @@ pub const MemoryRequirements2KHR = MemoryRequirements2;
 
 pub const SparseImageMemoryRequirements2 = extern struct {
     sType: StructureType = .SPARSE_IMAGE_MEMORY_REQUIREMENTS_2,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     memoryRequirements: SparseImageMemoryRequirements,
 };
 
 pub const PhysicalDeviceFeatures2 = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_FEATURES_2,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     features: PhysicalDeviceFeatures,
 };
 
 pub const PhysicalDeviceProperties2 = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_PROPERTIES_2,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     properties: PhysicalDeviceProperties,
 };
 
 pub const FormatProperties2 = extern struct {
     sType: StructureType = .FORMAT_PROPERTIES_2,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     formatProperties: FormatProperties,
 };
 
 pub const ImageFormatProperties2 = extern struct {
     sType: StructureType = .IMAGE_FORMAT_PROPERTIES_2,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     imageFormatProperties: ImageFormatProperties,
 };
 
 pub const PhysicalDeviceImageFormatInfo2 = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     format: Format,
     inType: ImageType,
     tiling: ImageTiling,
@@ -6795,25 +6884,25 @@ pub const PhysicalDeviceImageFormatInfo2 = extern struct {
 
 pub const QueueFamilyProperties2 = extern struct {
     sType: StructureType = .QUEUE_FAMILY_PROPERTIES_2,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     queueFamilyProperties: QueueFamilyProperties,
 };
 
 pub const PhysicalDeviceMemoryProperties2 = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_MEMORY_PROPERTIES_2,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     memoryProperties: PhysicalDeviceMemoryProperties,
 };
 
 pub const SparseImageFormatProperties2 = extern struct {
     sType: StructureType = .SPARSE_IMAGE_FORMAT_PROPERTIES_2,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     properties: SparseImageFormatProperties,
 };
 
 pub const PhysicalDeviceSparseImageFormatInfo2 = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_SPARSE_IMAGE_FORMAT_INFO_2,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     format: Format,
     inType: ImageType,
     samples: SampleCountFlags align(4),
@@ -6823,7 +6912,7 @@ pub const PhysicalDeviceSparseImageFormatInfo2 = extern struct {
 
 pub const PhysicalDevicePointClippingProperties = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_POINT_CLIPPING_PROPERTIES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     pointClippingBehavior: PointClippingBehavior,
 };
 
@@ -6835,26 +6924,26 @@ pub const InputAttachmentAspectReference = extern struct {
 
 pub const RenderPassInputAttachmentAspectCreateInfo = extern struct {
     sType: StructureType = .RENDER_PASS_INPUT_ATTACHMENT_ASPECT_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     aspectReferenceCount: u32,
     pAspectReferences: [*]const InputAttachmentAspectReference,
 };
 
 pub const ImageViewUsageCreateInfo = extern struct {
     sType: StructureType = .IMAGE_VIEW_USAGE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     usage: ImageUsageFlags align(4),
 };
 
 pub const PipelineTessellationDomainOriginStateCreateInfo = extern struct {
     sType: StructureType = .PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     domainOrigin: TessellationDomainOrigin,
 };
 
 pub const RenderPassMultiviewCreateInfo = extern struct {
     sType: StructureType = .RENDER_PASS_MULTIVIEW_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     subpassCount: u32 = 0,
     pViewMasks: [*]const u32 = undefined,
     dependencyCount: u32 = 0,
@@ -6865,7 +6954,7 @@ pub const RenderPassMultiviewCreateInfo = extern struct {
 
 pub const PhysicalDeviceMultiviewFeatures = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_MULTIVIEW_FEATURES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     multiview: Bool32,
     multiviewGeometryShader: Bool32,
     multiviewTessellationShader: Bool32,
@@ -6873,14 +6962,14 @@ pub const PhysicalDeviceMultiviewFeatures = extern struct {
 
 pub const PhysicalDeviceMultiviewProperties = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     maxMultiviewViewCount: u32,
     maxMultiviewInstanceIndex: u32,
 };
 
 pub const PhysicalDeviceVariablePointersFeatures = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     variablePointersStorageBuffer: Bool32,
     variablePointers: Bool32,
 };
@@ -6889,19 +6978,19 @@ pub const PhysicalDeviceVariablePointerFeatures = PhysicalDeviceVariablePointers
 
 pub const PhysicalDeviceProtectedMemoryFeatures = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     protectedMemory: Bool32,
 };
 
 pub const PhysicalDeviceProtectedMemoryProperties = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_PROTECTED_MEMORY_PROPERTIES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     protectedNoFault: Bool32,
 };
 
 pub const DeviceQueueInfo2 = extern struct {
     sType: StructureType = .DEVICE_QUEUE_INFO_2,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: DeviceQueueCreateFlags align(4) = DeviceQueueCreateFlags{},
     queueFamilyIndex: u32,
     queueIndex: u32,
@@ -6909,13 +6998,13 @@ pub const DeviceQueueInfo2 = extern struct {
 
 pub const ProtectedSubmitInfo = extern struct {
     sType: StructureType = .PROTECTED_SUBMIT_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     protectedSubmit: Bool32,
 };
 
 pub const SamplerYcbcrConversionCreateInfo = extern struct {
     sType: StructureType = .SAMPLER_YCBCR_CONVERSION_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     format: Format,
     ycbcrModel: SamplerYcbcrModelConversion,
     ycbcrRange: SamplerYcbcrRange,
@@ -6928,31 +7017,31 @@ pub const SamplerYcbcrConversionCreateInfo = extern struct {
 
 pub const SamplerYcbcrConversionInfo = extern struct {
     sType: StructureType = .SAMPLER_YCBCR_CONVERSION_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     conversion: SamplerYcbcrConversion,
 };
 
 pub const BindImagePlaneMemoryInfo = extern struct {
     sType: StructureType = .BIND_IMAGE_PLANE_MEMORY_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     planeAspect: ImageAspectFlags align(4),
 };
 
 pub const ImagePlaneMemoryRequirementsInfo = extern struct {
     sType: StructureType = .IMAGE_PLANE_MEMORY_REQUIREMENTS_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     planeAspect: ImageAspectFlags align(4),
 };
 
 pub const PhysicalDeviceSamplerYcbcrConversionFeatures = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     samplerYcbcrConversion: Bool32,
 };
 
 pub const SamplerYcbcrConversionImageFormatProperties = extern struct {
     sType: StructureType = .SAMPLER_YCBCR_CONVERSION_IMAGE_FORMAT_PROPERTIES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     combinedImageSamplerDescriptorCount: u32,
 };
 
@@ -6967,7 +7056,7 @@ pub const DescriptorUpdateTemplateEntry = extern struct {
 
 pub const DescriptorUpdateTemplateCreateInfo = extern struct {
     sType: StructureType = .DESCRIPTOR_UPDATE_TEMPLATE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: DescriptorUpdateTemplateCreateFlags align(4) = DescriptorUpdateTemplateCreateFlags{},
     descriptorUpdateEntryCount: u32,
     pDescriptorUpdateEntries: [*]const DescriptorUpdateTemplateEntry,
@@ -6986,19 +7075,19 @@ pub const ExternalMemoryProperties = extern struct {
 
 pub const PhysicalDeviceExternalImageFormatInfo = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     handleType: ExternalMemoryHandleTypeFlags align(4) = ExternalMemoryHandleTypeFlags{},
 };
 
 pub const ExternalImageFormatProperties = extern struct {
     sType: StructureType = .EXTERNAL_IMAGE_FORMAT_PROPERTIES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     externalMemoryProperties: ExternalMemoryProperties,
 };
 
 pub const PhysicalDeviceExternalBufferInfo = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_EXTERNAL_BUFFER_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: BufferCreateFlags align(4) = BufferCreateFlags{},
     usage: BufferUsageFlags align(4),
     handleType: ExternalMemoryHandleTypeFlags align(4),
@@ -7006,13 +7095,13 @@ pub const PhysicalDeviceExternalBufferInfo = extern struct {
 
 pub const ExternalBufferProperties = extern struct {
     sType: StructureType = .EXTERNAL_BUFFER_PROPERTIES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     externalMemoryProperties: ExternalMemoryProperties,
 };
 
 pub const PhysicalDeviceIDProperties = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_ID_PROPERTIES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     deviceUUID: [UUID_SIZE]u8,
     driverUUID: [UUID_SIZE]u8,
     deviceLUID: [LUID_SIZE]u8,
@@ -7022,31 +7111,31 @@ pub const PhysicalDeviceIDProperties = extern struct {
 
 pub const ExternalMemoryImageCreateInfo = extern struct {
     sType: StructureType = .EXTERNAL_MEMORY_IMAGE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     handleTypes: ExternalMemoryHandleTypeFlags align(4),
 };
 
 pub const ExternalMemoryBufferCreateInfo = extern struct {
     sType: StructureType = .EXTERNAL_MEMORY_BUFFER_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     handleTypes: ExternalMemoryHandleTypeFlags align(4) = ExternalMemoryHandleTypeFlags{},
 };
 
 pub const ExportMemoryAllocateInfo = extern struct {
     sType: StructureType = .EXPORT_MEMORY_ALLOCATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     handleTypes: ExternalMemoryHandleTypeFlags align(4) = ExternalMemoryHandleTypeFlags{},
 };
 
 pub const PhysicalDeviceExternalFenceInfo = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_EXTERNAL_FENCE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     handleType: ExternalFenceHandleTypeFlags align(4),
 };
 
 pub const ExternalFenceProperties = extern struct {
     sType: StructureType = .EXTERNAL_FENCE_PROPERTIES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     exportFromImportedHandleTypes: ExternalFenceHandleTypeFlags align(4),
     compatibleHandleTypes: ExternalFenceHandleTypeFlags align(4),
     externalFenceFeatures: ExternalFenceFeatureFlags align(4) = ExternalFenceFeatureFlags{},
@@ -7054,25 +7143,25 @@ pub const ExternalFenceProperties = extern struct {
 
 pub const ExportFenceCreateInfo = extern struct {
     sType: StructureType = .EXPORT_FENCE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     handleTypes: ExternalFenceHandleTypeFlags align(4) = ExternalFenceHandleTypeFlags{},
 };
 
 pub const ExportSemaphoreCreateInfo = extern struct {
     sType: StructureType = .EXPORT_SEMAPHORE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     handleTypes: ExternalSemaphoreHandleTypeFlags align(4) = ExternalSemaphoreHandleTypeFlags{},
 };
 
 pub const PhysicalDeviceExternalSemaphoreInfo = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_EXTERNAL_SEMAPHORE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     handleType: ExternalSemaphoreHandleTypeFlags align(4),
 };
 
 pub const ExternalSemaphoreProperties = extern struct {
     sType: StructureType = .EXTERNAL_SEMAPHORE_PROPERTIES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     exportFromImportedHandleTypes: ExternalSemaphoreHandleTypeFlags align(4),
     compatibleHandleTypes: ExternalSemaphoreHandleTypeFlags align(4),
     externalSemaphoreFeatures: ExternalSemaphoreFeatureFlags align(4) = ExternalSemaphoreFeatureFlags{},
@@ -7080,20 +7169,20 @@ pub const ExternalSemaphoreProperties = extern struct {
 
 pub const PhysicalDeviceMaintenance3Properties = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     maxPerSetDescriptors: u32,
     maxMemoryAllocationSize: DeviceSize,
 };
 
 pub const DescriptorSetLayoutSupport = extern struct {
     sType: StructureType = .DESCRIPTOR_SET_LAYOUT_SUPPORT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     supported: Bool32,
 };
 
 pub const PhysicalDeviceShaderDrawParametersFeatures = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     shaderDrawParameters: Bool32,
 };
 
@@ -7222,7 +7311,7 @@ pub extern fn vkCreateSamplerYcbcrConversion(
 
 pub extern fn vkDestroySamplerYcbcrConversion(
     device: Device,
-    ycbcrConversion: ?SamplerYcbcrConversion,
+    ycbcrConversion: SamplerYcbcrConversion,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -7235,7 +7324,7 @@ pub extern fn vkCreateDescriptorUpdateTemplate(
 
 pub extern fn vkDestroyDescriptorUpdateTemplate(
     device: Device,
-    descriptorUpdateTemplate: ?DescriptorUpdateTemplate,
+    descriptorUpdateTemplate: DescriptorUpdateTemplate,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -7243,7 +7332,7 @@ pub extern fn vkUpdateDescriptorSetWithTemplate(
     device: Device,
     descriptorSet: DescriptorSet,
     descriptorUpdateTemplate: DescriptorUpdateTemplate,
-    pData: ?*const c_void,
+    pData: ?*const anyopaque,
 ) callconv(CallConv) void;
 
 pub extern fn vkGetPhysicalDeviceExternalBufferProperties(
@@ -7269,7 +7358,8 @@ pub extern fn vkGetDescriptorSetLayoutSupport(
     pCreateInfo: *const DescriptorSetLayoutCreateInfo,
     pSupport: *DescriptorSetLayoutSupport,
 ) callconv(CallConv) void;
-pub fn EnumerateInstanceVersion() callconv(.Inline) error{VK_UNDOCUMENTED_ERROR}!u32 {
+
+pub inline fn EnumerateInstanceVersion() error{VK_UNDOCUMENTED_ERROR}!u32 {
     var out_apiVersion: u32 = undefined;
     const result = vkEnumerateInstanceVersion(&out_apiVersion);
     if (@bitCast(c_int, result) < 0) {
@@ -7277,7 +7367,8 @@ pub fn EnumerateInstanceVersion() callconv(.Inline) error{VK_UNDOCUMENTED_ERROR}
     }
     return out_apiVersion;
 }
-pub fn BindBufferMemory2(device: Device, bindInfos: []const BindBufferMemoryInfo) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_INVALID_OPAQUE_CAPTURE_ADDRESS, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn BindBufferMemory2(device: Device, bindInfos: []const BindBufferMemoryInfo) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_INVALID_OPAQUE_CAPTURE_ADDRESS,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkBindBufferMemory2(device, @intCast(u32, bindInfos.len), bindInfos.ptr);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -7288,7 +7379,8 @@ pub fn BindBufferMemory2(device: Device, bindInfos: []const BindBufferMemoryInfo
         };
     }
 }
-pub fn BindImageMemory2(device: Device, bindInfos: []const BindImageMemoryInfo) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn BindImageMemory2(device: Device, bindInfos: []const BindImageMemoryInfo) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkBindImageMemory2(device, @intCast(u32, bindInfos.len), bindInfos.ptr);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -7298,7 +7390,8 @@ pub fn BindImageMemory2(device: Device, bindInfos: []const BindImageMemoryInfo) 
         };
     }
 }
-pub fn GetDeviceGroupPeerMemoryFeatures(device: Device, heapIndex: u32, localDeviceIndex: u32, remoteDeviceIndex: u32) callconv(.Inline) PeerMemoryFeatureFlags {
+
+pub inline fn GetDeviceGroupPeerMemoryFeatures(device: Device, heapIndex: u32, localDeviceIndex: u32, remoteDeviceIndex: u32) PeerMemoryFeatureFlags {
     var out_peerMemoryFeatures: PeerMemoryFeatureFlags align(4) = undefined;
     vkGetDeviceGroupPeerMemoryFeatures(device, heapIndex, localDeviceIndex, remoteDeviceIndex, &out_peerMemoryFeatures);
     return out_peerMemoryFeatures;
@@ -7311,7 +7404,7 @@ pub const EnumeratePhysicalDeviceGroupsResult = struct {
     result: Result,
     physicalDeviceGroupProperties: []PhysicalDeviceGroupProperties,
 };
-pub fn EnumeratePhysicalDeviceGroups(instance: Instance, physicalDeviceGroupProperties: []PhysicalDeviceGroupProperties) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_INITIALIZATION_FAILED, VK_UNDOCUMENTED_ERROR }!EnumeratePhysicalDeviceGroupsResult {
+pub inline fn EnumeratePhysicalDeviceGroups(instance: Instance, physicalDeviceGroupProperties: []PhysicalDeviceGroupProperties) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_INITIALIZATION_FAILED,VK_UNDOCUMENTED_ERROR}!EnumeratePhysicalDeviceGroupsResult {
     var returnValues: EnumeratePhysicalDeviceGroupsResult = undefined;
     var physicalDeviceGroupCount: u32 = @intCast(u32, physicalDeviceGroupProperties.len);
     const result = vkEnumeratePhysicalDeviceGroups(instance, &physicalDeviceGroupCount, physicalDeviceGroupProperties.ptr);
@@ -7327,7 +7420,7 @@ pub fn EnumeratePhysicalDeviceGroups(instance: Instance, physicalDeviceGroupProp
     returnValues.result = result;
     return returnValues;
 }
-pub fn EnumeratePhysicalDeviceGroupsCount(instance: Instance) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_INITIALIZATION_FAILED, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn EnumeratePhysicalDeviceGroupsCount(instance: Instance) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_INITIALIZATION_FAILED,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_physicalDeviceGroupCount: u32 = undefined;
     const result = vkEnumeratePhysicalDeviceGroups(instance, &out_physicalDeviceGroupCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -7340,44 +7433,51 @@ pub fn EnumeratePhysicalDeviceGroupsCount(instance: Instance) callconv(.Inline) 
     }
     return out_physicalDeviceGroupCount;
 }
-pub fn GetImageMemoryRequirements2(device: Device, info: ImageMemoryRequirementsInfo2) callconv(.Inline) MemoryRequirements2 {
+
+pub inline fn GetImageMemoryRequirements2(device: Device, info: ImageMemoryRequirementsInfo2) MemoryRequirements2 {
     var out_memoryRequirements: MemoryRequirements2 = undefined;
     vkGetImageMemoryRequirements2(device, &info, &out_memoryRequirements);
     return out_memoryRequirements;
 }
-pub fn GetBufferMemoryRequirements2(device: Device, info: BufferMemoryRequirementsInfo2) callconv(.Inline) MemoryRequirements2 {
+
+pub inline fn GetBufferMemoryRequirements2(device: Device, info: BufferMemoryRequirementsInfo2) MemoryRequirements2 {
     var out_memoryRequirements: MemoryRequirements2 = undefined;
     vkGetBufferMemoryRequirements2(device, &info, &out_memoryRequirements);
     return out_memoryRequirements;
 }
-pub fn GetImageSparseMemoryRequirements2(device: Device, info: ImageSparseMemoryRequirementsInfo2, sparseMemoryRequirements: []SparseImageMemoryRequirements2) callconv(.Inline) []SparseImageMemoryRequirements2 {
+
+pub inline fn GetImageSparseMemoryRequirements2(device: Device, info: ImageSparseMemoryRequirementsInfo2, sparseMemoryRequirements: []SparseImageMemoryRequirements2) []SparseImageMemoryRequirements2 {
     var out_sparseMemoryRequirements: []SparseImageMemoryRequirements2 = undefined;
     var sparseMemoryRequirementCount: u32 = @intCast(u32, sparseMemoryRequirements.len);
     vkGetImageSparseMemoryRequirements2(device, &info, &sparseMemoryRequirementCount, sparseMemoryRequirements.ptr);
     out_sparseMemoryRequirements = sparseMemoryRequirements[0..sparseMemoryRequirementCount];
     return out_sparseMemoryRequirements;
 }
-pub fn GetImageSparseMemoryRequirements2Count(device: Device, info: ImageSparseMemoryRequirementsInfo2) callconv(.Inline) u32 {
+pub inline fn GetImageSparseMemoryRequirements2Count(device: Device, info: ImageSparseMemoryRequirementsInfo2) u32 {
     var out_sparseMemoryRequirementCount: u32 = undefined;
     vkGetImageSparseMemoryRequirements2(device, &info, &out_sparseMemoryRequirementCount, null);
     return out_sparseMemoryRequirementCount;
 }
-pub fn GetPhysicalDeviceFeatures2(physicalDevice: PhysicalDevice) callconv(.Inline) PhysicalDeviceFeatures2 {
+
+pub inline fn GetPhysicalDeviceFeatures2(physicalDevice: PhysicalDevice) PhysicalDeviceFeatures2 {
     var out_features: PhysicalDeviceFeatures2 = undefined;
     vkGetPhysicalDeviceFeatures2(physicalDevice, &out_features);
     return out_features;
 }
-pub fn GetPhysicalDeviceProperties2(physicalDevice: PhysicalDevice) callconv(.Inline) PhysicalDeviceProperties2 {
+
+pub inline fn GetPhysicalDeviceProperties2(physicalDevice: PhysicalDevice) PhysicalDeviceProperties2 {
     var out_properties: PhysicalDeviceProperties2 = undefined;
     vkGetPhysicalDeviceProperties2(physicalDevice, &out_properties);
     return out_properties;
 }
-pub fn GetPhysicalDeviceFormatProperties2(physicalDevice: PhysicalDevice, format: Format) callconv(.Inline) FormatProperties2 {
+
+pub inline fn GetPhysicalDeviceFormatProperties2(physicalDevice: PhysicalDevice, format: Format) FormatProperties2 {
     var out_formatProperties: FormatProperties2 = undefined;
     vkGetPhysicalDeviceFormatProperties2(physicalDevice, format, &out_formatProperties);
     return out_formatProperties;
 }
-pub fn GetPhysicalDeviceImageFormatProperties2(physicalDevice: PhysicalDevice, imageFormatInfo: PhysicalDeviceImageFormatInfo2) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_FORMAT_NOT_SUPPORTED, VK_UNDOCUMENTED_ERROR }!ImageFormatProperties2 {
+
+pub inline fn GetPhysicalDeviceImageFormatProperties2(physicalDevice: PhysicalDevice, imageFormatInfo: PhysicalDeviceImageFormatInfo2) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_FORMAT_NOT_SUPPORTED,VK_UNDOCUMENTED_ERROR}!ImageFormatProperties2 {
     var out_imageFormatProperties: ImageFormatProperties2 = undefined;
     const result = vkGetPhysicalDeviceImageFormatProperties2(physicalDevice, &imageFormatInfo, &out_imageFormatProperties);
     if (@bitCast(c_int, result) < 0) {
@@ -7390,44 +7490,50 @@ pub fn GetPhysicalDeviceImageFormatProperties2(physicalDevice: PhysicalDevice, i
     }
     return out_imageFormatProperties;
 }
-pub fn GetPhysicalDeviceQueueFamilyProperties2(physicalDevice: PhysicalDevice, queueFamilyProperties: []QueueFamilyProperties2) callconv(.Inline) []QueueFamilyProperties2 {
+
+pub inline fn GetPhysicalDeviceQueueFamilyProperties2(physicalDevice: PhysicalDevice, queueFamilyProperties: []QueueFamilyProperties2) []QueueFamilyProperties2 {
     var out_queueFamilyProperties: []QueueFamilyProperties2 = undefined;
     var queueFamilyPropertyCount: u32 = @intCast(u32, queueFamilyProperties.len);
     vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, &queueFamilyPropertyCount, queueFamilyProperties.ptr);
     out_queueFamilyProperties = queueFamilyProperties[0..queueFamilyPropertyCount];
     return out_queueFamilyProperties;
 }
-pub fn GetPhysicalDeviceQueueFamilyProperties2Count(physicalDevice: PhysicalDevice) callconv(.Inline) u32 {
+pub inline fn GetPhysicalDeviceQueueFamilyProperties2Count(physicalDevice: PhysicalDevice) u32 {
     var out_queueFamilyPropertyCount: u32 = undefined;
     vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, &out_queueFamilyPropertyCount, null);
     return out_queueFamilyPropertyCount;
 }
-pub fn GetPhysicalDeviceMemoryProperties2(physicalDevice: PhysicalDevice) callconv(.Inline) PhysicalDeviceMemoryProperties2 {
+
+pub inline fn GetPhysicalDeviceMemoryProperties2(physicalDevice: PhysicalDevice) PhysicalDeviceMemoryProperties2 {
     var out_memoryProperties: PhysicalDeviceMemoryProperties2 = undefined;
     vkGetPhysicalDeviceMemoryProperties2(physicalDevice, &out_memoryProperties);
     return out_memoryProperties;
 }
-pub fn GetPhysicalDeviceSparseImageFormatProperties2(physicalDevice: PhysicalDevice, formatInfo: PhysicalDeviceSparseImageFormatInfo2, properties: []SparseImageFormatProperties2) callconv(.Inline) []SparseImageFormatProperties2 {
+
+pub inline fn GetPhysicalDeviceSparseImageFormatProperties2(physicalDevice: PhysicalDevice, formatInfo: PhysicalDeviceSparseImageFormatInfo2, properties: []SparseImageFormatProperties2) []SparseImageFormatProperties2 {
     var out_properties: []SparseImageFormatProperties2 = undefined;
     var propertyCount: u32 = @intCast(u32, properties.len);
     vkGetPhysicalDeviceSparseImageFormatProperties2(physicalDevice, &formatInfo, &propertyCount, properties.ptr);
     out_properties = properties[0..propertyCount];
     return out_properties;
 }
-pub fn GetPhysicalDeviceSparseImageFormatProperties2Count(physicalDevice: PhysicalDevice, formatInfo: PhysicalDeviceSparseImageFormatInfo2) callconv(.Inline) u32 {
+pub inline fn GetPhysicalDeviceSparseImageFormatProperties2Count(physicalDevice: PhysicalDevice, formatInfo: PhysicalDeviceSparseImageFormatInfo2) u32 {
     var out_propertyCount: u32 = undefined;
     vkGetPhysicalDeviceSparseImageFormatProperties2(physicalDevice, &formatInfo, &out_propertyCount, null);
     return out_propertyCount;
 }
-pub fn TrimCommandPool(device: Device, commandPool: CommandPool, flags: CommandPoolTrimFlags) callconv(.Inline) void {
+
+pub inline fn TrimCommandPool(device: Device, commandPool: CommandPool, flags: CommandPoolTrimFlags) void {
     vkTrimCommandPool(device, commandPool, flags.toInt());
 }
-pub fn GetDeviceQueue2(device: Device, queueInfo: DeviceQueueInfo2) callconv(.Inline) Queue {
+
+pub inline fn GetDeviceQueue2(device: Device, queueInfo: DeviceQueueInfo2) Queue {
     var out_queue: Queue = undefined;
     vkGetDeviceQueue2(device, &queueInfo, &out_queue);
     return out_queue;
 }
-pub fn CreateSamplerYcbcrConversion(device: Device, createInfo: SamplerYcbcrConversionCreateInfo, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!SamplerYcbcrConversion {
+
+pub inline fn CreateSamplerYcbcrConversion(device: Device, createInfo: SamplerYcbcrConversionCreateInfo, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!SamplerYcbcrConversion {
     var out_ycbcrConversion: SamplerYcbcrConversion = undefined;
     const result = vkCreateSamplerYcbcrConversion(device, &createInfo, pAllocator, &out_ycbcrConversion);
     if (@bitCast(c_int, result) < 0) {
@@ -7441,7 +7547,8 @@ pub fn CreateSamplerYcbcrConversion(device: Device, createInfo: SamplerYcbcrConv
 }
 
 pub const DestroySamplerYcbcrConversion = vkDestroySamplerYcbcrConversion;
-pub fn CreateDescriptorUpdateTemplate(device: Device, createInfo: DescriptorUpdateTemplateCreateInfo, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!DescriptorUpdateTemplate {
+
+pub inline fn CreateDescriptorUpdateTemplate(device: Device, createInfo: DescriptorUpdateTemplateCreateInfo, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!DescriptorUpdateTemplate {
     var out_descriptorUpdateTemplate: DescriptorUpdateTemplate = undefined;
     const result = vkCreateDescriptorUpdateTemplate(device, &createInfo, pAllocator, &out_descriptorUpdateTemplate);
     if (@bitCast(c_int, result) < 0) {
@@ -7456,37 +7563,42 @@ pub fn CreateDescriptorUpdateTemplate(device: Device, createInfo: DescriptorUpda
 
 pub const DestroyDescriptorUpdateTemplate = vkDestroyDescriptorUpdateTemplate;
 pub const UpdateDescriptorSetWithTemplate = vkUpdateDescriptorSetWithTemplate;
-pub fn GetPhysicalDeviceExternalBufferProperties(physicalDevice: PhysicalDevice, externalBufferInfo: PhysicalDeviceExternalBufferInfo) callconv(.Inline) ExternalBufferProperties {
+
+pub inline fn GetPhysicalDeviceExternalBufferProperties(physicalDevice: PhysicalDevice, externalBufferInfo: PhysicalDeviceExternalBufferInfo) ExternalBufferProperties {
     var out_externalBufferProperties: ExternalBufferProperties = undefined;
     vkGetPhysicalDeviceExternalBufferProperties(physicalDevice, &externalBufferInfo, &out_externalBufferProperties);
     return out_externalBufferProperties;
 }
-pub fn GetPhysicalDeviceExternalFenceProperties(physicalDevice: PhysicalDevice, externalFenceInfo: PhysicalDeviceExternalFenceInfo) callconv(.Inline) ExternalFenceProperties {
+
+pub inline fn GetPhysicalDeviceExternalFenceProperties(physicalDevice: PhysicalDevice, externalFenceInfo: PhysicalDeviceExternalFenceInfo) ExternalFenceProperties {
     var out_externalFenceProperties: ExternalFenceProperties = undefined;
     vkGetPhysicalDeviceExternalFenceProperties(physicalDevice, &externalFenceInfo, &out_externalFenceProperties);
     return out_externalFenceProperties;
 }
-pub fn GetPhysicalDeviceExternalSemaphoreProperties(physicalDevice: PhysicalDevice, externalSemaphoreInfo: PhysicalDeviceExternalSemaphoreInfo) callconv(.Inline) ExternalSemaphoreProperties {
+
+pub inline fn GetPhysicalDeviceExternalSemaphoreProperties(physicalDevice: PhysicalDevice, externalSemaphoreInfo: PhysicalDeviceExternalSemaphoreInfo) ExternalSemaphoreProperties {
     var out_externalSemaphoreProperties: ExternalSemaphoreProperties = undefined;
     vkGetPhysicalDeviceExternalSemaphoreProperties(physicalDevice, &externalSemaphoreInfo, &out_externalSemaphoreProperties);
     return out_externalSemaphoreProperties;
 }
-pub fn GetDescriptorSetLayoutSupport(device: Device, createInfo: DescriptorSetLayoutCreateInfo) callconv(.Inline) DescriptorSetLayoutSupport {
+
+pub inline fn GetDescriptorSetLayoutSupport(device: Device, createInfo: DescriptorSetLayoutCreateInfo) DescriptorSetLayoutSupport {
     var out_support: DescriptorSetLayoutSupport = undefined;
     vkGetDescriptorSetLayoutSupport(device, &createInfo, &out_support);
     return out_support;
 }
 
+
 pub const VERSION_1_2 = 1;
 // Vulkan 1.2 version number
-pub const API_VERSION_1_2 = MAKE_VERSION(1, 2, 0); // Patch version should always be set to 0
+pub const API_VERSION_1_2 = MAKE_VERSION(1, 2, 0);// Patch version should always be set to 0
 
 pub const DeviceAddress = u64;
 
 pub const MAX_DRIVER_NAME_SIZE = 256;
 pub const MAX_DRIVER_INFO_SIZE = 256;
 
-pub const DriverId = extern enum(i32) {
+pub const DriverId = enum(i32) {
     AMD_PROPRIETARY = 1,
     AMD_OPEN_SOURCE = 2,
     MESA_RADV = 3,
@@ -7516,7 +7628,7 @@ pub const DriverId = extern enum(i32) {
     pub const BROADCOM_PROPRIETARY_KHR = Self.BROADCOM_PROPRIETARY;
 };
 
-pub const ShaderFloatControlsIndependence = extern enum(i32) {
+pub const ShaderFloatControlsIndependence = enum(i32) {
     T_32_BIT_ONLY = 0,
     ALL = 1,
     NONE = 2,
@@ -7528,7 +7640,7 @@ pub const ShaderFloatControlsIndependence = extern enum(i32) {
     pub const NONE_KHR = Self.NONE;
 };
 
-pub const SamplerReductionMode = extern enum(i32) {
+pub const SamplerReductionMode = enum(i32) {
     WEIGHTED_AVERAGE = 0,
     MIN = 1,
     MAX = 2,
@@ -7540,7 +7652,7 @@ pub const SamplerReductionMode = extern enum(i32) {
     pub const MAX_EXT = Self.MAX;
 };
 
-pub const SemaphoreType = extern enum(i32) {
+pub const SemaphoreType = enum(i32) {
     BINARY = 0,
     TIMELINE = 1,
     _,
@@ -7585,7 +7697,7 @@ pub const ResolveModeFlags = packed struct {
     __reserved_bit_31: bool = false,
 
     const Self = @This();
-    pub const none = fromInt(0);
+    pub const none = Self.fromInt(0);
     pub const noneKhr = Self{ .none = true };
     pub const sampleZeroKHR = Self{ .sampleZero = true };
     pub const averageKHR = Self{ .average = true };
@@ -7680,7 +7792,7 @@ pub const SemaphoreWaitFlags = packed struct {
 
 pub const PhysicalDeviceVulkan11Features = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     storageBuffer16BitAccess: Bool32,
     uniformAndStorageBuffer16BitAccess: Bool32,
     storagePushConstant16: Bool32,
@@ -7697,7 +7809,7 @@ pub const PhysicalDeviceVulkan11Features = extern struct {
 
 pub const PhysicalDeviceVulkan11Properties = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     deviceUUID: [UUID_SIZE]u8,
     driverUUID: [UUID_SIZE]u8,
     deviceLUID: [LUID_SIZE]u8,
@@ -7717,7 +7829,7 @@ pub const PhysicalDeviceVulkan11Properties = extern struct {
 
 pub const PhysicalDeviceVulkan12Features = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     samplerMirrorClampToEdge: Bool32,
     drawIndirectCount: Bool32,
     storageBuffer8BitAccess: Bool32,
@@ -7776,10 +7888,10 @@ pub const ConformanceVersion = extern struct {
 
 pub const PhysicalDeviceVulkan12Properties = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_VULKAN_1_2_PROPERTIES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     driverID: DriverId,
-    driverName: [MAX_DRIVER_NAME_SIZE - 1:0]u8,
-    driverInfo: [MAX_DRIVER_INFO_SIZE - 1:0]u8,
+    driverName: [MAX_DRIVER_NAME_SIZE-1:0]u8,
+    driverInfo: [MAX_DRIVER_INFO_SIZE-1:0]u8,
     conformanceVersion: ConformanceVersion,
     denormBehaviorIndependence: ShaderFloatControlsIndependence,
     roundingModeIndependence: ShaderFloatControlsIndependence,
@@ -7833,14 +7945,14 @@ pub const PhysicalDeviceVulkan12Properties = extern struct {
 
 pub const ImageFormatListCreateInfo = extern struct {
     sType: StructureType = .IMAGE_FORMAT_LIST_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     viewFormatCount: u32 = 0,
     pViewFormats: [*]const Format = undefined,
 };
 
 pub const AttachmentDescription2 = extern struct {
     sType: StructureType = .ATTACHMENT_DESCRIPTION_2,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: AttachmentDescriptionFlags align(4) = AttachmentDescriptionFlags{},
     format: Format,
     samples: SampleCountFlags align(4),
@@ -7854,7 +7966,7 @@ pub const AttachmentDescription2 = extern struct {
 
 pub const AttachmentReference2 = extern struct {
     sType: StructureType = .ATTACHMENT_REFERENCE_2,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     attachment: u32,
     layout: ImageLayout,
     aspectMask: ImageAspectFlags align(4),
@@ -7862,7 +7974,7 @@ pub const AttachmentReference2 = extern struct {
 
 pub const SubpassDescription2 = extern struct {
     sType: StructureType = .SUBPASS_DESCRIPTION_2,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: SubpassDescriptionFlags align(4) = SubpassDescriptionFlags{},
     pipelineBindPoint: PipelineBindPoint,
     viewMask: u32,
@@ -7878,7 +7990,7 @@ pub const SubpassDescription2 = extern struct {
 
 pub const SubpassDependency2 = extern struct {
     sType: StructureType = .SUBPASS_DEPENDENCY_2,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     srcSubpass: u32,
     dstSubpass: u32,
     srcStageMask: PipelineStageFlags align(4),
@@ -7891,7 +8003,7 @@ pub const SubpassDependency2 = extern struct {
 
 pub const RenderPassCreateInfo2 = extern struct {
     sType: StructureType = .RENDER_PASS_CREATE_INFO_2,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: RenderPassCreateFlags align(4) = RenderPassCreateFlags{},
     attachmentCount: u32 = 0,
     pAttachments: [*]const AttachmentDescription2 = undefined,
@@ -7905,18 +8017,18 @@ pub const RenderPassCreateInfo2 = extern struct {
 
 pub const SubpassBeginInfo = extern struct {
     sType: StructureType = .SUBPASS_BEGIN_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     contents: SubpassContents,
 };
 
 pub const SubpassEndInfo = extern struct {
     sType: StructureType = .SUBPASS_END_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
 };
 
 pub const PhysicalDevice8BitStorageFeatures = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_8BIT_STORAGE_FEATURES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     storageBuffer8BitAccess: Bool32,
     uniformAndStorageBuffer8BitAccess: Bool32,
     storagePushConstant8: Bool32,
@@ -7924,30 +8036,30 @@ pub const PhysicalDevice8BitStorageFeatures = extern struct {
 
 pub const PhysicalDeviceDriverProperties = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_DRIVER_PROPERTIES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     driverID: DriverId,
-    driverName: [MAX_DRIVER_NAME_SIZE - 1:0]u8,
-    driverInfo: [MAX_DRIVER_INFO_SIZE - 1:0]u8,
+    driverName: [MAX_DRIVER_NAME_SIZE-1:0]u8,
+    driverInfo: [MAX_DRIVER_INFO_SIZE-1:0]u8,
     conformanceVersion: ConformanceVersion,
 };
 
 pub const PhysicalDeviceShaderAtomicInt64Features = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_SHADER_ATOMIC_INT64_FEATURES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     shaderBufferInt64Atomics: Bool32,
     shaderSharedInt64Atomics: Bool32,
 };
 
 pub const PhysicalDeviceShaderFloat16Int8Features = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     shaderFloat16: Bool32,
     shaderInt8: Bool32,
 };
 
 pub const PhysicalDeviceFloatControlsProperties = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_FLOAT_CONTROLS_PROPERTIES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     denormBehaviorIndependence: ShaderFloatControlsIndependence,
     roundingModeIndependence: ShaderFloatControlsIndependence,
     shaderSignedZeroInfNanPreserveFloat16: Bool32,
@@ -7969,14 +8081,14 @@ pub const PhysicalDeviceFloatControlsProperties = extern struct {
 
 pub const DescriptorSetLayoutBindingFlagsCreateInfo = extern struct {
     sType: StructureType = .DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     bindingCount: u32 = 0,
     pBindingFlags: ?[*]align(4) const DescriptorBindingFlags = null,
 };
 
 pub const PhysicalDeviceDescriptorIndexingFeatures = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     shaderInputAttachmentArrayDynamicIndexing: Bool32,
     shaderUniformTexelBufferArrayDynamicIndexing: Bool32,
     shaderStorageTexelBufferArrayDynamicIndexing: Bool32,
@@ -8001,7 +8113,7 @@ pub const PhysicalDeviceDescriptorIndexingFeatures = extern struct {
 
 pub const PhysicalDeviceDescriptorIndexingProperties = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_PROPERTIES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     maxUpdateAfterBindDescriptorsInAllPools: u32,
     shaderUniformBufferArrayNonUniformIndexingNative: Bool32,
     shaderSampledImageArrayNonUniformIndexingNative: Bool32,
@@ -8029,20 +8141,20 @@ pub const PhysicalDeviceDescriptorIndexingProperties = extern struct {
 
 pub const DescriptorSetVariableDescriptorCountAllocateInfo = extern struct {
     sType: StructureType = .DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     descriptorSetCount: u32 = 0,
     pDescriptorCounts: [*]const u32 = undefined,
 };
 
 pub const DescriptorSetVariableDescriptorCountLayoutSupport = extern struct {
     sType: StructureType = .DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_LAYOUT_SUPPORT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     maxVariableDescriptorCount: u32,
 };
 
 pub const SubpassDescriptionDepthStencilResolve = extern struct {
     sType: StructureType = .SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     depthResolveMode: ResolveModeFlags align(4),
     stencilResolveMode: ResolveModeFlags align(4),
     pDepthStencilResolveAttachment: ?*const AttachmentReference2 = null,
@@ -8050,7 +8162,7 @@ pub const SubpassDescriptionDepthStencilResolve = extern struct {
 
 pub const PhysicalDeviceDepthStencilResolveProperties = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_DEPTH_STENCIL_RESOLVE_PROPERTIES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     supportedDepthResolveModes: ResolveModeFlags align(4),
     supportedStencilResolveModes: ResolveModeFlags align(4),
     independentResolveNone: Bool32,
@@ -8059,32 +8171,32 @@ pub const PhysicalDeviceDepthStencilResolveProperties = extern struct {
 
 pub const PhysicalDeviceScalarBlockLayoutFeatures = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_SCALAR_BLOCK_LAYOUT_FEATURES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     scalarBlockLayout: Bool32,
 };
 
 pub const ImageStencilUsageCreateInfo = extern struct {
     sType: StructureType = .IMAGE_STENCIL_USAGE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     stencilUsage: ImageUsageFlags align(4),
 };
 
 pub const SamplerReductionModeCreateInfo = extern struct {
     sType: StructureType = .SAMPLER_REDUCTION_MODE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     reductionMode: SamplerReductionMode,
 };
 
 pub const PhysicalDeviceSamplerFilterMinmaxProperties = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_SAMPLER_FILTER_MINMAX_PROPERTIES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     filterMinmaxSingleComponentFormats: Bool32,
     filterMinmaxImageComponentMapping: Bool32,
 };
 
 pub const PhysicalDeviceVulkanMemoryModelFeatures = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     vulkanMemoryModel: Bool32,
     vulkanMemoryModelDeviceScope: Bool32,
     vulkanMemoryModelAvailabilityVisibilityChains: Bool32,
@@ -8092,13 +8204,13 @@ pub const PhysicalDeviceVulkanMemoryModelFeatures = extern struct {
 
 pub const PhysicalDeviceImagelessFramebufferFeatures = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_IMAGELESS_FRAMEBUFFER_FEATURES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     imagelessFramebuffer: Bool32,
 };
 
 pub const FramebufferAttachmentImageInfo = extern struct {
     sType: StructureType = .FRAMEBUFFER_ATTACHMENT_IMAGE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: ImageCreateFlags align(4) = ImageCreateFlags{},
     usage: ImageUsageFlags align(4),
     width: u32,
@@ -8110,77 +8222,77 @@ pub const FramebufferAttachmentImageInfo = extern struct {
 
 pub const FramebufferAttachmentsCreateInfo = extern struct {
     sType: StructureType = .FRAMEBUFFER_ATTACHMENTS_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     attachmentImageInfoCount: u32 = 0,
     pAttachmentImageInfos: [*]const FramebufferAttachmentImageInfo = undefined,
 };
 
 pub const RenderPassAttachmentBeginInfo = extern struct {
     sType: StructureType = .RENDER_PASS_ATTACHMENT_BEGIN_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     attachmentCount: u32 = 0,
     pAttachments: [*]const ImageView = undefined,
 };
 
 pub const PhysicalDeviceUniformBufferStandardLayoutFeatures = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_UNIFORM_BUFFER_STANDARD_LAYOUT_FEATURES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     uniformBufferStandardLayout: Bool32,
 };
 
 pub const PhysicalDeviceShaderSubgroupExtendedTypesFeatures = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_SHADER_SUBGROUP_EXTENDED_TYPES_FEATURES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     shaderSubgroupExtendedTypes: Bool32,
 };
 
 pub const PhysicalDeviceSeparateDepthStencilLayoutsFeatures = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     separateDepthStencilLayouts: Bool32,
 };
 
 pub const AttachmentReferenceStencilLayout = extern struct {
     sType: StructureType = .ATTACHMENT_REFERENCE_STENCIL_LAYOUT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     stencilLayout: ImageLayout,
 };
 
 pub const AttachmentDescriptionStencilLayout = extern struct {
     sType: StructureType = .ATTACHMENT_DESCRIPTION_STENCIL_LAYOUT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     stencilInitialLayout: ImageLayout,
     stencilFinalLayout: ImageLayout,
 };
 
 pub const PhysicalDeviceHostQueryResetFeatures = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_HOST_QUERY_RESET_FEATURES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     hostQueryReset: Bool32,
 };
 
 pub const PhysicalDeviceTimelineSemaphoreFeatures = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     timelineSemaphore: Bool32,
 };
 
 pub const PhysicalDeviceTimelineSemaphoreProperties = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_PROPERTIES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     maxTimelineSemaphoreValueDifference: u64,
 };
 
 pub const SemaphoreTypeCreateInfo = extern struct {
     sType: StructureType = .SEMAPHORE_TYPE_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     semaphoreType: SemaphoreType,
     initialValue: u64,
 };
 
 pub const TimelineSemaphoreSubmitInfo = extern struct {
     sType: StructureType = .TIMELINE_SEMAPHORE_SUBMIT_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     waitSemaphoreValueCount: u32 = 0,
     pWaitSemaphoreValues: ?[*]const u64 = null,
     signalSemaphoreValueCount: u32 = 0,
@@ -8189,7 +8301,7 @@ pub const TimelineSemaphoreSubmitInfo = extern struct {
 
 pub const SemaphoreWaitInfo = extern struct {
     sType: StructureType = .SEMAPHORE_WAIT_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: SemaphoreWaitFlags align(4) = SemaphoreWaitFlags{},
     semaphoreCount: u32,
     pSemaphores: [*]const Semaphore,
@@ -8198,14 +8310,14 @@ pub const SemaphoreWaitInfo = extern struct {
 
 pub const SemaphoreSignalInfo = extern struct {
     sType: StructureType = .SEMAPHORE_SIGNAL_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     semaphore: Semaphore,
     value: u64,
 };
 
 pub const PhysicalDeviceBufferDeviceAddressFeatures = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     bufferDeviceAddress: Bool32,
     bufferDeviceAddressCaptureReplay: Bool32,
     bufferDeviceAddressMultiDevice: Bool32,
@@ -8213,25 +8325,25 @@ pub const PhysicalDeviceBufferDeviceAddressFeatures = extern struct {
 
 pub const BufferDeviceAddressInfo = extern struct {
     sType: StructureType = .BUFFER_DEVICE_ADDRESS_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     buffer: Buffer,
 };
 
 pub const BufferOpaqueCaptureAddressCreateInfo = extern struct {
     sType: StructureType = .BUFFER_OPAQUE_CAPTURE_ADDRESS_CREATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     opaqueCaptureAddress: u64,
 };
 
 pub const MemoryOpaqueCaptureAddressAllocateInfo = extern struct {
     sType: StructureType = .MEMORY_OPAQUE_CAPTURE_ADDRESS_ALLOCATE_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     opaqueCaptureAddress: u64,
 };
 
 pub const DeviceMemoryOpaqueCaptureAddressInfo = extern struct {
     sType: StructureType = .DEVICE_MEMORY_OPAQUE_CAPTURE_ADDRESS_INFO,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     memory: DeviceMemory,
 };
 
@@ -8320,7 +8432,8 @@ pub extern fn vkGetDeviceMemoryOpaqueCaptureAddress(
 
 pub const CmdDrawIndirectCount = vkCmdDrawIndirectCount;
 pub const CmdDrawIndexedIndirectCount = vkCmdDrawIndexedIndirectCount;
-pub fn CreateRenderPass2(device: Device, createInfo: RenderPassCreateInfo2, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!RenderPass {
+
+pub inline fn CreateRenderPass2(device: Device, createInfo: RenderPassCreateInfo2, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!RenderPass {
     var out_renderPass: RenderPass = undefined;
     const result = vkCreateRenderPass2(device, &createInfo, pAllocator, &out_renderPass);
     if (@bitCast(c_int, result) < 0) {
@@ -8332,18 +8445,22 @@ pub fn CreateRenderPass2(device: Device, createInfo: RenderPassCreateInfo2, pAll
     }
     return out_renderPass;
 }
-pub fn CmdBeginRenderPass2(commandBuffer: CommandBuffer, renderPassBegin: RenderPassBeginInfo, subpassBeginInfo: SubpassBeginInfo) callconv(.Inline) void {
+
+pub inline fn CmdBeginRenderPass2(commandBuffer: CommandBuffer, renderPassBegin: RenderPassBeginInfo, subpassBeginInfo: SubpassBeginInfo) void {
     vkCmdBeginRenderPass2(commandBuffer, &renderPassBegin, &subpassBeginInfo);
 }
-pub fn CmdNextSubpass2(commandBuffer: CommandBuffer, subpassBeginInfo: SubpassBeginInfo, subpassEndInfo: SubpassEndInfo) callconv(.Inline) void {
+
+pub inline fn CmdNextSubpass2(commandBuffer: CommandBuffer, subpassBeginInfo: SubpassBeginInfo, subpassEndInfo: SubpassEndInfo) void {
     vkCmdNextSubpass2(commandBuffer, &subpassBeginInfo, &subpassEndInfo);
 }
-pub fn CmdEndRenderPass2(commandBuffer: CommandBuffer, subpassEndInfo: SubpassEndInfo) callconv(.Inline) void {
+
+pub inline fn CmdEndRenderPass2(commandBuffer: CommandBuffer, subpassEndInfo: SubpassEndInfo) void {
     vkCmdEndRenderPass2(commandBuffer, &subpassEndInfo);
 }
 
 pub const ResetQueryPool = vkResetQueryPool;
-pub fn GetSemaphoreCounterValue(device: Device, semaphore: Semaphore) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_DEVICE_LOST, VK_UNDOCUMENTED_ERROR }!u64 {
+
+pub inline fn GetSemaphoreCounterValue(device: Device, semaphore: Semaphore) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_DEVICE_LOST,VK_UNDOCUMENTED_ERROR}!u64 {
     var out_value: u64 = undefined;
     const result = vkGetSemaphoreCounterValue(device, semaphore, &out_value);
     if (@bitCast(c_int, result) < 0) {
@@ -8356,7 +8473,8 @@ pub fn GetSemaphoreCounterValue(device: Device, semaphore: Semaphore) callconv(.
     }
     return out_value;
 }
-pub fn WaitSemaphores(device: Device, waitInfo: SemaphoreWaitInfo, timeout: u64) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_DEVICE_LOST, VK_UNDOCUMENTED_ERROR }!Result {
+
+pub inline fn WaitSemaphores(device: Device, waitInfo: SemaphoreWaitInfo, timeout: u64) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_DEVICE_LOST,VK_UNDOCUMENTED_ERROR}!Result {
     const result = vkWaitSemaphores(device, &waitInfo, timeout);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -8368,7 +8486,8 @@ pub fn WaitSemaphores(device: Device, waitInfo: SemaphoreWaitInfo, timeout: u64)
     }
     return result;
 }
-pub fn SignalSemaphore(device: Device, signalInfo: SemaphoreSignalInfo) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn SignalSemaphore(device: Device, signalInfo: SemaphoreSignalInfo) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkSignalSemaphore(device, &signalInfo);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -8378,26 +8497,30 @@ pub fn SignalSemaphore(device: Device, signalInfo: SemaphoreSignalInfo) callconv
         };
     }
 }
-pub fn GetBufferDeviceAddress(device: Device, info: BufferDeviceAddressInfo) callconv(.Inline) DeviceAddress {
+
+pub inline fn GetBufferDeviceAddress(device: Device, info: BufferDeviceAddressInfo) DeviceAddress {
     const result = vkGetBufferDeviceAddress(device, &info);
     return result;
 }
-pub fn GetBufferOpaqueCaptureAddress(device: Device, info: BufferDeviceAddressInfo) callconv(.Inline) u64 {
+
+pub inline fn GetBufferOpaqueCaptureAddress(device: Device, info: BufferDeviceAddressInfo) u64 {
     const result = vkGetBufferOpaqueCaptureAddress(device, &info);
     return result;
 }
-pub fn GetDeviceMemoryOpaqueCaptureAddress(device: Device, info: DeviceMemoryOpaqueCaptureAddressInfo) callconv(.Inline) u64 {
+
+pub inline fn GetDeviceMemoryOpaqueCaptureAddress(device: Device, info: DeviceMemoryOpaqueCaptureAddressInfo) u64 {
     const result = vkGetDeviceMemoryOpaqueCaptureAddress(device, &info);
     return result;
 }
 
+
 pub const KHR_surface = 1;
-pub const SurfaceKHR = *opaque {};
+pub const SurfaceKHR = enum(u64) { Null = 0, _ };
 
 pub const KHR_SURFACE_SPEC_VERSION = 25;
 pub const KHR_SURFACE_EXTENSION_NAME = "VK_KHR_surface";
 
-pub const ColorSpaceKHR = extern enum(i32) {
+pub const ColorSpaceKHR = enum(i32) {
     SRGB_NONLINEAR = 0,
     DISPLAY_P3_NONLINEAR_EXT = 1000104001,
     EXTENDED_SRGB_LINEAR_EXT = 1000104002,
@@ -8421,7 +8544,7 @@ pub const ColorSpaceKHR = extern enum(i32) {
     pub const DCI_P3_LINEAR_EXT = Self.DISPLAY_P3_LINEAR_EXT;
 };
 
-pub const PresentModeKHR = extern enum(i32) {
+pub const PresentModeKHR = enum(i32) {
     IMMEDIATE = 0,
     MAILBOX = 1,
     FIFO = 2,
@@ -8469,7 +8592,7 @@ pub const SurfaceTransformFlagsKHR = packed struct {
 };
 
 pub const CompositeAlphaFlagsKHR = packed struct {
-    opaqueBit: bool = false,
+    @"opaque": bool = false,
     preMultiplied: bool = false,
     postMultiplied: bool = false,
     inherit: bool = false,
@@ -8525,7 +8648,7 @@ pub const SurfaceFormatKHR = extern struct {
 
 pub extern fn vkDestroySurfaceKHR(
     instance: Instance,
-    surface: ?SurfaceKHR,
+    surface: SurfaceKHR,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -8557,7 +8680,8 @@ pub extern fn vkGetPhysicalDeviceSurfacePresentModesKHR(
 ) callconv(CallConv) Result;
 
 pub const DestroySurfaceKHR = vkDestroySurfaceKHR;
-pub fn GetPhysicalDeviceSurfaceSupportKHR(physicalDevice: PhysicalDevice, queueFamilyIndex: u32, surface: SurfaceKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_SURFACE_LOST_KHR, VK_UNDOCUMENTED_ERROR }!Bool32 {
+
+pub inline fn GetPhysicalDeviceSurfaceSupportKHR(physicalDevice: PhysicalDevice, queueFamilyIndex: u32, surface: SurfaceKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_SURFACE_LOST_KHR,VK_UNDOCUMENTED_ERROR}!Bool32 {
     var out_supported: Bool32 = undefined;
     const result = vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, queueFamilyIndex, surface, &out_supported);
     if (@bitCast(c_int, result) < 0) {
@@ -8570,7 +8694,8 @@ pub fn GetPhysicalDeviceSurfaceSupportKHR(physicalDevice: PhysicalDevice, queueF
     }
     return out_supported;
 }
-pub fn GetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice: PhysicalDevice, surface: SurfaceKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_SURFACE_LOST_KHR, VK_UNDOCUMENTED_ERROR }!SurfaceCapabilitiesKHR {
+
+pub inline fn GetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice: PhysicalDevice, surface: SurfaceKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_SURFACE_LOST_KHR,VK_UNDOCUMENTED_ERROR}!SurfaceCapabilitiesKHR {
     var out_surfaceCapabilities: SurfaceCapabilitiesKHR = undefined;
     const result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &out_surfaceCapabilities);
     if (@bitCast(c_int, result) < 0) {
@@ -8588,7 +8713,7 @@ pub const GetPhysicalDeviceSurfaceFormatsKHRResult = struct {
     result: Result,
     surfaceFormats: []SurfaceFormatKHR,
 };
-pub fn GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice: PhysicalDevice, surface: SurfaceKHR, surfaceFormats: []SurfaceFormatKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_SURFACE_LOST_KHR, VK_UNDOCUMENTED_ERROR }!GetPhysicalDeviceSurfaceFormatsKHRResult {
+pub inline fn GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice: PhysicalDevice, surface: SurfaceKHR, surfaceFormats: []SurfaceFormatKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_SURFACE_LOST_KHR,VK_UNDOCUMENTED_ERROR}!GetPhysicalDeviceSurfaceFormatsKHRResult {
     var returnValues: GetPhysicalDeviceSurfaceFormatsKHRResult = undefined;
     var surfaceFormatCount: u32 = @intCast(u32, surfaceFormats.len);
     const result = vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &surfaceFormatCount, surfaceFormats.ptr);
@@ -8604,7 +8729,7 @@ pub fn GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice: PhysicalDevice, surfac
     returnValues.result = result;
     return returnValues;
 }
-pub fn GetPhysicalDeviceSurfaceFormatsCountKHR(physicalDevice: PhysicalDevice, surface: SurfaceKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_SURFACE_LOST_KHR, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn GetPhysicalDeviceSurfaceFormatsCountKHR(physicalDevice: PhysicalDevice, surface: SurfaceKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_SURFACE_LOST_KHR,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_surfaceFormatCount: u32 = undefined;
     const result = vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &out_surfaceFormatCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -8622,7 +8747,7 @@ pub const GetPhysicalDeviceSurfacePresentModesKHRResult = struct {
     result: Result,
     presentModes: []PresentModeKHR,
 };
-pub fn GetPhysicalDeviceSurfacePresentModesKHR(physicalDevice: PhysicalDevice, surface: SurfaceKHR, presentModes: []PresentModeKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_SURFACE_LOST_KHR, VK_UNDOCUMENTED_ERROR }!GetPhysicalDeviceSurfacePresentModesKHRResult {
+pub inline fn GetPhysicalDeviceSurfacePresentModesKHR(physicalDevice: PhysicalDevice, surface: SurfaceKHR, presentModes: []PresentModeKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_SURFACE_LOST_KHR,VK_UNDOCUMENTED_ERROR}!GetPhysicalDeviceSurfacePresentModesKHRResult {
     var returnValues: GetPhysicalDeviceSurfacePresentModesKHRResult = undefined;
     var presentModeCount: u32 = @intCast(u32, presentModes.len);
     const result = vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, presentModes.ptr);
@@ -8638,7 +8763,7 @@ pub fn GetPhysicalDeviceSurfacePresentModesKHR(physicalDevice: PhysicalDevice, s
     returnValues.result = result;
     return returnValues;
 }
-pub fn GetPhysicalDeviceSurfacePresentModesCountKHR(physicalDevice: PhysicalDevice, surface: SurfaceKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_SURFACE_LOST_KHR, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn GetPhysicalDeviceSurfacePresentModesCountKHR(physicalDevice: PhysicalDevice, surface: SurfaceKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_SURFACE_LOST_KHR,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_presentModeCount: u32 = undefined;
     const result = vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &out_presentModeCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -8652,8 +8777,9 @@ pub fn GetPhysicalDeviceSurfacePresentModesCountKHR(physicalDevice: PhysicalDevi
     return out_presentModeCount;
 }
 
+
 pub const KHR_swapchain = 1;
-pub const SwapchainKHR = *opaque {};
+pub const SwapchainKHR = enum(u64) { Null = 0, _ };
 
 pub const KHR_SWAPCHAIN_SPEC_VERSION = 70;
 pub const KHR_SWAPCHAIN_EXTENSION_NAME = "VK_KHR_swapchain";
@@ -8734,7 +8860,7 @@ pub const DeviceGroupPresentModeFlagsKHR = packed struct {
 
 pub const SwapchainCreateInfoKHR = extern struct {
     sType: StructureType = .SWAPCHAIN_CREATE_INFO_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: SwapchainCreateFlagsKHR align(4) = SwapchainCreateFlagsKHR{},
     surface: SurfaceKHR,
     minImageCount: u32,
@@ -8750,12 +8876,12 @@ pub const SwapchainCreateInfoKHR = extern struct {
     compositeAlpha: CompositeAlphaFlagsKHR align(4),
     presentMode: PresentModeKHR,
     clipped: Bool32,
-    oldSwapchain: ?SwapchainKHR = null,
+    oldSwapchain: SwapchainKHR = SwapchainKHR.Null,
 };
 
 pub const PresentInfoKHR = extern struct {
     sType: StructureType = .PRESENT_INFO_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     waitSemaphoreCount: u32 = 0,
     pWaitSemaphores: [*]const Semaphore = undefined,
     swapchainCount: u32,
@@ -8766,37 +8892,37 @@ pub const PresentInfoKHR = extern struct {
 
 pub const ImageSwapchainCreateInfoKHR = extern struct {
     sType: StructureType = .IMAGE_SWAPCHAIN_CREATE_INFO_KHR,
-    pNext: ?*const c_void = null,
-    swapchain: ?SwapchainKHR = null,
+    pNext: ?*const anyopaque = null,
+    swapchain: SwapchainKHR = SwapchainKHR.Null,
 };
 
 pub const BindImageMemorySwapchainInfoKHR = extern struct {
     sType: StructureType = .BIND_IMAGE_MEMORY_SWAPCHAIN_INFO_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     swapchain: SwapchainKHR,
     imageIndex: u32,
 };
 
 pub const AcquireNextImageInfoKHR = extern struct {
     sType: StructureType = .ACQUIRE_NEXT_IMAGE_INFO_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     swapchain: SwapchainKHR,
     timeout: u64,
-    semaphore: ?Semaphore = null,
-    fence: ?Fence = null,
+    semaphore: Semaphore = Semaphore.Null,
+    fence: Fence = Fence.Null,
     deviceMask: u32,
 };
 
 pub const DeviceGroupPresentCapabilitiesKHR = extern struct {
     sType: StructureType = .DEVICE_GROUP_PRESENT_CAPABILITIES_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     presentMask: [MAX_DEVICE_GROUP_SIZE]u32,
     modes: DeviceGroupPresentModeFlagsKHR align(4),
 };
 
 pub const DeviceGroupPresentInfoKHR = extern struct {
     sType: StructureType = .DEVICE_GROUP_PRESENT_INFO_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     swapchainCount: u32 = 0,
     pDeviceMasks: [*]const u32 = undefined,
     mode: DeviceGroupPresentModeFlagsKHR align(4),
@@ -8804,7 +8930,7 @@ pub const DeviceGroupPresentInfoKHR = extern struct {
 
 pub const DeviceGroupSwapchainCreateInfoKHR = extern struct {
     sType: StructureType = .DEVICE_GROUP_SWAPCHAIN_CREATE_INFO_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     modes: DeviceGroupPresentModeFlagsKHR align(4),
 };
 
@@ -8817,7 +8943,7 @@ pub extern fn vkCreateSwapchainKHR(
 
 pub extern fn vkDestroySwapchainKHR(
     device: Device,
-    swapchain: ?SwapchainKHR,
+    swapchain: SwapchainKHR,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -8832,8 +8958,8 @@ pub extern fn vkAcquireNextImageKHR(
     device: Device,
     swapchain: SwapchainKHR,
     timeout: u64,
-    semaphore: ?Semaphore,
-    fence: ?Fence,
+    semaphore: Semaphore,
+    fence: Fence,
     pImageIndex: *u32,
 ) callconv(CallConv) Result;
 
@@ -8865,7 +8991,8 @@ pub extern fn vkAcquireNextImage2KHR(
     pAcquireInfo: *const AcquireNextImageInfoKHR,
     pImageIndex: *u32,
 ) callconv(CallConv) Result;
-pub fn CreateSwapchainKHR(device: Device, createInfo: SwapchainCreateInfoKHR, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_DEVICE_LOST, VK_SURFACE_LOST_KHR, VK_NATIVE_WINDOW_IN_USE_KHR, VK_INITIALIZATION_FAILED, VK_UNDOCUMENTED_ERROR }!SwapchainKHR {
+
+pub inline fn CreateSwapchainKHR(device: Device, createInfo: SwapchainCreateInfoKHR, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_DEVICE_LOST,VK_SURFACE_LOST_KHR,VK_NATIVE_WINDOW_IN_USE_KHR,VK_INITIALIZATION_FAILED,VK_UNDOCUMENTED_ERROR}!SwapchainKHR {
     var out_swapchain: SwapchainKHR = undefined;
     const result = vkCreateSwapchainKHR(device, &createInfo, pAllocator, &out_swapchain);
     if (@bitCast(c_int, result) < 0) {
@@ -8888,7 +9015,7 @@ pub const GetSwapchainImagesKHRResult = struct {
     result: Result,
     swapchainImages: []Image,
 };
-pub fn GetSwapchainImagesKHR(device: Device, swapchain: SwapchainKHR, swapchainImages: []Image) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!GetSwapchainImagesKHRResult {
+pub inline fn GetSwapchainImagesKHR(device: Device, swapchain: SwapchainKHR, swapchainImages: []Image) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!GetSwapchainImagesKHRResult {
     var returnValues: GetSwapchainImagesKHRResult = undefined;
     var swapchainImageCount: u32 = @intCast(u32, swapchainImages.len);
     const result = vkGetSwapchainImagesKHR(device, swapchain, &swapchainImageCount, swapchainImages.ptr);
@@ -8903,7 +9030,7 @@ pub fn GetSwapchainImagesKHR(device: Device, swapchain: SwapchainKHR, swapchainI
     returnValues.result = result;
     return returnValues;
 }
-pub fn GetSwapchainImagesCountKHR(device: Device, swapchain: SwapchainKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn GetSwapchainImagesCountKHR(device: Device, swapchain: SwapchainKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_swapchainImageCount: u32 = undefined;
     const result = vkGetSwapchainImagesKHR(device, swapchain, &out_swapchainImageCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -8920,7 +9047,7 @@ pub const AcquireNextImageKHRResult = struct {
     result: Result,
     imageIndex: u32,
 };
-pub fn AcquireNextImageKHR(device: Device, swapchain: SwapchainKHR, timeout: u64, semaphore: ?Semaphore, fence: ?Fence) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_DEVICE_LOST, VK_OUT_OF_DATE_KHR, VK_SURFACE_LOST_KHR, VK_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT, VK_UNDOCUMENTED_ERROR }!AcquireNextImageKHRResult {
+pub inline fn AcquireNextImageKHR(device: Device, swapchain: SwapchainKHR, timeout: u64, semaphore: Semaphore, fence: Fence) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_DEVICE_LOST,VK_OUT_OF_DATE_KHR,VK_SURFACE_LOST_KHR,VK_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT,VK_UNDOCUMENTED_ERROR}!AcquireNextImageKHRResult {
     var returnValues: AcquireNextImageKHRResult = undefined;
     const result = vkAcquireNextImageKHR(device, swapchain, timeout, semaphore, fence, &returnValues.imageIndex);
     if (@bitCast(c_int, result) < 0) {
@@ -8937,7 +9064,8 @@ pub fn AcquireNextImageKHR(device: Device, swapchain: SwapchainKHR, timeout: u64
     returnValues.result = result;
     return returnValues;
 }
-pub fn QueuePresentKHR(queue: Queue, presentInfo: PresentInfoKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_DEVICE_LOST, VK_OUT_OF_DATE_KHR, VK_SURFACE_LOST_KHR, VK_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT, VK_UNDOCUMENTED_ERROR }!Result {
+
+pub inline fn QueuePresentKHR(queue: Queue, presentInfo: PresentInfoKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_DEVICE_LOST,VK_OUT_OF_DATE_KHR,VK_SURFACE_LOST_KHR,VK_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT,VK_UNDOCUMENTED_ERROR}!Result {
     const result = vkQueuePresentKHR(queue, &presentInfo);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -8952,7 +9080,8 @@ pub fn QueuePresentKHR(queue: Queue, presentInfo: PresentInfoKHR) callconv(.Inli
     }
     return result;
 }
-pub fn GetDeviceGroupPresentCapabilitiesKHR(device: Device) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!DeviceGroupPresentCapabilitiesKHR {
+
+pub inline fn GetDeviceGroupPresentCapabilitiesKHR(device: Device) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!DeviceGroupPresentCapabilitiesKHR {
     var out_deviceGroupPresentCapabilities: DeviceGroupPresentCapabilitiesKHR = undefined;
     const result = vkGetDeviceGroupPresentCapabilitiesKHR(device, &out_deviceGroupPresentCapabilities);
     if (@bitCast(c_int, result) < 0) {
@@ -8964,7 +9093,8 @@ pub fn GetDeviceGroupPresentCapabilitiesKHR(device: Device) callconv(.Inline) er
     }
     return out_deviceGroupPresentCapabilities;
 }
-pub fn GetDeviceGroupSurfacePresentModesKHR(device: Device, surface: SurfaceKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_SURFACE_LOST_KHR, VK_UNDOCUMENTED_ERROR }!DeviceGroupPresentModeFlagsKHR {
+
+pub inline fn GetDeviceGroupSurfacePresentModesKHR(device: Device, surface: SurfaceKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_SURFACE_LOST_KHR,VK_UNDOCUMENTED_ERROR}!DeviceGroupPresentModeFlagsKHR {
     var out_modes: DeviceGroupPresentModeFlagsKHR align(4) = undefined;
     const result = vkGetDeviceGroupSurfacePresentModesKHR(device, surface, &out_modes);
     if (@bitCast(c_int, result) < 0) {
@@ -8982,7 +9112,7 @@ pub const GetPhysicalDevicePresentRectanglesKHRResult = struct {
     result: Result,
     rects: []Rect2D,
 };
-pub fn GetPhysicalDevicePresentRectanglesKHR(physicalDevice: PhysicalDevice, surface: SurfaceKHR, rects: []Rect2D) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!GetPhysicalDevicePresentRectanglesKHRResult {
+pub inline fn GetPhysicalDevicePresentRectanglesKHR(physicalDevice: PhysicalDevice, surface: SurfaceKHR, rects: []Rect2D) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!GetPhysicalDevicePresentRectanglesKHRResult {
     var returnValues: GetPhysicalDevicePresentRectanglesKHRResult = undefined;
     var rectCount: u32 = @intCast(u32, rects.len);
     const result = vkGetPhysicalDevicePresentRectanglesKHR(physicalDevice, surface, &rectCount, rects.ptr);
@@ -8997,7 +9127,7 @@ pub fn GetPhysicalDevicePresentRectanglesKHR(physicalDevice: PhysicalDevice, sur
     returnValues.result = result;
     return returnValues;
 }
-pub fn GetPhysicalDevicePresentRectanglesCountKHR(physicalDevice: PhysicalDevice, surface: SurfaceKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn GetPhysicalDevicePresentRectanglesCountKHR(physicalDevice: PhysicalDevice, surface: SurfaceKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_rectCount: u32 = undefined;
     const result = vkGetPhysicalDevicePresentRectanglesKHR(physicalDevice, surface, &out_rectCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -9014,7 +9144,7 @@ pub const AcquireNextImage2KHRResult = struct {
     result: Result,
     imageIndex: u32,
 };
-pub fn AcquireNextImage2KHR(device: Device, acquireInfo: AcquireNextImageInfoKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_DEVICE_LOST, VK_OUT_OF_DATE_KHR, VK_SURFACE_LOST_KHR, VK_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT, VK_UNDOCUMENTED_ERROR }!AcquireNextImage2KHRResult {
+pub inline fn AcquireNextImage2KHR(device: Device, acquireInfo: AcquireNextImageInfoKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_DEVICE_LOST,VK_OUT_OF_DATE_KHR,VK_SURFACE_LOST_KHR,VK_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT,VK_UNDOCUMENTED_ERROR}!AcquireNextImage2KHRResult {
     var returnValues: AcquireNextImage2KHRResult = undefined;
     const result = vkAcquireNextImage2KHR(device, &acquireInfo, &returnValues.imageIndex);
     if (@bitCast(c_int, result) < 0) {
@@ -9032,15 +9162,16 @@ pub fn AcquireNextImage2KHR(device: Device, acquireInfo: AcquireNextImageInfoKHR
     return returnValues;
 }
 
+
 pub const KHR_display = 1;
-pub const DisplayKHR = *opaque {};
-pub const DisplayModeKHR = *opaque {};
+pub const DisplayKHR = enum(u64) { Null = 0, _ };
+pub const DisplayModeKHR = enum(u64) { Null = 0, _ };
 
 pub const KHR_DISPLAY_SPEC_VERSION = 23;
 pub const KHR_DISPLAY_EXTENSION_NAME = "VK_KHR_display";
 
 pub const DisplayPlaneAlphaFlagsKHR = packed struct {
-    opaqueBit: bool = false,
+    @"opaque": bool = false,
     global: bool = false,
     perPixel: bool = false,
     perPixelPremultiplied: bool = false,
@@ -9108,7 +9239,7 @@ pub const DisplayModePropertiesKHR = extern struct {
 
 pub const DisplayModeCreateInfoKHR = extern struct {
     sType: StructureType = .DISPLAY_MODE_CREATE_INFO_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: DisplayModeCreateFlagsKHR align(4) = DisplayModeCreateFlagsKHR{},
     parameters: DisplayModeParametersKHR,
 };
@@ -9132,7 +9263,7 @@ pub const DisplayPlanePropertiesKHR = extern struct {
 
 pub const DisplaySurfaceCreateInfoKHR = extern struct {
     sType: StructureType = .DISPLAY_SURFACE_CREATE_INFO_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: DisplaySurfaceCreateFlagsKHR align(4) = DisplaySurfaceCreateFlagsKHR{},
     displayMode: DisplayModeKHR,
     planeIndex: u32,
@@ -9195,7 +9326,7 @@ pub const GetPhysicalDeviceDisplayPropertiesKHRResult = struct {
     result: Result,
     properties: []DisplayPropertiesKHR,
 };
-pub fn GetPhysicalDeviceDisplayPropertiesKHR(physicalDevice: PhysicalDevice, properties: []DisplayPropertiesKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!GetPhysicalDeviceDisplayPropertiesKHRResult {
+pub inline fn GetPhysicalDeviceDisplayPropertiesKHR(physicalDevice: PhysicalDevice, properties: []DisplayPropertiesKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!GetPhysicalDeviceDisplayPropertiesKHRResult {
     var returnValues: GetPhysicalDeviceDisplayPropertiesKHRResult = undefined;
     var propertyCount: u32 = @intCast(u32, properties.len);
     const result = vkGetPhysicalDeviceDisplayPropertiesKHR(physicalDevice, &propertyCount, properties.ptr);
@@ -9210,7 +9341,7 @@ pub fn GetPhysicalDeviceDisplayPropertiesKHR(physicalDevice: PhysicalDevice, pro
     returnValues.result = result;
     return returnValues;
 }
-pub fn GetPhysicalDeviceDisplayPropertiesCountKHR(physicalDevice: PhysicalDevice) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn GetPhysicalDeviceDisplayPropertiesCountKHR(physicalDevice: PhysicalDevice) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_propertyCount: u32 = undefined;
     const result = vkGetPhysicalDeviceDisplayPropertiesKHR(physicalDevice, &out_propertyCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -9227,7 +9358,7 @@ pub const GetPhysicalDeviceDisplayPlanePropertiesKHRResult = struct {
     result: Result,
     properties: []DisplayPlanePropertiesKHR,
 };
-pub fn GetPhysicalDeviceDisplayPlanePropertiesKHR(physicalDevice: PhysicalDevice, properties: []DisplayPlanePropertiesKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!GetPhysicalDeviceDisplayPlanePropertiesKHRResult {
+pub inline fn GetPhysicalDeviceDisplayPlanePropertiesKHR(physicalDevice: PhysicalDevice, properties: []DisplayPlanePropertiesKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!GetPhysicalDeviceDisplayPlanePropertiesKHRResult {
     var returnValues: GetPhysicalDeviceDisplayPlanePropertiesKHRResult = undefined;
     var propertyCount: u32 = @intCast(u32, properties.len);
     const result = vkGetPhysicalDeviceDisplayPlanePropertiesKHR(physicalDevice, &propertyCount, properties.ptr);
@@ -9242,7 +9373,7 @@ pub fn GetPhysicalDeviceDisplayPlanePropertiesKHR(physicalDevice: PhysicalDevice
     returnValues.result = result;
     return returnValues;
 }
-pub fn GetPhysicalDeviceDisplayPlanePropertiesCountKHR(physicalDevice: PhysicalDevice) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn GetPhysicalDeviceDisplayPlanePropertiesCountKHR(physicalDevice: PhysicalDevice) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_propertyCount: u32 = undefined;
     const result = vkGetPhysicalDeviceDisplayPlanePropertiesKHR(physicalDevice, &out_propertyCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -9259,7 +9390,7 @@ pub const GetDisplayPlaneSupportedDisplaysKHRResult = struct {
     result: Result,
     displays: []DisplayKHR,
 };
-pub fn GetDisplayPlaneSupportedDisplaysKHR(physicalDevice: PhysicalDevice, planeIndex: u32, displays: []DisplayKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!GetDisplayPlaneSupportedDisplaysKHRResult {
+pub inline fn GetDisplayPlaneSupportedDisplaysKHR(physicalDevice: PhysicalDevice, planeIndex: u32, displays: []DisplayKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!GetDisplayPlaneSupportedDisplaysKHRResult {
     var returnValues: GetDisplayPlaneSupportedDisplaysKHRResult = undefined;
     var displayCount: u32 = @intCast(u32, displays.len);
     const result = vkGetDisplayPlaneSupportedDisplaysKHR(physicalDevice, planeIndex, &displayCount, displays.ptr);
@@ -9274,7 +9405,7 @@ pub fn GetDisplayPlaneSupportedDisplaysKHR(physicalDevice: PhysicalDevice, plane
     returnValues.result = result;
     return returnValues;
 }
-pub fn GetDisplayPlaneSupportedDisplaysCountKHR(physicalDevice: PhysicalDevice, planeIndex: u32) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn GetDisplayPlaneSupportedDisplaysCountKHR(physicalDevice: PhysicalDevice, planeIndex: u32) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_displayCount: u32 = undefined;
     const result = vkGetDisplayPlaneSupportedDisplaysKHR(physicalDevice, planeIndex, &out_displayCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -9291,7 +9422,7 @@ pub const GetDisplayModePropertiesKHRResult = struct {
     result: Result,
     properties: []DisplayModePropertiesKHR,
 };
-pub fn GetDisplayModePropertiesKHR(physicalDevice: PhysicalDevice, display: DisplayKHR, properties: []DisplayModePropertiesKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!GetDisplayModePropertiesKHRResult {
+pub inline fn GetDisplayModePropertiesKHR(physicalDevice: PhysicalDevice, display: DisplayKHR, properties: []DisplayModePropertiesKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!GetDisplayModePropertiesKHRResult {
     var returnValues: GetDisplayModePropertiesKHRResult = undefined;
     var propertyCount: u32 = @intCast(u32, properties.len);
     const result = vkGetDisplayModePropertiesKHR(physicalDevice, display, &propertyCount, properties.ptr);
@@ -9306,7 +9437,7 @@ pub fn GetDisplayModePropertiesKHR(physicalDevice: PhysicalDevice, display: Disp
     returnValues.result = result;
     return returnValues;
 }
-pub fn GetDisplayModePropertiesCountKHR(physicalDevice: PhysicalDevice, display: DisplayKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn GetDisplayModePropertiesCountKHR(physicalDevice: PhysicalDevice, display: DisplayKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_propertyCount: u32 = undefined;
     const result = vkGetDisplayModePropertiesKHR(physicalDevice, display, &out_propertyCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -9318,7 +9449,8 @@ pub fn GetDisplayModePropertiesCountKHR(physicalDevice: PhysicalDevice, display:
     }
     return out_propertyCount;
 }
-pub fn CreateDisplayModeKHR(physicalDevice: PhysicalDevice, display: DisplayKHR, createInfo: DisplayModeCreateInfoKHR, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_INITIALIZATION_FAILED, VK_UNDOCUMENTED_ERROR }!DisplayModeKHR {
+
+pub inline fn CreateDisplayModeKHR(physicalDevice: PhysicalDevice, display: DisplayKHR, createInfo: DisplayModeCreateInfoKHR, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_INITIALIZATION_FAILED,VK_UNDOCUMENTED_ERROR}!DisplayModeKHR {
     var out_mode: DisplayModeKHR = undefined;
     const result = vkCreateDisplayModeKHR(physicalDevice, display, &createInfo, pAllocator, &out_mode);
     if (@bitCast(c_int, result) < 0) {
@@ -9331,7 +9463,8 @@ pub fn CreateDisplayModeKHR(physicalDevice: PhysicalDevice, display: DisplayKHR,
     }
     return out_mode;
 }
-pub fn GetDisplayPlaneCapabilitiesKHR(physicalDevice: PhysicalDevice, mode: DisplayModeKHR, planeIndex: u32) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!DisplayPlaneCapabilitiesKHR {
+
+pub inline fn GetDisplayPlaneCapabilitiesKHR(physicalDevice: PhysicalDevice, mode: DisplayModeKHR, planeIndex: u32) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!DisplayPlaneCapabilitiesKHR {
     var out_capabilities: DisplayPlaneCapabilitiesKHR = undefined;
     const result = vkGetDisplayPlaneCapabilitiesKHR(physicalDevice, mode, planeIndex, &out_capabilities);
     if (@bitCast(c_int, result) < 0) {
@@ -9343,7 +9476,8 @@ pub fn GetDisplayPlaneCapabilitiesKHR(physicalDevice: PhysicalDevice, mode: Disp
     }
     return out_capabilities;
 }
-pub fn CreateDisplayPlaneSurfaceKHR(instance: Instance, createInfo: DisplaySurfaceCreateInfoKHR, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!SurfaceKHR {
+
+pub inline fn CreateDisplayPlaneSurfaceKHR(instance: Instance, createInfo: DisplaySurfaceCreateInfoKHR, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!SurfaceKHR {
     var out_surface: SurfaceKHR = undefined;
     const result = vkCreateDisplayPlaneSurfaceKHR(instance, &createInfo, pAllocator, &out_surface);
     if (@bitCast(c_int, result) < 0) {
@@ -9356,13 +9490,14 @@ pub fn CreateDisplayPlaneSurfaceKHR(instance: Instance, createInfo: DisplaySurfa
     return out_surface;
 }
 
+
 pub const KHR_display_swapchain = 1;
 pub const KHR_DISPLAY_SWAPCHAIN_SPEC_VERSION = 10;
 pub const KHR_DISPLAY_SWAPCHAIN_EXTENSION_NAME = "VK_KHR_display_swapchain";
 
 pub const DisplayPresentInfoKHR = extern struct {
     sType: StructureType = .DISPLAY_PRESENT_INFO_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     srcRect: Rect2D,
     dstRect: Rect2D,
     persistent: Bool32,
@@ -9375,7 +9510,8 @@ pub extern fn vkCreateSharedSwapchainsKHR(
     pAllocator: ?*const AllocationCallbacks,
     pSwapchains: [*]SwapchainKHR,
 ) callconv(CallConv) Result;
-pub fn CreateSharedSwapchainsKHR(device: Device, createInfos: []const SwapchainCreateInfoKHR, pAllocator: ?*const AllocationCallbacks, swapchains: []SwapchainKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_INCOMPATIBLE_DISPLAY_KHR, VK_DEVICE_LOST, VK_SURFACE_LOST_KHR, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn CreateSharedSwapchainsKHR(device: Device, createInfos: []const SwapchainCreateInfoKHR, pAllocator: ?*const AllocationCallbacks, swapchains: []SwapchainKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_INCOMPATIBLE_DISPLAY_KHR,VK_DEVICE_LOST,VK_SURFACE_LOST_KHR,VK_UNDOCUMENTED_ERROR}!void {
     assert(swapchains.len >= createInfos.len);
     const result = vkCreateSharedSwapchainsKHR(device, @intCast(u32, createInfos.len), createInfos.ptr, pAllocator, swapchains.ptr);
     if (@bitCast(c_int, result) < 0) {
@@ -9390,9 +9526,11 @@ pub fn CreateSharedSwapchainsKHR(device: Device, createInfos: []const SwapchainC
     }
 }
 
+
 pub const KHR_sampler_mirror_clamp_to_edge = 1;
 pub const KHR_SAMPLER_MIRROR_CLAMP_TO_EDGE_SPEC_VERSION = 3;
 pub const KHR_SAMPLER_MIRROR_CLAMP_TO_EDGE_EXTENSION_NAME = "VK_KHR_sampler_mirror_clamp_to_edge";
+
 
 pub const KHR_multiview = 1;
 pub const KHR_MULTIVIEW_SPEC_VERSION = 1;
@@ -9401,6 +9539,7 @@ pub const KHR_MULTIVIEW_EXTENSION_NAME = "VK_KHR_multiview";
 pub const RenderPassMultiviewCreateInfoKHR = RenderPassMultiviewCreateInfo;
 pub const PhysicalDeviceMultiviewFeaturesKHR = PhysicalDeviceMultiviewFeatures;
 pub const PhysicalDeviceMultiviewPropertiesKHR = PhysicalDeviceMultiviewProperties;
+
 
 pub const KHR_get_physical_device_properties2 = 1;
 pub const KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_SPEC_VERSION = 2;
@@ -9455,22 +9594,26 @@ pub extern fn vkGetPhysicalDeviceSparseImageFormatProperties2KHR(
     pPropertyCount: *u32,
     pProperties: ?[*]SparseImageFormatProperties2,
 ) callconv(CallConv) void;
-pub fn GetPhysicalDeviceFeatures2KHR(physicalDevice: PhysicalDevice) callconv(.Inline) PhysicalDeviceFeatures2 {
+
+pub inline fn GetPhysicalDeviceFeatures2KHR(physicalDevice: PhysicalDevice) PhysicalDeviceFeatures2 {
     var out_features: PhysicalDeviceFeatures2 = undefined;
     vkGetPhysicalDeviceFeatures2KHR(physicalDevice, &out_features);
     return out_features;
 }
-pub fn GetPhysicalDeviceProperties2KHR(physicalDevice: PhysicalDevice) callconv(.Inline) PhysicalDeviceProperties2 {
+
+pub inline fn GetPhysicalDeviceProperties2KHR(physicalDevice: PhysicalDevice) PhysicalDeviceProperties2 {
     var out_properties: PhysicalDeviceProperties2 = undefined;
     vkGetPhysicalDeviceProperties2KHR(physicalDevice, &out_properties);
     return out_properties;
 }
-pub fn GetPhysicalDeviceFormatProperties2KHR(physicalDevice: PhysicalDevice, format: Format) callconv(.Inline) FormatProperties2 {
+
+pub inline fn GetPhysicalDeviceFormatProperties2KHR(physicalDevice: PhysicalDevice, format: Format) FormatProperties2 {
     var out_formatProperties: FormatProperties2 = undefined;
     vkGetPhysicalDeviceFormatProperties2KHR(physicalDevice, format, &out_formatProperties);
     return out_formatProperties;
 }
-pub fn GetPhysicalDeviceImageFormatProperties2KHR(physicalDevice: PhysicalDevice, imageFormatInfo: PhysicalDeviceImageFormatInfo2) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_FORMAT_NOT_SUPPORTED, VK_UNDOCUMENTED_ERROR }!ImageFormatProperties2 {
+
+pub inline fn GetPhysicalDeviceImageFormatProperties2KHR(physicalDevice: PhysicalDevice, imageFormatInfo: PhysicalDeviceImageFormatInfo2) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_FORMAT_NOT_SUPPORTED,VK_UNDOCUMENTED_ERROR}!ImageFormatProperties2 {
     var out_imageFormatProperties: ImageFormatProperties2 = undefined;
     const result = vkGetPhysicalDeviceImageFormatProperties2KHR(physicalDevice, &imageFormatInfo, &out_imageFormatProperties);
     if (@bitCast(c_int, result) < 0) {
@@ -9483,35 +9626,39 @@ pub fn GetPhysicalDeviceImageFormatProperties2KHR(physicalDevice: PhysicalDevice
     }
     return out_imageFormatProperties;
 }
-pub fn GetPhysicalDeviceQueueFamilyProperties2KHR(physicalDevice: PhysicalDevice, queueFamilyProperties: []QueueFamilyProperties2) callconv(.Inline) []QueueFamilyProperties2 {
+
+pub inline fn GetPhysicalDeviceQueueFamilyProperties2KHR(physicalDevice: PhysicalDevice, queueFamilyProperties: []QueueFamilyProperties2) []QueueFamilyProperties2 {
     var out_queueFamilyProperties: []QueueFamilyProperties2 = undefined;
     var queueFamilyPropertyCount: u32 = @intCast(u32, queueFamilyProperties.len);
     vkGetPhysicalDeviceQueueFamilyProperties2KHR(physicalDevice, &queueFamilyPropertyCount, queueFamilyProperties.ptr);
     out_queueFamilyProperties = queueFamilyProperties[0..queueFamilyPropertyCount];
     return out_queueFamilyProperties;
 }
-pub fn GetPhysicalDeviceQueueFamilyProperties2CountKHR(physicalDevice: PhysicalDevice) callconv(.Inline) u32 {
+pub inline fn GetPhysicalDeviceQueueFamilyProperties2CountKHR(physicalDevice: PhysicalDevice) u32 {
     var out_queueFamilyPropertyCount: u32 = undefined;
     vkGetPhysicalDeviceQueueFamilyProperties2KHR(physicalDevice, &out_queueFamilyPropertyCount, null);
     return out_queueFamilyPropertyCount;
 }
-pub fn GetPhysicalDeviceMemoryProperties2KHR(physicalDevice: PhysicalDevice) callconv(.Inline) PhysicalDeviceMemoryProperties2 {
+
+pub inline fn GetPhysicalDeviceMemoryProperties2KHR(physicalDevice: PhysicalDevice) PhysicalDeviceMemoryProperties2 {
     var out_memoryProperties: PhysicalDeviceMemoryProperties2 = undefined;
     vkGetPhysicalDeviceMemoryProperties2KHR(physicalDevice, &out_memoryProperties);
     return out_memoryProperties;
 }
-pub fn GetPhysicalDeviceSparseImageFormatProperties2KHR(physicalDevice: PhysicalDevice, formatInfo: PhysicalDeviceSparseImageFormatInfo2, properties: []SparseImageFormatProperties2) callconv(.Inline) []SparseImageFormatProperties2 {
+
+pub inline fn GetPhysicalDeviceSparseImageFormatProperties2KHR(physicalDevice: PhysicalDevice, formatInfo: PhysicalDeviceSparseImageFormatInfo2, properties: []SparseImageFormatProperties2) []SparseImageFormatProperties2 {
     var out_properties: []SparseImageFormatProperties2 = undefined;
     var propertyCount: u32 = @intCast(u32, properties.len);
     vkGetPhysicalDeviceSparseImageFormatProperties2KHR(physicalDevice, &formatInfo, &propertyCount, properties.ptr);
     out_properties = properties[0..propertyCount];
     return out_properties;
 }
-pub fn GetPhysicalDeviceSparseImageFormatProperties2CountKHR(physicalDevice: PhysicalDevice, formatInfo: PhysicalDeviceSparseImageFormatInfo2) callconv(.Inline) u32 {
+pub inline fn GetPhysicalDeviceSparseImageFormatProperties2CountKHR(physicalDevice: PhysicalDevice, formatInfo: PhysicalDeviceSparseImageFormatInfo2) u32 {
     var out_propertyCount: u32 = undefined;
     vkGetPhysicalDeviceSparseImageFormatProperties2KHR(physicalDevice, &formatInfo, &out_propertyCount, null);
     return out_propertyCount;
 }
+
 
 pub const KHR_device_group = 1;
 pub const KHR_DEVICE_GROUP_SPEC_VERSION = 4;
@@ -9550,7 +9697,8 @@ pub extern fn vkCmdDispatchBaseKHR(
     groupCountY: u32,
     groupCountZ: u32,
 ) callconv(CallConv) void;
-pub fn GetDeviceGroupPeerMemoryFeaturesKHR(device: Device, heapIndex: u32, localDeviceIndex: u32, remoteDeviceIndex: u32) callconv(.Inline) PeerMemoryFeatureFlags {
+
+pub inline fn GetDeviceGroupPeerMemoryFeaturesKHR(device: Device, heapIndex: u32, localDeviceIndex: u32, remoteDeviceIndex: u32) PeerMemoryFeatureFlags {
     var out_peerMemoryFeatures: PeerMemoryFeatureFlags align(4) = undefined;
     vkGetDeviceGroupPeerMemoryFeaturesKHR(device, heapIndex, localDeviceIndex, remoteDeviceIndex, &out_peerMemoryFeatures);
     return out_peerMemoryFeatures;
@@ -9559,9 +9707,11 @@ pub fn GetDeviceGroupPeerMemoryFeaturesKHR(device: Device, heapIndex: u32, local
 pub const CmdSetDeviceMaskKHR = vkCmdSetDeviceMaskKHR;
 pub const CmdDispatchBaseKHR = vkCmdDispatchBaseKHR;
 
+
 pub const KHR_shader_draw_parameters = 1;
 pub const KHR_SHADER_DRAW_PARAMETERS_SPEC_VERSION = 1;
 pub const KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME = "VK_KHR_shader_draw_parameters";
+
 
 pub const KHR_maintenance1 = 1;
 pub const KHR_MAINTENANCE1_SPEC_VERSION = 2;
@@ -9574,9 +9724,11 @@ pub extern fn vkTrimCommandPoolKHR(
     commandPool: CommandPool,
     flags: CommandPoolTrimFlags.IntType,
 ) callconv(CallConv) void;
-pub fn TrimCommandPoolKHR(device: Device, commandPool: CommandPool, flags: CommandPoolTrimFlags) callconv(.Inline) void {
+
+pub inline fn TrimCommandPoolKHR(device: Device, commandPool: CommandPool, flags: CommandPoolTrimFlags) void {
     vkTrimCommandPoolKHR(device, commandPool, flags.toInt());
 }
+
 
 pub const KHR_device_group_creation = 1;
 pub const KHR_DEVICE_GROUP_CREATION_SPEC_VERSION = 1;
@@ -9596,7 +9748,7 @@ pub const EnumeratePhysicalDeviceGroupsKHRResult = struct {
     result: Result,
     physicalDeviceGroupProperties: []PhysicalDeviceGroupProperties,
 };
-pub fn EnumeratePhysicalDeviceGroupsKHR(instance: Instance, physicalDeviceGroupProperties: []PhysicalDeviceGroupProperties) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_INITIALIZATION_FAILED, VK_UNDOCUMENTED_ERROR }!EnumeratePhysicalDeviceGroupsKHRResult {
+pub inline fn EnumeratePhysicalDeviceGroupsKHR(instance: Instance, physicalDeviceGroupProperties: []PhysicalDeviceGroupProperties) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_INITIALIZATION_FAILED,VK_UNDOCUMENTED_ERROR}!EnumeratePhysicalDeviceGroupsKHRResult {
     var returnValues: EnumeratePhysicalDeviceGroupsKHRResult = undefined;
     var physicalDeviceGroupCount: u32 = @intCast(u32, physicalDeviceGroupProperties.len);
     const result = vkEnumeratePhysicalDeviceGroupsKHR(instance, &physicalDeviceGroupCount, physicalDeviceGroupProperties.ptr);
@@ -9612,7 +9764,7 @@ pub fn EnumeratePhysicalDeviceGroupsKHR(instance: Instance, physicalDeviceGroupP
     returnValues.result = result;
     return returnValues;
 }
-pub fn EnumeratePhysicalDeviceGroupsCountKHR(instance: Instance) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_INITIALIZATION_FAILED, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn EnumeratePhysicalDeviceGroupsCountKHR(instance: Instance) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_INITIALIZATION_FAILED,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_physicalDeviceGroupCount: u32 = undefined;
     const result = vkEnumeratePhysicalDeviceGroupsKHR(instance, &out_physicalDeviceGroupCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -9625,6 +9777,7 @@ pub fn EnumeratePhysicalDeviceGroupsCountKHR(instance: Instance) callconv(.Inlin
     }
     return out_physicalDeviceGroupCount;
 }
+
 
 pub const KHR_external_memory_capabilities = 1;
 pub const KHR_EXTERNAL_MEMORY_CAPABILITIES_SPEC_VERSION = 1;
@@ -9646,11 +9799,13 @@ pub extern fn vkGetPhysicalDeviceExternalBufferPropertiesKHR(
     pExternalBufferInfo: *const PhysicalDeviceExternalBufferInfo,
     pExternalBufferProperties: *ExternalBufferProperties,
 ) callconv(CallConv) void;
-pub fn GetPhysicalDeviceExternalBufferPropertiesKHR(physicalDevice: PhysicalDevice, externalBufferInfo: PhysicalDeviceExternalBufferInfo) callconv(.Inline) ExternalBufferProperties {
+
+pub inline fn GetPhysicalDeviceExternalBufferPropertiesKHR(physicalDevice: PhysicalDevice, externalBufferInfo: PhysicalDeviceExternalBufferInfo) ExternalBufferProperties {
     var out_externalBufferProperties: ExternalBufferProperties = undefined;
     vkGetPhysicalDeviceExternalBufferPropertiesKHR(physicalDevice, &externalBufferInfo, &out_externalBufferProperties);
     return out_externalBufferProperties;
 }
+
 
 pub const KHR_external_memory = 1;
 pub const KHR_EXTERNAL_MEMORY_SPEC_VERSION = 1;
@@ -9661,26 +9816,27 @@ pub const ExternalMemoryImageCreateInfoKHR = ExternalMemoryImageCreateInfo;
 pub const ExternalMemoryBufferCreateInfoKHR = ExternalMemoryBufferCreateInfo;
 pub const ExportMemoryAllocateInfoKHR = ExportMemoryAllocateInfo;
 
+
 pub const KHR_external_memory_fd = 1;
 pub const KHR_EXTERNAL_MEMORY_FD_SPEC_VERSION = 1;
 pub const KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME = "VK_KHR_external_memory_fd";
 
 pub const ImportMemoryFdInfoKHR = extern struct {
     sType: StructureType = .IMPORT_MEMORY_FD_INFO_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     handleType: ExternalMemoryHandleTypeFlags align(4) = ExternalMemoryHandleTypeFlags{},
     fd: c_int,
 };
 
 pub const MemoryFdPropertiesKHR = extern struct {
     sType: StructureType = .MEMORY_FD_PROPERTIES_KHR,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     memoryTypeBits: u32,
 };
 
 pub const MemoryGetFdInfoKHR = extern struct {
     sType: StructureType = .MEMORY_GET_FD_INFO_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     memory: DeviceMemory,
     handleType: ExternalMemoryHandleTypeFlags align(4),
 };
@@ -9697,7 +9853,8 @@ pub extern fn vkGetMemoryFdPropertiesKHR(
     fd: c_int,
     pMemoryFdProperties: *MemoryFdPropertiesKHR,
 ) callconv(CallConv) Result;
-pub fn GetMemoryFdKHR(device: Device, getFdInfo: MemoryGetFdInfoKHR) callconv(.Inline) error{ VK_TOO_MANY_OBJECTS, VK_OUT_OF_HOST_MEMORY, VK_UNDOCUMENTED_ERROR }!c_int {
+
+pub inline fn GetMemoryFdKHR(device: Device, getFdInfo: MemoryGetFdInfoKHR) error{VK_TOO_MANY_OBJECTS,VK_OUT_OF_HOST_MEMORY,VK_UNDOCUMENTED_ERROR}!c_int {
     var out_fd: c_int = undefined;
     const result = vkGetMemoryFdKHR(device, &getFdInfo, &out_fd);
     if (@bitCast(c_int, result) < 0) {
@@ -9709,7 +9866,8 @@ pub fn GetMemoryFdKHR(device: Device, getFdInfo: MemoryGetFdInfoKHR) callconv(.I
     }
     return out_fd;
 }
-pub fn GetMemoryFdPropertiesKHR(device: Device, handleType: ExternalMemoryHandleTypeFlags, fd: c_int) callconv(.Inline) error{ VK_INVALID_EXTERNAL_HANDLE, VK_UNDOCUMENTED_ERROR }!MemoryFdPropertiesKHR {
+
+pub inline fn GetMemoryFdPropertiesKHR(device: Device, handleType: ExternalMemoryHandleTypeFlags, fd: c_int) error{VK_INVALID_EXTERNAL_HANDLE,VK_UNDOCUMENTED_ERROR}!MemoryFdPropertiesKHR {
     var out_memoryFdProperties: MemoryFdPropertiesKHR = undefined;
     const result = vkGetMemoryFdPropertiesKHR(device, handleType.toInt(), fd, &out_memoryFdProperties);
     if (@bitCast(c_int, result) < 0) {
@@ -9720,6 +9878,7 @@ pub fn GetMemoryFdPropertiesKHR(device: Device, handleType: ExternalMemoryHandle
     }
     return out_memoryFdProperties;
 }
+
 
 pub const KHR_external_semaphore_capabilities = 1;
 pub const KHR_EXTERNAL_SEMAPHORE_CAPABILITIES_SPEC_VERSION = 1;
@@ -9736,11 +9895,13 @@ pub extern fn vkGetPhysicalDeviceExternalSemaphorePropertiesKHR(
     pExternalSemaphoreInfo: *const PhysicalDeviceExternalSemaphoreInfo,
     pExternalSemaphoreProperties: *ExternalSemaphoreProperties,
 ) callconv(CallConv) void;
-pub fn GetPhysicalDeviceExternalSemaphorePropertiesKHR(physicalDevice: PhysicalDevice, externalSemaphoreInfo: PhysicalDeviceExternalSemaphoreInfo) callconv(.Inline) ExternalSemaphoreProperties {
+
+pub inline fn GetPhysicalDeviceExternalSemaphorePropertiesKHR(physicalDevice: PhysicalDevice, externalSemaphoreInfo: PhysicalDeviceExternalSemaphoreInfo) ExternalSemaphoreProperties {
     var out_externalSemaphoreProperties: ExternalSemaphoreProperties = undefined;
     vkGetPhysicalDeviceExternalSemaphorePropertiesKHR(physicalDevice, &externalSemaphoreInfo, &out_externalSemaphoreProperties);
     return out_externalSemaphoreProperties;
 }
+
 
 pub const KHR_external_semaphore = 1;
 pub const KHR_EXTERNAL_SEMAPHORE_SPEC_VERSION = 1;
@@ -9750,13 +9911,14 @@ pub const SemaphoreImportFlagsKHR = SemaphoreImportFlags;
 
 pub const ExportSemaphoreCreateInfoKHR = ExportSemaphoreCreateInfo;
 
+
 pub const KHR_external_semaphore_fd = 1;
 pub const KHR_EXTERNAL_SEMAPHORE_FD_SPEC_VERSION = 1;
 pub const KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME = "VK_KHR_external_semaphore_fd";
 
 pub const ImportSemaphoreFdInfoKHR = extern struct {
     sType: StructureType = .IMPORT_SEMAPHORE_FD_INFO_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     semaphore: Semaphore,
     flags: SemaphoreImportFlags align(4) = SemaphoreImportFlags{},
     handleType: ExternalSemaphoreHandleTypeFlags align(4),
@@ -9765,7 +9927,7 @@ pub const ImportSemaphoreFdInfoKHR = extern struct {
 
 pub const SemaphoreGetFdInfoKHR = extern struct {
     sType: StructureType = .SEMAPHORE_GET_FD_INFO_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     semaphore: Semaphore,
     handleType: ExternalSemaphoreHandleTypeFlags align(4),
 };
@@ -9780,7 +9942,8 @@ pub extern fn vkGetSemaphoreFdKHR(
     pGetFdInfo: *const SemaphoreGetFdInfoKHR,
     pFd: *c_int,
 ) callconv(CallConv) Result;
-pub fn ImportSemaphoreFdKHR(device: Device, importSemaphoreFdInfo: ImportSemaphoreFdInfoKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_INVALID_EXTERNAL_HANDLE, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn ImportSemaphoreFdKHR(device: Device, importSemaphoreFdInfo: ImportSemaphoreFdInfoKHR) error{VK_OUT_OF_HOST_MEMORY,VK_INVALID_EXTERNAL_HANDLE,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkImportSemaphoreFdKHR(device, &importSemaphoreFdInfo);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -9790,7 +9953,8 @@ pub fn ImportSemaphoreFdKHR(device: Device, importSemaphoreFdInfo: ImportSemapho
         };
     }
 }
-pub fn GetSemaphoreFdKHR(device: Device, getFdInfo: SemaphoreGetFdInfoKHR) callconv(.Inline) error{ VK_TOO_MANY_OBJECTS, VK_OUT_OF_HOST_MEMORY, VK_UNDOCUMENTED_ERROR }!c_int {
+
+pub inline fn GetSemaphoreFdKHR(device: Device, getFdInfo: SemaphoreGetFdInfoKHR) error{VK_TOO_MANY_OBJECTS,VK_OUT_OF_HOST_MEMORY,VK_UNDOCUMENTED_ERROR}!c_int {
     var out_fd: c_int = undefined;
     const result = vkGetSemaphoreFdKHR(device, &getFdInfo, &out_fd);
     if (@bitCast(c_int, result) < 0) {
@@ -9803,13 +9967,14 @@ pub fn GetSemaphoreFdKHR(device: Device, getFdInfo: SemaphoreGetFdInfoKHR) callc
     return out_fd;
 }
 
+
 pub const KHR_push_descriptor = 1;
 pub const KHR_PUSH_DESCRIPTOR_SPEC_VERSION = 2;
 pub const KHR_PUSH_DESCRIPTOR_EXTENSION_NAME = "VK_KHR_push_descriptor";
 
 pub const PhysicalDevicePushDescriptorPropertiesKHR = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES_KHR,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     maxPushDescriptors: u32,
 };
 
@@ -9827,13 +9992,15 @@ pub extern fn vkCmdPushDescriptorSetWithTemplateKHR(
     descriptorUpdateTemplate: DescriptorUpdateTemplate,
     layout: PipelineLayout,
     set: u32,
-    pData: ?*const c_void,
+    pData: ?*const anyopaque,
 ) callconv(CallConv) void;
-pub fn CmdPushDescriptorSetKHR(commandBuffer: CommandBuffer, pipelineBindPoint: PipelineBindPoint, layout: PipelineLayout, set: u32, descriptorWrites: []const WriteDescriptorSet) callconv(.Inline) void {
+
+pub inline fn CmdPushDescriptorSetKHR(commandBuffer: CommandBuffer, pipelineBindPoint: PipelineBindPoint, layout: PipelineLayout, set: u32, descriptorWrites: []const WriteDescriptorSet) void {
     vkCmdPushDescriptorSetKHR(commandBuffer, pipelineBindPoint, layout, set, @intCast(u32, descriptorWrites.len), descriptorWrites.ptr);
 }
 
 pub const CmdPushDescriptorSetWithTemplateKHR = vkCmdPushDescriptorSetWithTemplateKHR;
+
 
 pub const KHR_shader_float16_int8 = 1;
 pub const KHR_SHADER_FLOAT16_INT8_SPEC_VERSION = 1;
@@ -9842,11 +10009,13 @@ pub const KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME = "VK_KHR_shader_float16_int8";
 pub const PhysicalDeviceShaderFloat16Int8FeaturesKHR = PhysicalDeviceShaderFloat16Int8Features;
 pub const PhysicalDeviceFloat16Int8FeaturesKHR = PhysicalDeviceShaderFloat16Int8Features;
 
+
 pub const KHR_16bit_storage = 1;
 pub const KHR_16BIT_STORAGE_SPEC_VERSION = 1;
 pub const KHR_16BIT_STORAGE_EXTENSION_NAME = "VK_KHR_16bit_storage";
 
 pub const PhysicalDevice16BitStorageFeaturesKHR = PhysicalDevice16BitStorageFeatures;
+
 
 pub const KHR_incremental_present = 1;
 pub const KHR_INCREMENTAL_PRESENT_SPEC_VERSION = 1;
@@ -9865,10 +10034,11 @@ pub const PresentRegionKHR = extern struct {
 
 pub const PresentRegionsKHR = extern struct {
     sType: StructureType = .PRESENT_REGIONS_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     swapchainCount: u32,
     pRegions: ?[*]const PresentRegionKHR = null,
 };
+
 
 pub const KHR_descriptor_update_template = 1;
 pub const DescriptorUpdateTemplateKHR = DescriptorUpdateTemplate;
@@ -9892,7 +10062,7 @@ pub extern fn vkCreateDescriptorUpdateTemplateKHR(
 
 pub extern fn vkDestroyDescriptorUpdateTemplateKHR(
     device: Device,
-    descriptorUpdateTemplate: ?DescriptorUpdateTemplate,
+    descriptorUpdateTemplate: DescriptorUpdateTemplate,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -9900,9 +10070,10 @@ pub extern fn vkUpdateDescriptorSetWithTemplateKHR(
     device: Device,
     descriptorSet: DescriptorSet,
     descriptorUpdateTemplate: DescriptorUpdateTemplate,
-    pData: ?*const c_void,
+    pData: ?*const anyopaque,
 ) callconv(CallConv) void;
-pub fn CreateDescriptorUpdateTemplateKHR(device: Device, createInfo: DescriptorUpdateTemplateCreateInfo, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!DescriptorUpdateTemplate {
+
+pub inline fn CreateDescriptorUpdateTemplateKHR(device: Device, createInfo: DescriptorUpdateTemplateCreateInfo, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!DescriptorUpdateTemplate {
     var out_descriptorUpdateTemplate: DescriptorUpdateTemplate = undefined;
     const result = vkCreateDescriptorUpdateTemplateKHR(device, &createInfo, pAllocator, &out_descriptorUpdateTemplate);
     if (@bitCast(c_int, result) < 0) {
@@ -9918,6 +10089,7 @@ pub fn CreateDescriptorUpdateTemplateKHR(device: Device, createInfo: DescriptorU
 pub const DestroyDescriptorUpdateTemplateKHR = vkDestroyDescriptorUpdateTemplateKHR;
 pub const UpdateDescriptorSetWithTemplateKHR = vkUpdateDescriptorSetWithTemplateKHR;
 
+
 pub const KHR_imageless_framebuffer = 1;
 pub const KHR_IMAGELESS_FRAMEBUFFER_SPEC_VERSION = 1;
 pub const KHR_IMAGELESS_FRAMEBUFFER_EXTENSION_NAME = "VK_KHR_imageless_framebuffer";
@@ -9926,6 +10098,7 @@ pub const PhysicalDeviceImagelessFramebufferFeaturesKHR = PhysicalDeviceImageles
 pub const FramebufferAttachmentsCreateInfoKHR = FramebufferAttachmentsCreateInfo;
 pub const FramebufferAttachmentImageInfoKHR = FramebufferAttachmentImageInfo;
 pub const RenderPassAttachmentBeginInfoKHR = RenderPassAttachmentBeginInfo;
+
 
 pub const KHR_create_renderpass2 = 1;
 pub const KHR_CREATE_RENDERPASS_2_SPEC_VERSION = 1;
@@ -9962,7 +10135,8 @@ pub extern fn vkCmdEndRenderPass2KHR(
     commandBuffer: CommandBuffer,
     pSubpassEndInfo: *const SubpassEndInfo,
 ) callconv(CallConv) void;
-pub fn CreateRenderPass2KHR(device: Device, createInfo: RenderPassCreateInfo2, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!RenderPass {
+
+pub inline fn CreateRenderPass2KHR(device: Device, createInfo: RenderPassCreateInfo2, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!RenderPass {
     var out_renderPass: RenderPass = undefined;
     const result = vkCreateRenderPass2KHR(device, &createInfo, pAllocator, &out_renderPass);
     if (@bitCast(c_int, result) < 0) {
@@ -9974,15 +10148,19 @@ pub fn CreateRenderPass2KHR(device: Device, createInfo: RenderPassCreateInfo2, p
     }
     return out_renderPass;
 }
-pub fn CmdBeginRenderPass2KHR(commandBuffer: CommandBuffer, renderPassBegin: RenderPassBeginInfo, subpassBeginInfo: SubpassBeginInfo) callconv(.Inline) void {
+
+pub inline fn CmdBeginRenderPass2KHR(commandBuffer: CommandBuffer, renderPassBegin: RenderPassBeginInfo, subpassBeginInfo: SubpassBeginInfo) void {
     vkCmdBeginRenderPass2KHR(commandBuffer, &renderPassBegin, &subpassBeginInfo);
 }
-pub fn CmdNextSubpass2KHR(commandBuffer: CommandBuffer, subpassBeginInfo: SubpassBeginInfo, subpassEndInfo: SubpassEndInfo) callconv(.Inline) void {
+
+pub inline fn CmdNextSubpass2KHR(commandBuffer: CommandBuffer, subpassBeginInfo: SubpassBeginInfo, subpassEndInfo: SubpassEndInfo) void {
     vkCmdNextSubpass2KHR(commandBuffer, &subpassBeginInfo, &subpassEndInfo);
 }
-pub fn CmdEndRenderPass2KHR(commandBuffer: CommandBuffer, subpassEndInfo: SubpassEndInfo) callconv(.Inline) void {
+
+pub inline fn CmdEndRenderPass2KHR(commandBuffer: CommandBuffer, subpassEndInfo: SubpassEndInfo) void {
     vkCmdEndRenderPass2KHR(commandBuffer, &subpassEndInfo);
 }
+
 
 pub const KHR_shared_presentable_image = 1;
 pub const KHR_SHARED_PRESENTABLE_IMAGE_SPEC_VERSION = 1;
@@ -9990,7 +10168,7 @@ pub const KHR_SHARED_PRESENTABLE_IMAGE_EXTENSION_NAME = "VK_KHR_shared_presentab
 
 pub const SharedPresentSurfaceCapabilitiesKHR = extern struct {
     sType: StructureType = .SHARED_PRESENT_SURFACE_CAPABILITIES_KHR,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     sharedPresentSupportedUsageFlags: ImageUsageFlags align(4) = ImageUsageFlags{},
 };
 
@@ -9998,7 +10176,8 @@ pub extern fn vkGetSwapchainStatusKHR(
     device: Device,
     swapchain: SwapchainKHR,
 ) callconv(CallConv) Result;
-pub fn GetSwapchainStatusKHR(device: Device, swapchain: SwapchainKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_DEVICE_LOST, VK_OUT_OF_DATE_KHR, VK_SURFACE_LOST_KHR, VK_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT, VK_UNDOCUMENTED_ERROR }!Result {
+
+pub inline fn GetSwapchainStatusKHR(device: Device, swapchain: SwapchainKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_DEVICE_LOST,VK_OUT_OF_DATE_KHR,VK_SURFACE_LOST_KHR,VK_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT,VK_UNDOCUMENTED_ERROR}!Result {
     const result = vkGetSwapchainStatusKHR(device, swapchain);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -10013,6 +10192,7 @@ pub fn GetSwapchainStatusKHR(device: Device, swapchain: SwapchainKHR) callconv(.
     }
     return result;
 }
+
 
 pub const KHR_external_fence_capabilities = 1;
 pub const KHR_EXTERNAL_FENCE_CAPABILITIES_SPEC_VERSION = 1;
@@ -10029,11 +10209,13 @@ pub extern fn vkGetPhysicalDeviceExternalFencePropertiesKHR(
     pExternalFenceInfo: *const PhysicalDeviceExternalFenceInfo,
     pExternalFenceProperties: *ExternalFenceProperties,
 ) callconv(CallConv) void;
-pub fn GetPhysicalDeviceExternalFencePropertiesKHR(physicalDevice: PhysicalDevice, externalFenceInfo: PhysicalDeviceExternalFenceInfo) callconv(.Inline) ExternalFenceProperties {
+
+pub inline fn GetPhysicalDeviceExternalFencePropertiesKHR(physicalDevice: PhysicalDevice, externalFenceInfo: PhysicalDeviceExternalFenceInfo) ExternalFenceProperties {
     var out_externalFenceProperties: ExternalFenceProperties = undefined;
     vkGetPhysicalDeviceExternalFencePropertiesKHR(physicalDevice, &externalFenceInfo, &out_externalFenceProperties);
     return out_externalFenceProperties;
 }
+
 
 pub const KHR_external_fence = 1;
 pub const KHR_EXTERNAL_FENCE_SPEC_VERSION = 1;
@@ -10043,13 +10225,14 @@ pub const FenceImportFlagsKHR = FenceImportFlags;
 
 pub const ExportFenceCreateInfoKHR = ExportFenceCreateInfo;
 
+
 pub const KHR_external_fence_fd = 1;
 pub const KHR_EXTERNAL_FENCE_FD_SPEC_VERSION = 1;
 pub const KHR_EXTERNAL_FENCE_FD_EXTENSION_NAME = "VK_KHR_external_fence_fd";
 
 pub const ImportFenceFdInfoKHR = extern struct {
     sType: StructureType = .IMPORT_FENCE_FD_INFO_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     fence: Fence,
     flags: FenceImportFlags align(4) = FenceImportFlags{},
     handleType: ExternalFenceHandleTypeFlags align(4),
@@ -10058,7 +10241,7 @@ pub const ImportFenceFdInfoKHR = extern struct {
 
 pub const FenceGetFdInfoKHR = extern struct {
     sType: StructureType = .FENCE_GET_FD_INFO_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     fence: Fence,
     handleType: ExternalFenceHandleTypeFlags align(4),
 };
@@ -10073,7 +10256,8 @@ pub extern fn vkGetFenceFdKHR(
     pGetFdInfo: *const FenceGetFdInfoKHR,
     pFd: *c_int,
 ) callconv(CallConv) Result;
-pub fn ImportFenceFdKHR(device: Device, importFenceFdInfo: ImportFenceFdInfoKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_INVALID_EXTERNAL_HANDLE, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn ImportFenceFdKHR(device: Device, importFenceFdInfo: ImportFenceFdInfoKHR) error{VK_OUT_OF_HOST_MEMORY,VK_INVALID_EXTERNAL_HANDLE,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkImportFenceFdKHR(device, &importFenceFdInfo);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -10083,7 +10267,8 @@ pub fn ImportFenceFdKHR(device: Device, importFenceFdInfo: ImportFenceFdInfoKHR)
         };
     }
 }
-pub fn GetFenceFdKHR(device: Device, getFdInfo: FenceGetFdInfoKHR) callconv(.Inline) error{ VK_TOO_MANY_OBJECTS, VK_OUT_OF_HOST_MEMORY, VK_UNDOCUMENTED_ERROR }!c_int {
+
+pub inline fn GetFenceFdKHR(device: Device, getFdInfo: FenceGetFdInfoKHR) error{VK_TOO_MANY_OBJECTS,VK_OUT_OF_HOST_MEMORY,VK_UNDOCUMENTED_ERROR}!c_int {
     var out_fd: c_int = undefined;
     const result = vkGetFenceFdKHR(device, &getFdInfo, &out_fd);
     if (@bitCast(c_int, result) < 0) {
@@ -10096,11 +10281,12 @@ pub fn GetFenceFdKHR(device: Device, getFdInfo: FenceGetFdInfoKHR) callconv(.Inl
     return out_fd;
 }
 
+
 pub const KHR_performance_query = 1;
 pub const KHR_PERFORMANCE_QUERY_SPEC_VERSION = 1;
 pub const KHR_PERFORMANCE_QUERY_EXTENSION_NAME = "VK_KHR_performance_query";
 
-pub const PerformanceCounterUnitKHR = extern enum(i32) {
+pub const PerformanceCounterUnitKHR = enum(i32) {
     GENERIC = 0,
     PERCENTAGE = 1,
     NANOSECONDS = 2,
@@ -10115,7 +10301,7 @@ pub const PerformanceCounterUnitKHR = extern enum(i32) {
     _,
 };
 
-pub const PerformanceCounterScopeKHR = extern enum(i32) {
+pub const PerformanceCounterScopeKHR = enum(i32) {
     COMMAND_BUFFER = 0,
     RENDER_PASS = 1,
     COMMAND = 2,
@@ -10127,7 +10313,7 @@ pub const PerformanceCounterScopeKHR = extern enum(i32) {
     pub const QUERY_SCOPE_COMMAND = Self.COMMAND;
 };
 
-pub const PerformanceCounterStorageKHR = extern enum(i32) {
+pub const PerformanceCounterStorageKHR = enum(i32) {
     INT32 = 0,
     INT64 = 1,
     UINT32 = 2,
@@ -10213,20 +10399,20 @@ pub const AcquireProfilingLockFlagsKHR = packed struct {
 
 pub const PhysicalDevicePerformanceQueryFeaturesKHR = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_PERFORMANCE_QUERY_FEATURES_KHR,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     performanceCounterQueryPools: Bool32,
     performanceCounterMultipleQueryPools: Bool32,
 };
 
 pub const PhysicalDevicePerformanceQueryPropertiesKHR = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_PERFORMANCE_QUERY_PROPERTIES_KHR,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     allowCommandBufferQueryCopies: Bool32,
 };
 
 pub const PerformanceCounterKHR = extern struct {
     sType: StructureType = .PERFORMANCE_COUNTER_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     unit: PerformanceCounterUnitKHR,
     scope: PerformanceCounterScopeKHR,
     storage: PerformanceCounterStorageKHR,
@@ -10235,16 +10421,16 @@ pub const PerformanceCounterKHR = extern struct {
 
 pub const PerformanceCounterDescriptionKHR = extern struct {
     sType: StructureType = .PERFORMANCE_COUNTER_DESCRIPTION_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: PerformanceCounterDescriptionFlagsKHR align(4) = PerformanceCounterDescriptionFlagsKHR{},
-    name: [MAX_DESCRIPTION_SIZE - 1:0]u8,
-    category: [MAX_DESCRIPTION_SIZE - 1:0]u8,
-    description: [MAX_DESCRIPTION_SIZE - 1:0]u8,
+    name: [MAX_DESCRIPTION_SIZE-1:0]u8,
+    category: [MAX_DESCRIPTION_SIZE-1:0]u8,
+    description: [MAX_DESCRIPTION_SIZE-1:0]u8,
 };
 
 pub const QueryPoolPerformanceCreateInfoKHR = extern struct {
     sType: StructureType = .QUERY_POOL_PERFORMANCE_CREATE_INFO_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     queueFamilyIndex: u32,
     counterIndexCount: u32,
     pCounterIndices: [*]const u32,
@@ -10261,14 +10447,14 @@ pub const PerformanceCounterResultKHR = extern union {
 
 pub const AcquireProfilingLockInfoKHR = extern struct {
     sType: StructureType = .ACQUIRE_PROFILING_LOCK_INFO_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: AcquireProfilingLockFlagsKHR align(4) = AcquireProfilingLockFlagsKHR{},
     timeout: u64,
 };
 
 pub const PerformanceQuerySubmitInfoKHR = extern struct {
     sType: StructureType = .PERFORMANCE_QUERY_SUBMIT_INFO_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     counterPassIndex: u32,
 };
 
@@ -10298,7 +10484,7 @@ pub const EnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHRResult = 
     counters: []PerformanceCounterKHR,
     counterDescriptions: []PerformanceCounterDescriptionKHR,
 };
-pub fn EnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR(physicalDevice: PhysicalDevice, queueFamilyIndex: u32, counters: []PerformanceCounterKHR, counterDescriptions: []PerformanceCounterDescriptionKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_INITIALIZATION_FAILED, VK_UNDOCUMENTED_ERROR }!EnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHRResult {
+pub inline fn EnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR(physicalDevice: PhysicalDevice, queueFamilyIndex: u32, counters: []PerformanceCounterKHR, counterDescriptions: []PerformanceCounterDescriptionKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_INITIALIZATION_FAILED,VK_UNDOCUMENTED_ERROR}!EnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHRResult {
     var returnValues: EnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHRResult = undefined;
     var counterCount: u32 = @intCast(u32, counters.len);
     assert(counterDescriptions.len >= counters.len);
@@ -10316,7 +10502,7 @@ pub fn EnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR(physicalDev
     returnValues.result = result;
     return returnValues;
 }
-pub fn EnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersCountKHR(physicalDevice: PhysicalDevice, queueFamilyIndex: u32) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_INITIALIZATION_FAILED, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn EnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersCountKHR(physicalDevice: PhysicalDevice, queueFamilyIndex: u32) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_INITIALIZATION_FAILED,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_counterCount: u32 = undefined;
     const result = vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR(physicalDevice, queueFamilyIndex, &out_counterCount, null, null);
     if (@bitCast(c_int, result) < 0) {
@@ -10329,12 +10515,14 @@ pub fn EnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersCountKHR(physic
     }
     return out_counterCount;
 }
-pub fn GetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR(physicalDevice: PhysicalDevice, performanceQueryCreateInfo: QueryPoolPerformanceCreateInfoKHR) callconv(.Inline) u32 {
+
+pub inline fn GetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR(physicalDevice: PhysicalDevice, performanceQueryCreateInfo: QueryPoolPerformanceCreateInfoKHR) u32 {
     var out_numPasses: u32 = undefined;
     vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR(physicalDevice, &performanceQueryCreateInfo, &out_numPasses);
     return out_numPasses;
 }
-pub fn AcquireProfilingLockKHR(device: Device, info: AcquireProfilingLockInfoKHR) callconv(.Inline) error{ VK_TIMEOUT, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn AcquireProfilingLockKHR(device: Device, info: AcquireProfilingLockInfoKHR) error{VK_TIMEOUT,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkAcquireProfilingLockKHR(device, &info);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -10345,6 +10533,7 @@ pub fn AcquireProfilingLockKHR(device: Device, info: AcquireProfilingLockInfoKHR
 }
 
 pub const ReleaseProfilingLockKHR = vkReleaseProfilingLockKHR;
+
 
 pub const KHR_maintenance2 = 1;
 pub const KHR_MAINTENANCE2_SPEC_VERSION = 1;
@@ -10359,25 +10548,26 @@ pub const InputAttachmentAspectReferenceKHR = InputAttachmentAspectReference;
 pub const ImageViewUsageCreateInfoKHR = ImageViewUsageCreateInfo;
 pub const PipelineTessellationDomainOriginStateCreateInfoKHR = PipelineTessellationDomainOriginStateCreateInfo;
 
+
 pub const KHR_get_surface_capabilities2 = 1;
 pub const KHR_GET_SURFACE_CAPABILITIES_2_SPEC_VERSION = 1;
 pub const KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME = "VK_KHR_get_surface_capabilities2";
 
 pub const PhysicalDeviceSurfaceInfo2KHR = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_SURFACE_INFO_2_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     surface: SurfaceKHR,
 };
 
 pub const SurfaceCapabilities2KHR = extern struct {
     sType: StructureType = .SURFACE_CAPABILITIES_2_KHR,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     surfaceCapabilities: SurfaceCapabilitiesKHR,
 };
 
 pub const SurfaceFormat2KHR = extern struct {
     sType: StructureType = .SURFACE_FORMAT_2_KHR,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     surfaceFormat: SurfaceFormatKHR,
 };
 
@@ -10393,7 +10583,8 @@ pub extern fn vkGetPhysicalDeviceSurfaceFormats2KHR(
     pSurfaceFormatCount: *u32,
     pSurfaceFormats: ?[*]SurfaceFormat2KHR,
 ) callconv(CallConv) Result;
-pub fn GetPhysicalDeviceSurfaceCapabilities2KHR(physicalDevice: PhysicalDevice, surfaceInfo: PhysicalDeviceSurfaceInfo2KHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_SURFACE_LOST_KHR, VK_UNDOCUMENTED_ERROR }!SurfaceCapabilities2KHR {
+
+pub inline fn GetPhysicalDeviceSurfaceCapabilities2KHR(physicalDevice: PhysicalDevice, surfaceInfo: PhysicalDeviceSurfaceInfo2KHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_SURFACE_LOST_KHR,VK_UNDOCUMENTED_ERROR}!SurfaceCapabilities2KHR {
     var out_surfaceCapabilities: SurfaceCapabilities2KHR = undefined;
     const result = vkGetPhysicalDeviceSurfaceCapabilities2KHR(physicalDevice, &surfaceInfo, &out_surfaceCapabilities);
     if (@bitCast(c_int, result) < 0) {
@@ -10411,7 +10602,7 @@ pub const GetPhysicalDeviceSurfaceFormats2KHRResult = struct {
     result: Result,
     surfaceFormats: []SurfaceFormat2KHR,
 };
-pub fn GetPhysicalDeviceSurfaceFormats2KHR(physicalDevice: PhysicalDevice, surfaceInfo: PhysicalDeviceSurfaceInfo2KHR, surfaceFormats: []SurfaceFormat2KHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_SURFACE_LOST_KHR, VK_UNDOCUMENTED_ERROR }!GetPhysicalDeviceSurfaceFormats2KHRResult {
+pub inline fn GetPhysicalDeviceSurfaceFormats2KHR(physicalDevice: PhysicalDevice, surfaceInfo: PhysicalDeviceSurfaceInfo2KHR, surfaceFormats: []SurfaceFormat2KHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_SURFACE_LOST_KHR,VK_UNDOCUMENTED_ERROR}!GetPhysicalDeviceSurfaceFormats2KHRResult {
     var returnValues: GetPhysicalDeviceSurfaceFormats2KHRResult = undefined;
     var surfaceFormatCount: u32 = @intCast(u32, surfaceFormats.len);
     const result = vkGetPhysicalDeviceSurfaceFormats2KHR(physicalDevice, &surfaceInfo, &surfaceFormatCount, surfaceFormats.ptr);
@@ -10427,7 +10618,7 @@ pub fn GetPhysicalDeviceSurfaceFormats2KHR(physicalDevice: PhysicalDevice, surfa
     returnValues.result = result;
     return returnValues;
 }
-pub fn GetPhysicalDeviceSurfaceFormats2CountKHR(physicalDevice: PhysicalDevice, surfaceInfo: PhysicalDeviceSurfaceInfo2KHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_SURFACE_LOST_KHR, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn GetPhysicalDeviceSurfaceFormats2CountKHR(physicalDevice: PhysicalDevice, surfaceInfo: PhysicalDeviceSurfaceInfo2KHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_SURFACE_LOST_KHR,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_surfaceFormatCount: u32 = undefined;
     const result = vkGetPhysicalDeviceSurfaceFormats2KHR(physicalDevice, &surfaceInfo, &out_surfaceFormatCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -10441,6 +10632,7 @@ pub fn GetPhysicalDeviceSurfaceFormats2CountKHR(physicalDevice: PhysicalDevice, 
     return out_surfaceFormatCount;
 }
 
+
 pub const KHR_variable_pointers = 1;
 pub const KHR_VARIABLE_POINTERS_SPEC_VERSION = 1;
 pub const KHR_VARIABLE_POINTERS_EXTENSION_NAME = "VK_KHR_variable_pointers";
@@ -10448,38 +10640,39 @@ pub const KHR_VARIABLE_POINTERS_EXTENSION_NAME = "VK_KHR_variable_pointers";
 pub const PhysicalDeviceVariablePointerFeaturesKHR = PhysicalDeviceVariablePointersFeatures;
 pub const PhysicalDeviceVariablePointersFeaturesKHR = PhysicalDeviceVariablePointersFeatures;
 
+
 pub const KHR_get_display_properties2 = 1;
 pub const KHR_GET_DISPLAY_PROPERTIES_2_SPEC_VERSION = 1;
 pub const KHR_GET_DISPLAY_PROPERTIES_2_EXTENSION_NAME = "VK_KHR_get_display_properties2";
 
 pub const DisplayProperties2KHR = extern struct {
     sType: StructureType = .DISPLAY_PROPERTIES_2_KHR,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     displayProperties: DisplayPropertiesKHR,
 };
 
 pub const DisplayPlaneProperties2KHR = extern struct {
     sType: StructureType = .DISPLAY_PLANE_PROPERTIES_2_KHR,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     displayPlaneProperties: DisplayPlanePropertiesKHR,
 };
 
 pub const DisplayModeProperties2KHR = extern struct {
     sType: StructureType = .DISPLAY_MODE_PROPERTIES_2_KHR,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     displayModeProperties: DisplayModePropertiesKHR,
 };
 
 pub const DisplayPlaneInfo2KHR = extern struct {
     sType: StructureType = .DISPLAY_PLANE_INFO_2_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     mode: DisplayModeKHR,
     planeIndex: u32,
 };
 
 pub const DisplayPlaneCapabilities2KHR = extern struct {
     sType: StructureType = .DISPLAY_PLANE_CAPABILITIES_2_KHR,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     capabilities: DisplayPlaneCapabilitiesKHR,
 };
 
@@ -10512,7 +10705,7 @@ pub const GetPhysicalDeviceDisplayProperties2KHRResult = struct {
     result: Result,
     properties: []DisplayProperties2KHR,
 };
-pub fn GetPhysicalDeviceDisplayProperties2KHR(physicalDevice: PhysicalDevice, properties: []DisplayProperties2KHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!GetPhysicalDeviceDisplayProperties2KHRResult {
+pub inline fn GetPhysicalDeviceDisplayProperties2KHR(physicalDevice: PhysicalDevice, properties: []DisplayProperties2KHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!GetPhysicalDeviceDisplayProperties2KHRResult {
     var returnValues: GetPhysicalDeviceDisplayProperties2KHRResult = undefined;
     var propertyCount: u32 = @intCast(u32, properties.len);
     const result = vkGetPhysicalDeviceDisplayProperties2KHR(physicalDevice, &propertyCount, properties.ptr);
@@ -10527,7 +10720,7 @@ pub fn GetPhysicalDeviceDisplayProperties2KHR(physicalDevice: PhysicalDevice, pr
     returnValues.result = result;
     return returnValues;
 }
-pub fn GetPhysicalDeviceDisplayProperties2CountKHR(physicalDevice: PhysicalDevice) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn GetPhysicalDeviceDisplayProperties2CountKHR(physicalDevice: PhysicalDevice) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_propertyCount: u32 = undefined;
     const result = vkGetPhysicalDeviceDisplayProperties2KHR(physicalDevice, &out_propertyCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -10544,7 +10737,7 @@ pub const GetPhysicalDeviceDisplayPlaneProperties2KHRResult = struct {
     result: Result,
     properties: []DisplayPlaneProperties2KHR,
 };
-pub fn GetPhysicalDeviceDisplayPlaneProperties2KHR(physicalDevice: PhysicalDevice, properties: []DisplayPlaneProperties2KHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!GetPhysicalDeviceDisplayPlaneProperties2KHRResult {
+pub inline fn GetPhysicalDeviceDisplayPlaneProperties2KHR(physicalDevice: PhysicalDevice, properties: []DisplayPlaneProperties2KHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!GetPhysicalDeviceDisplayPlaneProperties2KHRResult {
     var returnValues: GetPhysicalDeviceDisplayPlaneProperties2KHRResult = undefined;
     var propertyCount: u32 = @intCast(u32, properties.len);
     const result = vkGetPhysicalDeviceDisplayPlaneProperties2KHR(physicalDevice, &propertyCount, properties.ptr);
@@ -10559,7 +10752,7 @@ pub fn GetPhysicalDeviceDisplayPlaneProperties2KHR(physicalDevice: PhysicalDevic
     returnValues.result = result;
     return returnValues;
 }
-pub fn GetPhysicalDeviceDisplayPlaneProperties2CountKHR(physicalDevice: PhysicalDevice) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn GetPhysicalDeviceDisplayPlaneProperties2CountKHR(physicalDevice: PhysicalDevice) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_propertyCount: u32 = undefined;
     const result = vkGetPhysicalDeviceDisplayPlaneProperties2KHR(physicalDevice, &out_propertyCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -10576,7 +10769,7 @@ pub const GetDisplayModeProperties2KHRResult = struct {
     result: Result,
     properties: []DisplayModeProperties2KHR,
 };
-pub fn GetDisplayModeProperties2KHR(physicalDevice: PhysicalDevice, display: DisplayKHR, properties: []DisplayModeProperties2KHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!GetDisplayModeProperties2KHRResult {
+pub inline fn GetDisplayModeProperties2KHR(physicalDevice: PhysicalDevice, display: DisplayKHR, properties: []DisplayModeProperties2KHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!GetDisplayModeProperties2KHRResult {
     var returnValues: GetDisplayModeProperties2KHRResult = undefined;
     var propertyCount: u32 = @intCast(u32, properties.len);
     const result = vkGetDisplayModeProperties2KHR(physicalDevice, display, &propertyCount, properties.ptr);
@@ -10591,7 +10784,7 @@ pub fn GetDisplayModeProperties2KHR(physicalDevice: PhysicalDevice, display: Dis
     returnValues.result = result;
     return returnValues;
 }
-pub fn GetDisplayModeProperties2CountKHR(physicalDevice: PhysicalDevice, display: DisplayKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn GetDisplayModeProperties2CountKHR(physicalDevice: PhysicalDevice, display: DisplayKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_propertyCount: u32 = undefined;
     const result = vkGetDisplayModeProperties2KHR(physicalDevice, display, &out_propertyCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -10603,7 +10796,8 @@ pub fn GetDisplayModeProperties2CountKHR(physicalDevice: PhysicalDevice, display
     }
     return out_propertyCount;
 }
-pub fn GetDisplayPlaneCapabilities2KHR(physicalDevice: PhysicalDevice, displayPlaneInfo: DisplayPlaneInfo2KHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!DisplayPlaneCapabilities2KHR {
+
+pub inline fn GetDisplayPlaneCapabilities2KHR(physicalDevice: PhysicalDevice, displayPlaneInfo: DisplayPlaneInfo2KHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!DisplayPlaneCapabilities2KHR {
     var out_capabilities: DisplayPlaneCapabilities2KHR = undefined;
     const result = vkGetDisplayPlaneCapabilities2KHR(physicalDevice, &displayPlaneInfo, &out_capabilities);
     if (@bitCast(c_int, result) < 0) {
@@ -10616,6 +10810,7 @@ pub fn GetDisplayPlaneCapabilities2KHR(physicalDevice: PhysicalDevice, displayPl
     return out_capabilities;
 }
 
+
 pub const KHR_dedicated_allocation = 1;
 pub const KHR_DEDICATED_ALLOCATION_SPEC_VERSION = 3;
 pub const KHR_DEDICATED_ALLOCATION_EXTENSION_NAME = "VK_KHR_dedicated_allocation";
@@ -10623,13 +10818,16 @@ pub const KHR_DEDICATED_ALLOCATION_EXTENSION_NAME = "VK_KHR_dedicated_allocation
 pub const MemoryDedicatedRequirementsKHR = MemoryDedicatedRequirements;
 pub const MemoryDedicatedAllocateInfoKHR = MemoryDedicatedAllocateInfo;
 
+
 pub const KHR_storage_buffer_storage_class = 1;
 pub const KHR_STORAGE_BUFFER_STORAGE_CLASS_SPEC_VERSION = 1;
 pub const KHR_STORAGE_BUFFER_STORAGE_CLASS_EXTENSION_NAME = "VK_KHR_storage_buffer_storage_class";
 
+
 pub const KHR_relaxed_block_layout = 1;
 pub const KHR_RELAXED_BLOCK_LAYOUT_SPEC_VERSION = 1;
 pub const KHR_RELAXED_BLOCK_LAYOUT_EXTENSION_NAME = "VK_KHR_relaxed_block_layout";
+
 
 pub const KHR_get_memory_requirements2 = 1;
 pub const KHR_GET_MEMORY_REQUIREMENTS_2_SPEC_VERSION = 1;
@@ -10658,34 +10856,39 @@ pub extern fn vkGetImageSparseMemoryRequirements2KHR(
     pSparseMemoryRequirementCount: *u32,
     pSparseMemoryRequirements: ?[*]SparseImageMemoryRequirements2,
 ) callconv(CallConv) void;
-pub fn GetImageMemoryRequirements2KHR(device: Device, info: ImageMemoryRequirementsInfo2) callconv(.Inline) MemoryRequirements2 {
+
+pub inline fn GetImageMemoryRequirements2KHR(device: Device, info: ImageMemoryRequirementsInfo2) MemoryRequirements2 {
     var out_memoryRequirements: MemoryRequirements2 = undefined;
     vkGetImageMemoryRequirements2KHR(device, &info, &out_memoryRequirements);
     return out_memoryRequirements;
 }
-pub fn GetBufferMemoryRequirements2KHR(device: Device, info: BufferMemoryRequirementsInfo2) callconv(.Inline) MemoryRequirements2 {
+
+pub inline fn GetBufferMemoryRequirements2KHR(device: Device, info: BufferMemoryRequirementsInfo2) MemoryRequirements2 {
     var out_memoryRequirements: MemoryRequirements2 = undefined;
     vkGetBufferMemoryRequirements2KHR(device, &info, &out_memoryRequirements);
     return out_memoryRequirements;
 }
-pub fn GetImageSparseMemoryRequirements2KHR(device: Device, info: ImageSparseMemoryRequirementsInfo2, sparseMemoryRequirements: []SparseImageMemoryRequirements2) callconv(.Inline) []SparseImageMemoryRequirements2 {
+
+pub inline fn GetImageSparseMemoryRequirements2KHR(device: Device, info: ImageSparseMemoryRequirementsInfo2, sparseMemoryRequirements: []SparseImageMemoryRequirements2) []SparseImageMemoryRequirements2 {
     var out_sparseMemoryRequirements: []SparseImageMemoryRequirements2 = undefined;
     var sparseMemoryRequirementCount: u32 = @intCast(u32, sparseMemoryRequirements.len);
     vkGetImageSparseMemoryRequirements2KHR(device, &info, &sparseMemoryRequirementCount, sparseMemoryRequirements.ptr);
     out_sparseMemoryRequirements = sparseMemoryRequirements[0..sparseMemoryRequirementCount];
     return out_sparseMemoryRequirements;
 }
-pub fn GetImageSparseMemoryRequirements2CountKHR(device: Device, info: ImageSparseMemoryRequirementsInfo2) callconv(.Inline) u32 {
+pub inline fn GetImageSparseMemoryRequirements2CountKHR(device: Device, info: ImageSparseMemoryRequirementsInfo2) u32 {
     var out_sparseMemoryRequirementCount: u32 = undefined;
     vkGetImageSparseMemoryRequirements2KHR(device, &info, &out_sparseMemoryRequirementCount, null);
     return out_sparseMemoryRequirementCount;
 }
+
 
 pub const KHR_image_format_list = 1;
 pub const KHR_IMAGE_FORMAT_LIST_SPEC_VERSION = 1;
 pub const KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME = "VK_KHR_image_format_list";
 
 pub const ImageFormatListCreateInfoKHR = ImageFormatListCreateInfo;
+
 
 pub const KHR_sampler_ycbcr_conversion = 1;
 pub const SamplerYcbcrConversionKHR = SamplerYcbcrConversion;
@@ -10713,10 +10916,11 @@ pub extern fn vkCreateSamplerYcbcrConversionKHR(
 
 pub extern fn vkDestroySamplerYcbcrConversionKHR(
     device: Device,
-    ycbcrConversion: ?SamplerYcbcrConversion,
+    ycbcrConversion: SamplerYcbcrConversion,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
-pub fn CreateSamplerYcbcrConversionKHR(device: Device, createInfo: SamplerYcbcrConversionCreateInfo, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!SamplerYcbcrConversion {
+
+pub inline fn CreateSamplerYcbcrConversionKHR(device: Device, createInfo: SamplerYcbcrConversionCreateInfo, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!SamplerYcbcrConversion {
     var out_ycbcrConversion: SamplerYcbcrConversion = undefined;
     const result = vkCreateSamplerYcbcrConversionKHR(device, &createInfo, pAllocator, &out_ycbcrConversion);
     if (@bitCast(c_int, result) < 0) {
@@ -10730,6 +10934,7 @@ pub fn CreateSamplerYcbcrConversionKHR(device: Device, createInfo: SamplerYcbcrC
 }
 
 pub const DestroySamplerYcbcrConversionKHR = vkDestroySamplerYcbcrConversionKHR;
+
 
 pub const KHR_bind_memory2 = 1;
 pub const KHR_BIND_MEMORY_2_SPEC_VERSION = 1;
@@ -10749,7 +10954,8 @@ pub extern fn vkBindImageMemory2KHR(
     bindInfoCount: u32,
     pBindInfos: [*]const BindImageMemoryInfo,
 ) callconv(CallConv) Result;
-pub fn BindBufferMemory2KHR(device: Device, bindInfos: []const BindBufferMemoryInfo) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_INVALID_OPAQUE_CAPTURE_ADDRESS, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn BindBufferMemory2KHR(device: Device, bindInfos: []const BindBufferMemoryInfo) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_INVALID_OPAQUE_CAPTURE_ADDRESS,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkBindBufferMemory2KHR(device, @intCast(u32, bindInfos.len), bindInfos.ptr);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -10760,7 +10966,8 @@ pub fn BindBufferMemory2KHR(device: Device, bindInfos: []const BindBufferMemoryI
         };
     }
 }
-pub fn BindImageMemory2KHR(device: Device, bindInfos: []const BindImageMemoryInfo) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn BindImageMemory2KHR(device: Device, bindInfos: []const BindImageMemoryInfo) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkBindImageMemory2KHR(device, @intCast(u32, bindInfos.len), bindInfos.ptr);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -10770,6 +10977,7 @@ pub fn BindImageMemory2KHR(device: Device, bindInfos: []const BindImageMemoryInf
         };
     }
 }
+
 
 pub const KHR_maintenance3 = 1;
 pub const KHR_MAINTENANCE3_SPEC_VERSION = 1;
@@ -10783,11 +10991,13 @@ pub extern fn vkGetDescriptorSetLayoutSupportKHR(
     pCreateInfo: *const DescriptorSetLayoutCreateInfo,
     pSupport: *DescriptorSetLayoutSupport,
 ) callconv(CallConv) void;
-pub fn GetDescriptorSetLayoutSupportKHR(device: Device, createInfo: DescriptorSetLayoutCreateInfo) callconv(.Inline) DescriptorSetLayoutSupport {
+
+pub inline fn GetDescriptorSetLayoutSupportKHR(device: Device, createInfo: DescriptorSetLayoutCreateInfo) DescriptorSetLayoutSupport {
     var out_support: DescriptorSetLayoutSupport = undefined;
     vkGetDescriptorSetLayoutSupportKHR(device, &createInfo, &out_support);
     return out_support;
 }
+
 
 pub const KHR_draw_indirect_count = 1;
 pub const KHR_DRAW_INDIRECT_COUNT_SPEC_VERSION = 1;
@@ -10816,11 +11026,13 @@ pub extern fn vkCmdDrawIndexedIndirectCountKHR(
 pub const CmdDrawIndirectCountKHR = vkCmdDrawIndirectCountKHR;
 pub const CmdDrawIndexedIndirectCountKHR = vkCmdDrawIndexedIndirectCountKHR;
 
+
 pub const KHR_shader_subgroup_extended_types = 1;
 pub const KHR_SHADER_SUBGROUP_EXTENDED_TYPES_SPEC_VERSION = 1;
 pub const KHR_SHADER_SUBGROUP_EXTENDED_TYPES_EXTENSION_NAME = "VK_KHR_shader_subgroup_extended_types";
 
 pub const PhysicalDeviceShaderSubgroupExtendedTypesFeaturesKHR = PhysicalDeviceShaderSubgroupExtendedTypesFeatures;
+
 
 pub const KHR_8bit_storage = 1;
 pub const KHR_8BIT_STORAGE_SPEC_VERSION = 1;
@@ -10828,11 +11040,13 @@ pub const KHR_8BIT_STORAGE_EXTENSION_NAME = "VK_KHR_8bit_storage";
 
 pub const PhysicalDevice8BitStorageFeaturesKHR = PhysicalDevice8BitStorageFeatures;
 
+
 pub const KHR_shader_atomic_int64 = 1;
 pub const KHR_SHADER_ATOMIC_INT64_SPEC_VERSION = 1;
 pub const KHR_SHADER_ATOMIC_INT64_EXTENSION_NAME = "VK_KHR_shader_atomic_int64";
 
 pub const PhysicalDeviceShaderAtomicInt64FeaturesKHR = PhysicalDeviceShaderAtomicInt64Features;
+
 
 pub const KHR_shader_clock = 1;
 pub const KHR_SHADER_CLOCK_SPEC_VERSION = 1;
@@ -10840,10 +11054,11 @@ pub const KHR_SHADER_CLOCK_EXTENSION_NAME = "VK_KHR_shader_clock";
 
 pub const PhysicalDeviceShaderClockFeaturesKHR = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_SHADER_CLOCK_FEATURES_KHR,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     shaderSubgroupClock: Bool32,
     shaderDeviceClock: Bool32,
 };
+
 
 pub const KHR_driver_properties = 1;
 pub const KHR_DRIVER_PROPERTIES_SPEC_VERSION = 1;
@@ -10856,6 +11071,7 @@ pub const DriverIdKHR = DriverId;
 pub const ConformanceVersionKHR = ConformanceVersion;
 pub const PhysicalDeviceDriverPropertiesKHR = PhysicalDeviceDriverProperties;
 
+
 pub const KHR_shader_float_controls = 1;
 pub const KHR_SHADER_FLOAT_CONTROLS_SPEC_VERSION = 4;
 pub const KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME = "VK_KHR_shader_float_controls";
@@ -10863,6 +11079,7 @@ pub const KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME = "VK_KHR_shader_float_contro
 pub const ShaderFloatControlsIndependenceKHR = ShaderFloatControlsIndependence;
 
 pub const PhysicalDeviceFloatControlsPropertiesKHR = PhysicalDeviceFloatControlsProperties;
+
 
 pub const KHR_depth_stencil_resolve = 1;
 pub const KHR_DEPTH_STENCIL_RESOLVE_SPEC_VERSION = 1;
@@ -10873,9 +11090,11 @@ pub const ResolveModeFlagsKHR = ResolveModeFlags;
 pub const SubpassDescriptionDepthStencilResolveKHR = SubpassDescriptionDepthStencilResolve;
 pub const PhysicalDeviceDepthStencilResolvePropertiesKHR = PhysicalDeviceDepthStencilResolveProperties;
 
+
 pub const KHR_swapchain_mutable_format = 1;
 pub const KHR_SWAPCHAIN_MUTABLE_FORMAT_SPEC_VERSION = 1;
 pub const KHR_SWAPCHAIN_MUTABLE_FORMAT_EXTENSION_NAME = "VK_KHR_swapchain_mutable_format";
+
 
 pub const KHR_timeline_semaphore = 1;
 pub const KHR_TIMELINE_SEMAPHORE_SPEC_VERSION = 2;
@@ -10908,7 +11127,8 @@ pub extern fn vkSignalSemaphoreKHR(
     device: Device,
     pSignalInfo: *const SemaphoreSignalInfo,
 ) callconv(CallConv) Result;
-pub fn GetSemaphoreCounterValueKHR(device: Device, semaphore: Semaphore) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_DEVICE_LOST, VK_UNDOCUMENTED_ERROR }!u64 {
+
+pub inline fn GetSemaphoreCounterValueKHR(device: Device, semaphore: Semaphore) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_DEVICE_LOST,VK_UNDOCUMENTED_ERROR}!u64 {
     var out_value: u64 = undefined;
     const result = vkGetSemaphoreCounterValueKHR(device, semaphore, &out_value);
     if (@bitCast(c_int, result) < 0) {
@@ -10921,7 +11141,8 @@ pub fn GetSemaphoreCounterValueKHR(device: Device, semaphore: Semaphore) callcon
     }
     return out_value;
 }
-pub fn WaitSemaphoresKHR(device: Device, waitInfo: SemaphoreWaitInfo, timeout: u64) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_DEVICE_LOST, VK_UNDOCUMENTED_ERROR }!Result {
+
+pub inline fn WaitSemaphoresKHR(device: Device, waitInfo: SemaphoreWaitInfo, timeout: u64) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_DEVICE_LOST,VK_UNDOCUMENTED_ERROR}!Result {
     const result = vkWaitSemaphoresKHR(device, &waitInfo, timeout);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -10933,7 +11154,8 @@ pub fn WaitSemaphoresKHR(device: Device, waitInfo: SemaphoreWaitInfo, timeout: u
     }
     return result;
 }
-pub fn SignalSemaphoreKHR(device: Device, signalInfo: SemaphoreSignalInfo) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn SignalSemaphoreKHR(device: Device, signalInfo: SemaphoreSignalInfo) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkSignalSemaphoreKHR(device, &signalInfo);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -10944,15 +11166,18 @@ pub fn SignalSemaphoreKHR(device: Device, signalInfo: SemaphoreSignalInfo) callc
     }
 }
 
+
 pub const KHR_vulkan_memory_model = 1;
 pub const KHR_VULKAN_MEMORY_MODEL_SPEC_VERSION = 3;
 pub const KHR_VULKAN_MEMORY_MODEL_EXTENSION_NAME = "VK_KHR_vulkan_memory_model";
 
 pub const PhysicalDeviceVulkanMemoryModelFeaturesKHR = PhysicalDeviceVulkanMemoryModelFeatures;
 
+
 pub const KHR_spirv_1_4 = 1;
 pub const KHR_SPIRV_1_4_SPEC_VERSION = 1;
 pub const KHR_SPIRV_1_4_EXTENSION_NAME = "VK_KHR_spirv_1_4";
+
 
 pub const KHR_surface_protected_capabilities = 1;
 pub const KHR_SURFACE_PROTECTED_CAPABILITIES_SPEC_VERSION = 1;
@@ -10960,9 +11185,10 @@ pub const KHR_SURFACE_PROTECTED_CAPABILITIES_EXTENSION_NAME = "VK_KHR_surface_pr
 
 pub const SurfaceProtectedCapabilitiesKHR = extern struct {
     sType: StructureType = .SURFACE_PROTECTED_CAPABILITIES_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     supportsProtected: Bool32,
 };
+
 
 pub const KHR_separate_depth_stencil_layouts = 1;
 pub const KHR_SEPARATE_DEPTH_STENCIL_LAYOUTS_SPEC_VERSION = 1;
@@ -10972,11 +11198,13 @@ pub const PhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR = PhysicalDeviceS
 pub const AttachmentReferenceStencilLayoutKHR = AttachmentReferenceStencilLayout;
 pub const AttachmentDescriptionStencilLayoutKHR = AttachmentDescriptionStencilLayout;
 
+
 pub const KHR_uniform_buffer_standard_layout = 1;
 pub const KHR_UNIFORM_BUFFER_STANDARD_LAYOUT_SPEC_VERSION = 1;
 pub const KHR_UNIFORM_BUFFER_STANDARD_LAYOUT_EXTENSION_NAME = "VK_KHR_uniform_buffer_standard_layout";
 
 pub const PhysicalDeviceUniformBufferStandardLayoutFeaturesKHR = PhysicalDeviceUniformBufferStandardLayoutFeatures;
+
 
 pub const KHR_buffer_device_address = 1;
 pub const KHR_BUFFER_DEVICE_ADDRESS_SPEC_VERSION = 1;
@@ -11002,24 +11230,28 @@ pub extern fn vkGetDeviceMemoryOpaqueCaptureAddressKHR(
     device: Device,
     pInfo: *const DeviceMemoryOpaqueCaptureAddressInfo,
 ) callconv(CallConv) u64;
-pub fn GetBufferDeviceAddressKHR(device: Device, info: BufferDeviceAddressInfo) callconv(.Inline) DeviceAddress {
+
+pub inline fn GetBufferDeviceAddressKHR(device: Device, info: BufferDeviceAddressInfo) DeviceAddress {
     const result = vkGetBufferDeviceAddressKHR(device, &info);
     return result;
 }
-pub fn GetBufferOpaqueCaptureAddressKHR(device: Device, info: BufferDeviceAddressInfo) callconv(.Inline) u64 {
+
+pub inline fn GetBufferOpaqueCaptureAddressKHR(device: Device, info: BufferDeviceAddressInfo) u64 {
     const result = vkGetBufferOpaqueCaptureAddressKHR(device, &info);
     return result;
 }
-pub fn GetDeviceMemoryOpaqueCaptureAddressKHR(device: Device, info: DeviceMemoryOpaqueCaptureAddressInfo) callconv(.Inline) u64 {
+
+pub inline fn GetDeviceMemoryOpaqueCaptureAddressKHR(device: Device, info: DeviceMemoryOpaqueCaptureAddressInfo) u64 {
     const result = vkGetDeviceMemoryOpaqueCaptureAddressKHR(device, &info);
     return result;
 }
+
 
 pub const KHR_pipeline_executable_properties = 1;
 pub const KHR_PIPELINE_EXECUTABLE_PROPERTIES_SPEC_VERSION = 1;
 pub const KHR_PIPELINE_EXECUTABLE_PROPERTIES_EXTENSION_NAME = "VK_KHR_pipeline_executable_properties";
 
-pub const PipelineExecutableStatisticFormatKHR = extern enum(i32) {
+pub const PipelineExecutableStatisticFormatKHR = enum(i32) {
     BOOL32 = 0,
     INT64 = 1,
     UINT64 = 2,
@@ -11029,28 +11261,28 @@ pub const PipelineExecutableStatisticFormatKHR = extern enum(i32) {
 
 pub const PhysicalDevicePipelineExecutablePropertiesFeaturesKHR = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_PIPELINE_EXECUTABLE_PROPERTIES_FEATURES_KHR,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     pipelineExecutableInfo: Bool32,
 };
 
 pub const PipelineInfoKHR = extern struct {
     sType: StructureType = .PIPELINE_INFO_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     pipeline: Pipeline,
 };
 
 pub const PipelineExecutablePropertiesKHR = extern struct {
     sType: StructureType = .PIPELINE_EXECUTABLE_PROPERTIES_KHR,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     stages: ShaderStageFlags align(4),
-    name: [MAX_DESCRIPTION_SIZE - 1:0]u8,
-    description: [MAX_DESCRIPTION_SIZE - 1:0]u8,
+    name: [MAX_DESCRIPTION_SIZE-1:0]u8,
+    description: [MAX_DESCRIPTION_SIZE-1:0]u8,
     subgroupSize: u32,
 };
 
 pub const PipelineExecutableInfoKHR = extern struct {
     sType: StructureType = .PIPELINE_EXECUTABLE_INFO_KHR,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     pipeline: Pipeline,
     executableIndex: u32,
 };
@@ -11064,21 +11296,21 @@ pub const PipelineExecutableStatisticValueKHR = extern union {
 
 pub const PipelineExecutableStatisticKHR = extern struct {
     sType: StructureType = .PIPELINE_EXECUTABLE_STATISTIC_KHR,
-    pNext: ?*c_void = null,
-    name: [MAX_DESCRIPTION_SIZE - 1:0]u8,
-    description: [MAX_DESCRIPTION_SIZE - 1:0]u8,
+    pNext: ?*anyopaque = null,
+    name: [MAX_DESCRIPTION_SIZE-1:0]u8,
+    description: [MAX_DESCRIPTION_SIZE-1:0]u8,
     format: PipelineExecutableStatisticFormatKHR,
     value: PipelineExecutableStatisticValueKHR,
 };
 
 pub const PipelineExecutableInternalRepresentationKHR = extern struct {
     sType: StructureType = .PIPELINE_EXECUTABLE_INTERNAL_REPRESENTATION_KHR,
-    pNext: ?*c_void = null,
-    name: [MAX_DESCRIPTION_SIZE - 1:0]u8,
-    description: [MAX_DESCRIPTION_SIZE - 1:0]u8,
+    pNext: ?*anyopaque = null,
+    name: [MAX_DESCRIPTION_SIZE-1:0]u8,
+    description: [MAX_DESCRIPTION_SIZE-1:0]u8,
     isText: Bool32,
     dataSize: usize = 0,
-    pData: ?*c_void = null,
+    pData: ?*anyopaque = null,
 };
 
 pub extern fn vkGetPipelineExecutablePropertiesKHR(
@@ -11106,7 +11338,7 @@ pub const GetPipelineExecutablePropertiesKHRResult = struct {
     result: Result,
     properties: []PipelineExecutablePropertiesKHR,
 };
-pub fn GetPipelineExecutablePropertiesKHR(device: Device, pipelineInfo: PipelineInfoKHR, properties: []PipelineExecutablePropertiesKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!GetPipelineExecutablePropertiesKHRResult {
+pub inline fn GetPipelineExecutablePropertiesKHR(device: Device, pipelineInfo: PipelineInfoKHR, properties: []PipelineExecutablePropertiesKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!GetPipelineExecutablePropertiesKHRResult {
     var returnValues: GetPipelineExecutablePropertiesKHRResult = undefined;
     var executableCount: u32 = @intCast(u32, properties.len);
     const result = vkGetPipelineExecutablePropertiesKHR(device, &pipelineInfo, &executableCount, properties.ptr);
@@ -11121,7 +11353,7 @@ pub fn GetPipelineExecutablePropertiesKHR(device: Device, pipelineInfo: Pipeline
     returnValues.result = result;
     return returnValues;
 }
-pub fn GetPipelineExecutablePropertiesCountKHR(device: Device, pipelineInfo: PipelineInfoKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn GetPipelineExecutablePropertiesCountKHR(device: Device, pipelineInfo: PipelineInfoKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_executableCount: u32 = undefined;
     const result = vkGetPipelineExecutablePropertiesKHR(device, &pipelineInfo, &out_executableCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -11138,7 +11370,7 @@ pub const GetPipelineExecutableStatisticsKHRResult = struct {
     result: Result,
     statistics: []PipelineExecutableStatisticKHR,
 };
-pub fn GetPipelineExecutableStatisticsKHR(device: Device, executableInfo: PipelineExecutableInfoKHR, statistics: []PipelineExecutableStatisticKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!GetPipelineExecutableStatisticsKHRResult {
+pub inline fn GetPipelineExecutableStatisticsKHR(device: Device, executableInfo: PipelineExecutableInfoKHR, statistics: []PipelineExecutableStatisticKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!GetPipelineExecutableStatisticsKHRResult {
     var returnValues: GetPipelineExecutableStatisticsKHRResult = undefined;
     var statisticCount: u32 = @intCast(u32, statistics.len);
     const result = vkGetPipelineExecutableStatisticsKHR(device, &executableInfo, &statisticCount, statistics.ptr);
@@ -11153,7 +11385,7 @@ pub fn GetPipelineExecutableStatisticsKHR(device: Device, executableInfo: Pipeli
     returnValues.result = result;
     return returnValues;
 }
-pub fn GetPipelineExecutableStatisticsCountKHR(device: Device, executableInfo: PipelineExecutableInfoKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn GetPipelineExecutableStatisticsCountKHR(device: Device, executableInfo: PipelineExecutableInfoKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_statisticCount: u32 = undefined;
     const result = vkGetPipelineExecutableStatisticsKHR(device, &executableInfo, &out_statisticCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -11170,7 +11402,7 @@ pub const GetPipelineExecutableInternalRepresentationsKHRResult = struct {
     result: Result,
     internalRepresentations: []PipelineExecutableInternalRepresentationKHR,
 };
-pub fn GetPipelineExecutableInternalRepresentationsKHR(device: Device, executableInfo: PipelineExecutableInfoKHR, internalRepresentations: []PipelineExecutableInternalRepresentationKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!GetPipelineExecutableInternalRepresentationsKHRResult {
+pub inline fn GetPipelineExecutableInternalRepresentationsKHR(device: Device, executableInfo: PipelineExecutableInfoKHR, internalRepresentations: []PipelineExecutableInternalRepresentationKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!GetPipelineExecutableInternalRepresentationsKHRResult {
     var returnValues: GetPipelineExecutableInternalRepresentationsKHRResult = undefined;
     var internalRepresentationCount: u32 = @intCast(u32, internalRepresentations.len);
     const result = vkGetPipelineExecutableInternalRepresentationsKHR(device, &executableInfo, &internalRepresentationCount, internalRepresentations.ptr);
@@ -11185,7 +11417,7 @@ pub fn GetPipelineExecutableInternalRepresentationsKHR(device: Device, executabl
     returnValues.result = result;
     return returnValues;
 }
-pub fn GetPipelineExecutableInternalRepresentationsCountKHR(device: Device, executableInfo: PipelineExecutableInfoKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn GetPipelineExecutableInternalRepresentationsCountKHR(device: Device, executableInfo: PipelineExecutableInfoKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_internalRepresentationCount: u32 = undefined;
     const result = vkGetPipelineExecutableInternalRepresentationsKHR(device, &executableInfo, &out_internalRepresentationCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -11198,13 +11430,14 @@ pub fn GetPipelineExecutableInternalRepresentationsCountKHR(device: Device, exec
     return out_internalRepresentationCount;
 }
 
+
 pub const EXT_debug_report = 1;
-pub const DebugReportCallbackEXT = *opaque {};
+pub const DebugReportCallbackEXT = enum(u64) { Null = 0, _ };
 
 pub const EXT_DEBUG_REPORT_SPEC_VERSION = 9;
 pub const EXT_DEBUG_REPORT_EXTENSION_NAME = "VK_EXT_debug_report";
 
-pub const DebugReportObjectTypeEXT = extern enum(i32) {
+pub const DebugReportObjectTypeEXT = enum(i32) {
     UNKNOWN = 0,
     INSTANCE = 1,
     PHYSICAL_DEVICE = 2,
@@ -11296,15 +11529,15 @@ pub const PFN_DebugReportCallbackEXT = fn (
     i32,
     ?CString,
     ?CString,
-    ?*c_void,
+    ?*anyopaque,
 ) callconv(CallConv) Bool32;
 
 pub const DebugReportCallbackCreateInfoEXT = extern struct {
     sType: StructureType = .DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: DebugReportFlagsEXT align(4) = DebugReportFlagsEXT{},
     pfnCallback: PFN_DebugReportCallbackEXT,
-    pUserData: ?*c_void = null,
+    pUserData: ?*anyopaque = null,
 };
 
 pub extern fn vkCreateDebugReportCallbackEXT(
@@ -11330,7 +11563,8 @@ pub extern fn vkDebugReportMessageEXT(
     pLayerPrefix: CString,
     pMessage: CString,
 ) callconv(CallConv) void;
-pub fn CreateDebugReportCallbackEXT(instance: Instance, createInfo: DebugReportCallbackCreateInfoEXT, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_UNDOCUMENTED_ERROR }!DebugReportCallbackEXT {
+
+pub inline fn CreateDebugReportCallbackEXT(instance: Instance, createInfo: DebugReportCallbackCreateInfoEXT, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_UNDOCUMENTED_ERROR}!DebugReportCallbackEXT {
     var out_callback: DebugReportCallbackEXT = undefined;
     const result = vkCreateDebugReportCallbackEXT(instance, &createInfo, pAllocator, &out_callback);
     if (@bitCast(c_int, result) < 0) {
@@ -11343,27 +11577,32 @@ pub fn CreateDebugReportCallbackEXT(instance: Instance, createInfo: DebugReportC
 }
 
 pub const DestroyDebugReportCallbackEXT = vkDestroyDebugReportCallbackEXT;
-pub fn DebugReportMessageEXT(instance: Instance, flags: DebugReportFlagsEXT, objectType: DebugReportObjectTypeEXT, object: u64, location: usize, messageCode: i32, pLayerPrefix: CString, pMessage: CString) callconv(.Inline) void {
+
+pub inline fn DebugReportMessageEXT(instance: Instance, flags: DebugReportFlagsEXT, objectType: DebugReportObjectTypeEXT, object: u64, location: usize, messageCode: i32, pLayerPrefix: CString, pMessage: CString) void {
     vkDebugReportMessageEXT(instance, flags.toInt(), objectType, object, location, messageCode, pLayerPrefix, pMessage);
 }
+
 
 pub const NV_glsl_shader = 1;
 pub const NV_GLSL_SHADER_SPEC_VERSION = 1;
 pub const NV_GLSL_SHADER_EXTENSION_NAME = "VK_NV_glsl_shader";
 
+
 pub const EXT_depth_range_unrestricted = 1;
 pub const EXT_DEPTH_RANGE_UNRESTRICTED_SPEC_VERSION = 1;
 pub const EXT_DEPTH_RANGE_UNRESTRICTED_EXTENSION_NAME = "VK_EXT_depth_range_unrestricted";
+
 
 pub const IMG_filter_cubic = 1;
 pub const IMG_FILTER_CUBIC_SPEC_VERSION = 1;
 pub const IMG_FILTER_CUBIC_EXTENSION_NAME = "VK_IMG_filter_cubic";
 
+
 pub const AMD_rasterization_order = 1;
 pub const AMD_RASTERIZATION_ORDER_SPEC_VERSION = 1;
 pub const AMD_RASTERIZATION_ORDER_EXTENSION_NAME = "VK_AMD_rasterization_order";
 
-pub const RasterizationOrderAMD = extern enum(i32) {
+pub const RasterizationOrderAMD = enum(i32) {
     STRICT = 0,
     RELAXED = 1,
     _,
@@ -11371,17 +11610,20 @@ pub const RasterizationOrderAMD = extern enum(i32) {
 
 pub const PipelineRasterizationStateRasterizationOrderAMD = extern struct {
     sType: StructureType = .PIPELINE_RASTERIZATION_STATE_RASTERIZATION_ORDER_AMD,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     rasterizationOrder: RasterizationOrderAMD,
 };
+
 
 pub const AMD_shader_trinary_minmax = 1;
 pub const AMD_SHADER_TRINARY_MINMAX_SPEC_VERSION = 1;
 pub const AMD_SHADER_TRINARY_MINMAX_EXTENSION_NAME = "VK_AMD_shader_trinary_minmax";
 
+
 pub const AMD_shader_explicit_vertex_parameter = 1;
 pub const AMD_SHADER_EXPLICIT_VERTEX_PARAMETER_SPEC_VERSION = 1;
 pub const AMD_SHADER_EXPLICIT_VERTEX_PARAMETER_EXTENSION_NAME = "VK_AMD_shader_explicit_vertex_parameter";
+
 
 pub const EXT_debug_marker = 1;
 pub const EXT_DEBUG_MARKER_SPEC_VERSION = 4;
@@ -11389,7 +11631,7 @@ pub const EXT_DEBUG_MARKER_EXTENSION_NAME = "VK_EXT_debug_marker";
 
 pub const DebugMarkerObjectNameInfoEXT = extern struct {
     sType: StructureType = .DEBUG_MARKER_OBJECT_NAME_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     objectType: DebugReportObjectTypeEXT,
     object: u64,
     pObjectName: CString,
@@ -11397,17 +11639,17 @@ pub const DebugMarkerObjectNameInfoEXT = extern struct {
 
 pub const DebugMarkerObjectTagInfoEXT = extern struct {
     sType: StructureType = .DEBUG_MARKER_OBJECT_TAG_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     objectType: DebugReportObjectTypeEXT,
     object: u64,
     tagName: u64,
     tagSize: usize,
-    pTag: ?*const c_void,
+    pTag: ?*const anyopaque,
 };
 
 pub const DebugMarkerMarkerInfoEXT = extern struct {
     sType: StructureType = .DEBUG_MARKER_MARKER_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     pMarkerName: CString,
     color: [4]f32 = 0,
 };
@@ -11433,7 +11675,8 @@ pub extern fn vkCmdDebugMarkerInsertEXT(
     commandBuffer: CommandBuffer,
     pMarkerInfo: *const DebugMarkerMarkerInfoEXT,
 ) callconv(CallConv) void;
-pub fn DebugMarkerSetObjectTagEXT(device: Device, tagInfo: DebugMarkerObjectTagInfoEXT) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn DebugMarkerSetObjectTagEXT(device: Device, tagInfo: DebugMarkerObjectTagInfoEXT) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkDebugMarkerSetObjectTagEXT(device, &tagInfo);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -11443,7 +11686,8 @@ pub fn DebugMarkerSetObjectTagEXT(device: Device, tagInfo: DebugMarkerObjectTagI
         };
     }
 }
-pub fn DebugMarkerSetObjectNameEXT(device: Device, nameInfo: DebugMarkerObjectNameInfoEXT) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn DebugMarkerSetObjectNameEXT(device: Device, nameInfo: DebugMarkerObjectNameInfoEXT) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkDebugMarkerSetObjectNameEXT(device, &nameInfo);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -11453,18 +11697,22 @@ pub fn DebugMarkerSetObjectNameEXT(device: Device, nameInfo: DebugMarkerObjectNa
         };
     }
 }
-pub fn CmdDebugMarkerBeginEXT(commandBuffer: CommandBuffer, markerInfo: DebugMarkerMarkerInfoEXT) callconv(.Inline) void {
+
+pub inline fn CmdDebugMarkerBeginEXT(commandBuffer: CommandBuffer, markerInfo: DebugMarkerMarkerInfoEXT) void {
     vkCmdDebugMarkerBeginEXT(commandBuffer, &markerInfo);
 }
 
 pub const CmdDebugMarkerEndEXT = vkCmdDebugMarkerEndEXT;
-pub fn CmdDebugMarkerInsertEXT(commandBuffer: CommandBuffer, markerInfo: DebugMarkerMarkerInfoEXT) callconv(.Inline) void {
+
+pub inline fn CmdDebugMarkerInsertEXT(commandBuffer: CommandBuffer, markerInfo: DebugMarkerMarkerInfoEXT) void {
     vkCmdDebugMarkerInsertEXT(commandBuffer, &markerInfo);
 }
+
 
 pub const AMD_gcn_shader = 1;
 pub const AMD_GCN_SHADER_SPEC_VERSION = 1;
 pub const AMD_GCN_SHADER_EXTENSION_NAME = "VK_AMD_gcn_shader";
+
 
 pub const NV_dedicated_allocation = 1;
 pub const NV_DEDICATED_ALLOCATION_SPEC_VERSION = 1;
@@ -11472,22 +11720,23 @@ pub const NV_DEDICATED_ALLOCATION_EXTENSION_NAME = "VK_NV_dedicated_allocation";
 
 pub const DedicatedAllocationImageCreateInfoNV = extern struct {
     sType: StructureType = .DEDICATED_ALLOCATION_IMAGE_CREATE_INFO_NV,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     dedicatedAllocation: Bool32,
 };
 
 pub const DedicatedAllocationBufferCreateInfoNV = extern struct {
     sType: StructureType = .DEDICATED_ALLOCATION_BUFFER_CREATE_INFO_NV,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     dedicatedAllocation: Bool32,
 };
 
 pub const DedicatedAllocationMemoryAllocateInfoNV = extern struct {
     sType: StructureType = .DEDICATED_ALLOCATION_MEMORY_ALLOCATE_INFO_NV,
-    pNext: ?*const c_void = null,
-    image: ?Image = null,
-    buffer: ?Buffer = null,
+    pNext: ?*const anyopaque = null,
+    image: Image = Image.Null,
+    buffer: Buffer = Buffer.Null,
 };
+
 
 pub const EXT_transform_feedback = 1;
 pub const EXT_TRANSFORM_FEEDBACK_SPEC_VERSION = 1;
@@ -11500,14 +11749,14 @@ pub const PipelineRasterizationStateStreamCreateFlagsEXT = packed struct {
 
 pub const PhysicalDeviceTransformFeedbackFeaturesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_TRANSFORM_FEEDBACK_FEATURES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     transformFeedback: Bool32,
     geometryStreams: Bool32,
 };
 
 pub const PhysicalDeviceTransformFeedbackPropertiesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_TRANSFORM_FEEDBACK_PROPERTIES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     maxTransformFeedbackStreams: u32,
     maxTransformFeedbackBuffers: u32,
     maxTransformFeedbackBufferSize: DeviceSize,
@@ -11522,7 +11771,7 @@ pub const PhysicalDeviceTransformFeedbackPropertiesEXT = extern struct {
 
 pub const PipelineRasterizationStateStreamCreateInfoEXT = extern struct {
     sType: StructureType = .PIPELINE_RASTERIZATION_STATE_STREAM_CREATE_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: PipelineRasterizationStateStreamCreateFlagsEXT align(4) = PipelineRasterizationStateStreamCreateFlagsEXT{},
     rasterizationStream: u32,
 };
@@ -11576,25 +11825,30 @@ pub extern fn vkCmdDrawIndirectByteCountEXT(
     counterOffset: u32,
     vertexStride: u32,
 ) callconv(CallConv) void;
-pub fn CmdBindTransformFeedbackBuffersEXT(commandBuffer: CommandBuffer, firstBinding: u32, buffers: []const Buffer, offsets: []const DeviceSize, sizes: []const DeviceSize) callconv(.Inline) void {
+
+pub inline fn CmdBindTransformFeedbackBuffersEXT(commandBuffer: CommandBuffer, firstBinding: u32, buffers: []const Buffer, offsets: []const DeviceSize, sizes: []const DeviceSize) void {
     assert(offsets.len >= buffers.len);
     assert(sizes.len >= buffers.len);
     vkCmdBindTransformFeedbackBuffersEXT(commandBuffer, firstBinding, @intCast(u32, buffers.len), buffers.ptr, offsets.ptr, sizes.ptr);
 }
-pub fn CmdBeginTransformFeedbackEXT(commandBuffer: CommandBuffer, firstCounterBuffer: u32, counterBuffers: []const Buffer, counterBufferOffsets: []const DeviceSize) callconv(.Inline) void {
+
+pub inline fn CmdBeginTransformFeedbackEXT(commandBuffer: CommandBuffer, firstCounterBuffer: u32, counterBuffers: []const Buffer, counterBufferOffsets: []const DeviceSize) void {
     assert(counterBufferOffsets.len >= counterBuffers.len);
     vkCmdBeginTransformFeedbackEXT(commandBuffer, firstCounterBuffer, @intCast(u32, counterBuffers.len), counterBuffers.ptr, counterBufferOffsets.ptr);
 }
-pub fn CmdEndTransformFeedbackEXT(commandBuffer: CommandBuffer, firstCounterBuffer: u32, counterBuffers: []const Buffer, counterBufferOffsets: []const DeviceSize) callconv(.Inline) void {
+
+pub inline fn CmdEndTransformFeedbackEXT(commandBuffer: CommandBuffer, firstCounterBuffer: u32, counterBuffers: []const Buffer, counterBufferOffsets: []const DeviceSize) void {
     assert(counterBufferOffsets.len >= counterBuffers.len);
     vkCmdEndTransformFeedbackEXT(commandBuffer, firstCounterBuffer, @intCast(u32, counterBuffers.len), counterBuffers.ptr, counterBufferOffsets.ptr);
 }
-pub fn CmdBeginQueryIndexedEXT(commandBuffer: CommandBuffer, queryPool: QueryPool, query: u32, flags: QueryControlFlags, index: u32) callconv(.Inline) void {
+
+pub inline fn CmdBeginQueryIndexedEXT(commandBuffer: CommandBuffer, queryPool: QueryPool, query: u32, flags: QueryControlFlags, index: u32) void {
     vkCmdBeginQueryIndexedEXT(commandBuffer, queryPool, query, flags.toInt(), index);
 }
 
 pub const CmdEndQueryIndexedEXT = vkCmdEndQueryIndexedEXT;
 pub const CmdDrawIndirectByteCountEXT = vkCmdDrawIndirectByteCountEXT;
+
 
 pub const NVX_image_view_handle = 1;
 pub const NVX_IMAGE_VIEW_HANDLE_SPEC_VERSION = 1;
@@ -11602,20 +11856,22 @@ pub const NVX_IMAGE_VIEW_HANDLE_EXTENSION_NAME = "VK_NVX_image_view_handle";
 
 pub const ImageViewHandleInfoNVX = extern struct {
     sType: StructureType = .IMAGE_VIEW_HANDLE_INFO_NVX,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     imageView: ImageView,
     descriptorType: DescriptorType,
-    sampler: ?Sampler = null,
+    sampler: Sampler = Sampler.Null,
 };
 
 pub extern fn vkGetImageViewHandleNVX(
     device: Device,
     pInfo: *const ImageViewHandleInfoNVX,
 ) callconv(CallConv) u32;
-pub fn GetImageViewHandleNVX(device: Device, info: ImageViewHandleInfoNVX) callconv(.Inline) u32 {
+
+pub inline fn GetImageViewHandleNVX(device: Device, info: ImageViewHandleInfoNVX) u32 {
     const result = vkGetImageViewHandleNVX(device, &info);
     return result;
 }
+
 
 pub const AMD_draw_indirect_count = 1;
 pub const AMD_DRAW_INDIRECT_COUNT_SPEC_VERSION = 2;
@@ -11644,17 +11900,21 @@ pub extern fn vkCmdDrawIndexedIndirectCountAMD(
 pub const CmdDrawIndirectCountAMD = vkCmdDrawIndirectCountAMD;
 pub const CmdDrawIndexedIndirectCountAMD = vkCmdDrawIndexedIndirectCountAMD;
 
+
 pub const AMD_negative_viewport_height = 1;
 pub const AMD_NEGATIVE_VIEWPORT_HEIGHT_SPEC_VERSION = 1;
 pub const AMD_NEGATIVE_VIEWPORT_HEIGHT_EXTENSION_NAME = "VK_AMD_negative_viewport_height";
+
 
 pub const AMD_gpu_shader_half_float = 1;
 pub const AMD_GPU_SHADER_HALF_FLOAT_SPEC_VERSION = 2;
 pub const AMD_GPU_SHADER_HALF_FLOAT_EXTENSION_NAME = "VK_AMD_gpu_shader_half_float";
 
+
 pub const AMD_shader_ballot = 1;
 pub const AMD_SHADER_BALLOT_SPEC_VERSION = 1;
 pub const AMD_SHADER_BALLOT_EXTENSION_NAME = "VK_AMD_shader_ballot";
+
 
 pub const AMD_texture_gather_bias_lod = 1;
 pub const AMD_TEXTURE_GATHER_BIAS_LOD_SPEC_VERSION = 1;
@@ -11662,15 +11922,16 @@ pub const AMD_TEXTURE_GATHER_BIAS_LOD_EXTENSION_NAME = "VK_AMD_texture_gather_bi
 
 pub const TextureLODGatherFormatPropertiesAMD = extern struct {
     sType: StructureType = .TEXTURE_LOD_GATHER_FORMAT_PROPERTIES_AMD,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     supportsTextureGatherLODBiasAMD: Bool32,
 };
+
 
 pub const AMD_shader_info = 1;
 pub const AMD_SHADER_INFO_SPEC_VERSION = 1;
 pub const AMD_SHADER_INFO_EXTENSION_NAME = "VK_AMD_shader_info";
 
-pub const ShaderInfoTypeAMD = extern enum(i32) {
+pub const ShaderInfoTypeAMD = enum(i32) {
     STATISTICS = 0,
     BINARY = 1,
     DISASSEMBLY = 2,
@@ -11701,14 +11962,14 @@ pub extern fn vkGetShaderInfoAMD(
     shaderStage: ShaderStageFlags.IntType,
     infoType: ShaderInfoTypeAMD,
     pInfoSize: *usize,
-    pInfo: ?*c_void,
+    pInfo: ?*anyopaque,
 ) callconv(CallConv) Result;
 
 pub const GetShaderInfoAMDResult = struct {
     result: Result,
     info: []u8,
 };
-pub fn GetShaderInfoAMD(device: Device, pipeline: Pipeline, shaderStage: ShaderStageFlags, infoType: ShaderInfoTypeAMD, info: []u8) callconv(.Inline) error{ VK_FEATURE_NOT_PRESENT, VK_OUT_OF_HOST_MEMORY, VK_UNDOCUMENTED_ERROR }!GetShaderInfoAMDResult {
+pub inline fn GetShaderInfoAMD(device: Device, pipeline: Pipeline, shaderStage: ShaderStageFlags, infoType: ShaderInfoTypeAMD, info: []u8) error{VK_FEATURE_NOT_PRESENT,VK_OUT_OF_HOST_MEMORY,VK_UNDOCUMENTED_ERROR}!GetShaderInfoAMDResult {
     var returnValues: GetShaderInfoAMDResult = undefined;
     var infoSize: usize = @intCast(usize, info.len);
     const result = vkGetShaderInfoAMD(device, pipeline, shaderStage.toInt(), infoType, &infoSize, info.ptr);
@@ -11723,7 +11984,7 @@ pub fn GetShaderInfoAMD(device: Device, pipeline: Pipeline, shaderStage: ShaderS
     returnValues.result = result;
     return returnValues;
 }
-pub fn GetShaderInfoCountAMD(device: Device, pipeline: Pipeline, shaderStage: ShaderStageFlags, infoType: ShaderInfoTypeAMD) callconv(.Inline) error{ VK_FEATURE_NOT_PRESENT, VK_OUT_OF_HOST_MEMORY, VK_UNDOCUMENTED_ERROR }!usize {
+pub inline fn GetShaderInfoCountAMD(device: Device, pipeline: Pipeline, shaderStage: ShaderStageFlags, infoType: ShaderInfoTypeAMD) error{VK_FEATURE_NOT_PRESENT,VK_OUT_OF_HOST_MEMORY,VK_UNDOCUMENTED_ERROR}!usize {
     var out_infoSize: usize = undefined;
     const result = vkGetShaderInfoAMD(device, pipeline, shaderStage.toInt(), infoType, &out_infoSize, null);
     if (@bitCast(c_int, result) < 0) {
@@ -11736,9 +11997,11 @@ pub fn GetShaderInfoCountAMD(device: Device, pipeline: Pipeline, shaderStage: Sh
     return out_infoSize;
 }
 
+
 pub const AMD_shader_image_load_store_lod = 1;
 pub const AMD_SHADER_IMAGE_LOAD_STORE_LOD_SPEC_VERSION = 1;
 pub const AMD_SHADER_IMAGE_LOAD_STORE_LOD_EXTENSION_NAME = "VK_AMD_shader_image_load_store_lod";
+
 
 pub const NV_corner_sampled_image = 1;
 pub const NV_CORNER_SAMPLED_IMAGE_SPEC_VERSION = 2;
@@ -11746,13 +12009,15 @@ pub const NV_CORNER_SAMPLED_IMAGE_EXTENSION_NAME = "VK_NV_corner_sampled_image";
 
 pub const PhysicalDeviceCornerSampledImageFeaturesNV = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_CORNER_SAMPLED_IMAGE_FEATURES_NV,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     cornerSampledImage: Bool32,
 };
+
 
 pub const IMG_format_pvrtc = 1;
 pub const IMG_FORMAT_PVRTC_SPEC_VERSION = 1;
 pub const IMG_FORMAT_PVRTC_EXTENSION_NAME = "VK_IMG_format_pvrtc";
+
 
 pub const NV_external_memory_capabilities = 1;
 pub const NV_EXTERNAL_MEMORY_CAPABILITIES_SPEC_VERSION = 1;
@@ -11849,7 +12114,8 @@ pub extern fn vkGetPhysicalDeviceExternalImageFormatPropertiesNV(
     externalHandleType: ExternalMemoryHandleTypeFlagsNV.IntType,
     pExternalImageFormatProperties: *ExternalImageFormatPropertiesNV,
 ) callconv(CallConv) Result;
-pub fn GetPhysicalDeviceExternalImageFormatPropertiesNV(physicalDevice: PhysicalDevice, format: Format, inType: ImageType, tiling: ImageTiling, usage: ImageUsageFlags, flags: ImageCreateFlags, externalHandleType: ExternalMemoryHandleTypeFlagsNV) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_FORMAT_NOT_SUPPORTED, VK_UNDOCUMENTED_ERROR }!ExternalImageFormatPropertiesNV {
+
+pub inline fn GetPhysicalDeviceExternalImageFormatPropertiesNV(physicalDevice: PhysicalDevice, format: Format, inType: ImageType, tiling: ImageTiling, usage: ImageUsageFlags, flags: ImageCreateFlags, externalHandleType: ExternalMemoryHandleTypeFlagsNV) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_FORMAT_NOT_SUPPORTED,VK_UNDOCUMENTED_ERROR}!ExternalImageFormatPropertiesNV {
     var out_externalImageFormatProperties: ExternalImageFormatPropertiesNV = undefined;
     const result = vkGetPhysicalDeviceExternalImageFormatPropertiesNV(physicalDevice, format, inType, tiling, usage.toInt(), flags.toInt(), externalHandleType.toInt(), &out_externalImageFormatProperties);
     if (@bitCast(c_int, result) < 0) {
@@ -11863,27 +12129,29 @@ pub fn GetPhysicalDeviceExternalImageFormatPropertiesNV(physicalDevice: Physical
     return out_externalImageFormatProperties;
 }
 
+
 pub const NV_external_memory = 1;
 pub const NV_EXTERNAL_MEMORY_SPEC_VERSION = 1;
 pub const NV_EXTERNAL_MEMORY_EXTENSION_NAME = "VK_NV_external_memory";
 
 pub const ExternalMemoryImageCreateInfoNV = extern struct {
     sType: StructureType = .EXTERNAL_MEMORY_IMAGE_CREATE_INFO_NV,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     handleTypes: ExternalMemoryHandleTypeFlagsNV align(4) = ExternalMemoryHandleTypeFlagsNV{},
 };
 
 pub const ExportMemoryAllocateInfoNV = extern struct {
     sType: StructureType = .EXPORT_MEMORY_ALLOCATE_INFO_NV,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     handleTypes: ExternalMemoryHandleTypeFlagsNV align(4) = ExternalMemoryHandleTypeFlagsNV{},
 };
+
 
 pub const EXT_validation_flags = 1;
 pub const EXT_VALIDATION_FLAGS_SPEC_VERSION = 2;
 pub const EXT_VALIDATION_FLAGS_EXTENSION_NAME = "VK_EXT_validation_flags";
 
-pub const ValidationCheckEXT = extern enum(i32) {
+pub const ValidationCheckEXT = enum(i32) {
     ALL = 0,
     SHADERS = 1,
     _,
@@ -11891,18 +12159,21 @@ pub const ValidationCheckEXT = extern enum(i32) {
 
 pub const ValidationFlagsEXT = extern struct {
     sType: StructureType = .VALIDATION_FLAGS_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     disabledValidationCheckCount: u32,
     pDisabledValidationChecks: [*]const ValidationCheckEXT,
 };
+
 
 pub const EXT_shader_subgroup_ballot = 1;
 pub const EXT_SHADER_SUBGROUP_BALLOT_SPEC_VERSION = 1;
 pub const EXT_SHADER_SUBGROUP_BALLOT_EXTENSION_NAME = "VK_EXT_shader_subgroup_ballot";
 
+
 pub const EXT_shader_subgroup_vote = 1;
 pub const EXT_SHADER_SUBGROUP_VOTE_SPEC_VERSION = 1;
 pub const EXT_SHADER_SUBGROUP_VOTE_EXTENSION_NAME = "VK_EXT_shader_subgroup_vote";
+
 
 pub const EXT_texture_compression_astc_hdr = 1;
 pub const EXT_TEXTURE_COMPRESSION_ASTC_HDR_SPEC_VERSION = 1;
@@ -11910,9 +12181,10 @@ pub const EXT_TEXTURE_COMPRESSION_ASTC_HDR_EXTENSION_NAME = "VK_EXT_texture_comp
 
 pub const PhysicalDeviceTextureCompressionASTCHDRFeaturesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_TEXTURE_COMPRESSION_ASTC_HDR_FEATURES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     textureCompressionASTC_HDR: Bool32,
 };
+
 
 pub const EXT_astc_decode_mode = 1;
 pub const EXT_ASTC_DECODE_MODE_SPEC_VERSION = 1;
@@ -11920,15 +12192,16 @@ pub const EXT_ASTC_DECODE_MODE_EXTENSION_NAME = "VK_EXT_astc_decode_mode";
 
 pub const ImageViewASTCDecodeModeEXT = extern struct {
     sType: StructureType = .IMAGE_VIEW_ASTC_DECODE_MODE_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     decodeMode: Format,
 };
 
 pub const PhysicalDeviceASTCDecodeFeaturesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_ASTC_DECODE_FEATURES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     decodeModeSharedExponent: Bool32,
 };
+
 
 pub const EXT_conditional_rendering = 1;
 pub const EXT_CONDITIONAL_RENDERING_SPEC_VERSION = 2;
@@ -11973,7 +12246,7 @@ pub const ConditionalRenderingFlagsEXT = packed struct {
 
 pub const ConditionalRenderingBeginInfoEXT = extern struct {
     sType: StructureType = .CONDITIONAL_RENDERING_BEGIN_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     buffer: Buffer,
     offset: DeviceSize,
     flags: ConditionalRenderingFlagsEXT align(4) = ConditionalRenderingFlagsEXT{},
@@ -11981,14 +12254,14 @@ pub const ConditionalRenderingBeginInfoEXT = extern struct {
 
 pub const PhysicalDeviceConditionalRenderingFeaturesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_CONDITIONAL_RENDERING_FEATURES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     conditionalRendering: Bool32,
     inheritedConditionalRendering: Bool32,
 };
 
 pub const CommandBufferInheritanceConditionalRenderingInfoEXT = extern struct {
     sType: StructureType = .COMMAND_BUFFER_INHERITANCE_CONDITIONAL_RENDERING_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     conditionalRenderingEnable: Bool32,
 };
 
@@ -11998,20 +12271,22 @@ pub extern fn vkCmdBeginConditionalRenderingEXT(
 ) callconv(CallConv) void;
 
 pub extern fn vkCmdEndConditionalRenderingEXT(commandBuffer: CommandBuffer) callconv(CallConv) void;
-pub fn CmdBeginConditionalRenderingEXT(commandBuffer: CommandBuffer, conditionalRenderingBegin: ConditionalRenderingBeginInfoEXT) callconv(.Inline) void {
+
+pub inline fn CmdBeginConditionalRenderingEXT(commandBuffer: CommandBuffer, conditionalRenderingBegin: ConditionalRenderingBeginInfoEXT) void {
     vkCmdBeginConditionalRenderingEXT(commandBuffer, &conditionalRenderingBegin);
 }
 
 pub const CmdEndConditionalRenderingEXT = vkCmdEndConditionalRenderingEXT;
 
+
 pub const NVX_device_generated_commands = 1;
-pub const ObjectTableNVX = *opaque {};
-pub const IndirectCommandsLayoutNVX = *opaque {};
+pub const ObjectTableNVX = enum(u64) { Null = 0, _ };
+pub const IndirectCommandsLayoutNVX = enum(u64) { Null = 0, _ };
 
 pub const NVX_DEVICE_GENERATED_COMMANDS_SPEC_VERSION = 3;
 pub const NVX_DEVICE_GENERATED_COMMANDS_EXTENSION_NAME = "VK_NVX_device_generated_commands";
 
-pub const IndirectCommandsTokenTypeNVX = extern enum(i32) {
+pub const IndirectCommandsTokenTypeNVX = enum(i32) {
     PIPELINE = 0,
     DESCRIPTOR_SET = 1,
     INDEX_BUFFER = 2,
@@ -12023,7 +12298,7 @@ pub const IndirectCommandsTokenTypeNVX = extern enum(i32) {
     _,
 };
 
-pub const ObjectEntryTypeNVX = extern enum(i32) {
+pub const ObjectEntryTypeNVX = enum(i32) {
     DESCRIPTOR_SET = 0,
     PIPELINE = 1,
     INDEX_BUFFER = 2,
@@ -12108,13 +12383,13 @@ pub const ObjectEntryUsageFlagsNVX = packed struct {
 
 pub const DeviceGeneratedCommandsFeaturesNVX = extern struct {
     sType: StructureType = .DEVICE_GENERATED_COMMANDS_FEATURES_NVX,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     computeBindingPointSupport: Bool32,
 };
 
 pub const DeviceGeneratedCommandsLimitsNVX = extern struct {
     sType: StructureType = .DEVICE_GENERATED_COMMANDS_LIMITS_NVX,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     maxIndirectCommandsLayoutTokenCount: u32,
     maxObjectEntryCounts: u32,
     minSequenceCountBufferOffsetAlignment: u32,
@@ -12137,7 +12412,7 @@ pub const IndirectCommandsLayoutTokenNVX = extern struct {
 
 pub const IndirectCommandsLayoutCreateInfoNVX = extern struct {
     sType: StructureType = .INDIRECT_COMMANDS_LAYOUT_CREATE_INFO_NVX,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     pipelineBindPoint: PipelineBindPoint,
     flags: IndirectCommandsLayoutUsageFlagsNVX align(4),
     tokenCount: u32,
@@ -12146,22 +12421,22 @@ pub const IndirectCommandsLayoutCreateInfoNVX = extern struct {
 
 pub const CmdProcessCommandsInfoNVX = extern struct {
     sType: StructureType = .CMD_PROCESS_COMMANDS_INFO_NVX,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     objectTable: ObjectTableNVX,
     indirectCommandsLayout: IndirectCommandsLayoutNVX,
     indirectCommandsTokenCount: u32,
     pIndirectCommandsTokens: [*]const IndirectCommandsTokenNVX,
     maxSequencesCount: u32,
-    targetCommandBuffer: ?CommandBuffer = null,
-    sequencesCountBuffer: ?Buffer = null,
+    targetCommandBuffer: CommandBuffer = CommandBuffer.Null,
+    sequencesCountBuffer: Buffer = Buffer.Null,
     sequencesCountOffset: DeviceSize = 0,
-    sequencesIndexBuffer: ?Buffer = null,
+    sequencesIndexBuffer: Buffer = Buffer.Null,
     sequencesIndexOffset: DeviceSize = 0,
 };
 
 pub const CmdReserveSpaceForCommandsInfoNVX = extern struct {
     sType: StructureType = .CMD_RESERVE_SPACE_FOR_COMMANDS_INFO_NVX,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     objectTable: ObjectTableNVX,
     indirectCommandsLayout: IndirectCommandsLayoutNVX,
     maxSequencesCount: u32,
@@ -12169,7 +12444,7 @@ pub const CmdReserveSpaceForCommandsInfoNVX = extern struct {
 
 pub const ObjectTableCreateInfoNVX = extern struct {
     sType: StructureType = .OBJECT_TABLE_CREATE_INFO_NVX,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     objectCount: u32,
     pObjectEntryTypes: [*]const ObjectEntryTypeNVX,
     pObjectEntryCounts: [*]const u32,
@@ -12259,7 +12534,7 @@ pub extern fn vkRegisterObjectsNVX(
     device: Device,
     objectTable: ObjectTableNVX,
     objectCount: u32,
-    ppObjectTableEntries: [*]const *const ObjectTableEntryNVX,
+    ppObjectTableEntries: [*]const*const ObjectTableEntryNVX,
     pObjectIndices: [*]const u32,
 ) callconv(CallConv) Result;
 
@@ -12276,13 +12551,16 @@ pub extern fn vkGetPhysicalDeviceGeneratedCommandsPropertiesNVX(
     pFeatures: *DeviceGeneratedCommandsFeaturesNVX,
     pLimits: *DeviceGeneratedCommandsLimitsNVX,
 ) callconv(CallConv) void;
-pub fn CmdProcessCommandsNVX(commandBuffer: CommandBuffer, processCommandsInfo: CmdProcessCommandsInfoNVX) callconv(.Inline) void {
+
+pub inline fn CmdProcessCommandsNVX(commandBuffer: CommandBuffer, processCommandsInfo: CmdProcessCommandsInfoNVX) void {
     vkCmdProcessCommandsNVX(commandBuffer, &processCommandsInfo);
 }
-pub fn CmdReserveSpaceForCommandsNVX(commandBuffer: CommandBuffer, reserveSpaceInfo: CmdReserveSpaceForCommandsInfoNVX) callconv(.Inline) void {
+
+pub inline fn CmdReserveSpaceForCommandsNVX(commandBuffer: CommandBuffer, reserveSpaceInfo: CmdReserveSpaceForCommandsInfoNVX) void {
     vkCmdReserveSpaceForCommandsNVX(commandBuffer, &reserveSpaceInfo);
 }
-pub fn CreateIndirectCommandsLayoutNVX(device: Device, createInfo: IndirectCommandsLayoutCreateInfoNVX, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!IndirectCommandsLayoutNVX {
+
+pub inline fn CreateIndirectCommandsLayoutNVX(device: Device, createInfo: IndirectCommandsLayoutCreateInfoNVX, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!IndirectCommandsLayoutNVX {
     var out_indirectCommandsLayout: IndirectCommandsLayoutNVX = undefined;
     const result = vkCreateIndirectCommandsLayoutNVX(device, &createInfo, pAllocator, &out_indirectCommandsLayout);
     if (@bitCast(c_int, result) < 0) {
@@ -12296,7 +12574,8 @@ pub fn CreateIndirectCommandsLayoutNVX(device: Device, createInfo: IndirectComma
 }
 
 pub const DestroyIndirectCommandsLayoutNVX = vkDestroyIndirectCommandsLayoutNVX;
-pub fn CreateObjectTableNVX(device: Device, createInfo: ObjectTableCreateInfoNVX, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!ObjectTableNVX {
+
+pub inline fn CreateObjectTableNVX(device: Device, createInfo: ObjectTableCreateInfoNVX, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!ObjectTableNVX {
     var out_objectTable: ObjectTableNVX = undefined;
     const result = vkCreateObjectTableNVX(device, &createInfo, pAllocator, &out_objectTable);
     if (@bitCast(c_int, result) < 0) {
@@ -12310,7 +12589,8 @@ pub fn CreateObjectTableNVX(device: Device, createInfo: ObjectTableCreateInfoNVX
 }
 
 pub const DestroyObjectTableNVX = vkDestroyObjectTableNVX;
-pub fn RegisterObjectsNVX(device: Device, objectTable: ObjectTableNVX, pObjectTableEntries: []const *const ObjectTableEntryNVX, objectIndices: []const u32) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn RegisterObjectsNVX(device: Device, objectTable: ObjectTableNVX, pObjectTableEntries: []const*const ObjectTableEntryNVX, objectIndices: []const u32) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     assert(objectIndices.len >= pObjectTableEntries.len);
     const result = vkRegisterObjectsNVX(device, objectTable, @intCast(u32, pObjectTableEntries.len), pObjectTableEntries.ptr, objectIndices.ptr);
     if (@bitCast(c_int, result) < 0) {
@@ -12321,7 +12601,8 @@ pub fn RegisterObjectsNVX(device: Device, objectTable: ObjectTableNVX, pObjectTa
         };
     }
 }
-pub fn UnregisterObjectsNVX(device: Device, objectTable: ObjectTableNVX, objectEntryTypes: []const ObjectEntryTypeNVX, objectIndices: []const u32) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn UnregisterObjectsNVX(device: Device, objectTable: ObjectTableNVX, objectEntryTypes: []const ObjectEntryTypeNVX, objectIndices: []const u32) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     assert(objectIndices.len >= objectEntryTypes.len);
     const result = vkUnregisterObjectsNVX(device, objectTable, @intCast(u32, objectEntryTypes.len), objectEntryTypes.ptr, objectIndices.ptr);
     if (@bitCast(c_int, result) < 0) {
@@ -12337,11 +12618,12 @@ pub const GetPhysicalDeviceGeneratedCommandsPropertiesNVXResult = struct {
     features: DeviceGeneratedCommandsFeaturesNVX,
     limits: DeviceGeneratedCommandsLimitsNVX,
 };
-pub fn GetPhysicalDeviceGeneratedCommandsPropertiesNVX(physicalDevice: PhysicalDevice) callconv(.Inline) GetPhysicalDeviceGeneratedCommandsPropertiesNVXResult {
+pub inline fn GetPhysicalDeviceGeneratedCommandsPropertiesNVX(physicalDevice: PhysicalDevice) GetPhysicalDeviceGeneratedCommandsPropertiesNVXResult {
     var returnValues: GetPhysicalDeviceGeneratedCommandsPropertiesNVXResult = undefined;
     vkGetPhysicalDeviceGeneratedCommandsPropertiesNVX(physicalDevice, &returnValues.features, &returnValues.limits);
     return returnValues;
 }
+
 
 pub const NV_clip_space_w_scaling = 1;
 pub const NV_CLIP_SPACE_W_SCALING_SPEC_VERSION = 1;
@@ -12354,7 +12636,7 @@ pub const ViewportWScalingNV = extern struct {
 
 pub const PipelineViewportWScalingStateCreateInfoNV = extern struct {
     sType: StructureType = .PIPELINE_VIEWPORT_W_SCALING_STATE_CREATE_INFO_NV,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     viewportWScalingEnable: Bool32,
     viewportCount: u32,
     pViewportWScalings: ?[*]const ViewportWScalingNV = null,
@@ -12366,9 +12648,11 @@ pub extern fn vkCmdSetViewportWScalingNV(
     viewportCount: u32,
     pViewportWScalings: [*]const ViewportWScalingNV,
 ) callconv(CallConv) void;
-pub fn CmdSetViewportWScalingNV(commandBuffer: CommandBuffer, firstViewport: u32, viewportWScalings: []const ViewportWScalingNV) callconv(.Inline) void {
+
+pub inline fn CmdSetViewportWScalingNV(commandBuffer: CommandBuffer, firstViewport: u32, viewportWScalings: []const ViewportWScalingNV) void {
     vkCmdSetViewportWScalingNV(commandBuffer, firstViewport, @intCast(u32, viewportWScalings.len), viewportWScalings.ptr);
 }
+
 
 pub const EXT_direct_mode_display = 1;
 pub const EXT_DIRECT_MODE_DISPLAY_SPEC_VERSION = 1;
@@ -12378,12 +12662,14 @@ pub extern fn vkReleaseDisplayEXT(
     physicalDevice: PhysicalDevice,
     display: DisplayKHR,
 ) callconv(CallConv) Result;
-pub fn ReleaseDisplayEXT(physicalDevice: PhysicalDevice, display: DisplayKHR) callconv(.Inline) error{VK_UNDOCUMENTED_ERROR}!void {
+
+pub inline fn ReleaseDisplayEXT(physicalDevice: PhysicalDevice, display: DisplayKHR) error{VK_UNDOCUMENTED_ERROR}!void {
     const result = vkReleaseDisplayEXT(physicalDevice, display);
     if (@bitCast(c_int, result) < 0) {
         return error.VK_UNDOCUMENTED_ERROR;
     }
 }
+
 
 pub const EXT_display_surface_counter = 1;
 pub const EXT_DISPLAY_SURFACE_COUNTER_SPEC_VERSION = 1;
@@ -12428,7 +12714,7 @@ pub const SurfaceCounterFlagsEXT = packed struct {
 
 pub const SurfaceCapabilities2EXT = extern struct {
     sType: StructureType = .SURFACE_CAPABILITIES_2_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     minImageCount: u32,
     maxImageCount: u32,
     currentExtent: Extent2D,
@@ -12447,7 +12733,8 @@ pub extern fn vkGetPhysicalDeviceSurfaceCapabilities2EXT(
     surface: SurfaceKHR,
     pSurfaceCapabilities: *SurfaceCapabilities2EXT,
 ) callconv(CallConv) Result;
-pub fn GetPhysicalDeviceSurfaceCapabilities2EXT(physicalDevice: PhysicalDevice, surface: SurfaceKHR) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_SURFACE_LOST_KHR, VK_UNDOCUMENTED_ERROR }!SurfaceCapabilities2EXT {
+
+pub inline fn GetPhysicalDeviceSurfaceCapabilities2EXT(physicalDevice: PhysicalDevice, surface: SurfaceKHR) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_SURFACE_LOST_KHR,VK_UNDOCUMENTED_ERROR}!SurfaceCapabilities2EXT {
     var out_surfaceCapabilities: SurfaceCapabilities2EXT = undefined;
     const result = vkGetPhysicalDeviceSurfaceCapabilities2EXT(physicalDevice, surface, &out_surfaceCapabilities);
     if (@bitCast(c_int, result) < 0) {
@@ -12461,48 +12748,49 @@ pub fn GetPhysicalDeviceSurfaceCapabilities2EXT(physicalDevice: PhysicalDevice, 
     return out_surfaceCapabilities;
 }
 
+
 pub const EXT_display_control = 1;
 pub const EXT_DISPLAY_CONTROL_SPEC_VERSION = 1;
 pub const EXT_DISPLAY_CONTROL_EXTENSION_NAME = "VK_EXT_display_control";
 
-pub const DisplayPowerStateEXT = extern enum(i32) {
+pub const DisplayPowerStateEXT = enum(i32) {
     OFF = 0,
     SUSPEND = 1,
     ON = 2,
     _,
 };
 
-pub const DeviceEventTypeEXT = extern enum(i32) {
+pub const DeviceEventTypeEXT = enum(i32) {
     DISPLAY_HOTPLUG = 0,
     _,
 };
 
-pub const DisplayEventTypeEXT = extern enum(i32) {
+pub const DisplayEventTypeEXT = enum(i32) {
     FIRST_PIXEL_OUT = 0,
     _,
 };
 
 pub const DisplayPowerInfoEXT = extern struct {
     sType: StructureType = .DISPLAY_POWER_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     powerState: DisplayPowerStateEXT,
 };
 
 pub const DeviceEventInfoEXT = extern struct {
     sType: StructureType = .DEVICE_EVENT_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     deviceEvent: DeviceEventTypeEXT,
 };
 
 pub const DisplayEventInfoEXT = extern struct {
     sType: StructureType = .DISPLAY_EVENT_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     displayEvent: DisplayEventTypeEXT,
 };
 
 pub const SwapchainCounterCreateInfoEXT = extern struct {
     sType: StructureType = .SWAPCHAIN_COUNTER_CREATE_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     surfaceCounters: SurfaceCounterFlagsEXT align(4) = SurfaceCounterFlagsEXT{},
 };
 
@@ -12533,13 +12821,15 @@ pub extern fn vkGetSwapchainCounterEXT(
     counter: SurfaceCounterFlagsEXT.IntType,
     pCounterValue: *u64,
 ) callconv(CallConv) Result;
-pub fn DisplayPowerControlEXT(device: Device, display: DisplayKHR, displayPowerInfo: DisplayPowerInfoEXT) callconv(.Inline) error{VK_UNDOCUMENTED_ERROR}!void {
+
+pub inline fn DisplayPowerControlEXT(device: Device, display: DisplayKHR, displayPowerInfo: DisplayPowerInfoEXT) error{VK_UNDOCUMENTED_ERROR}!void {
     const result = vkDisplayPowerControlEXT(device, display, &displayPowerInfo);
     if (@bitCast(c_int, result) < 0) {
         return error.VK_UNDOCUMENTED_ERROR;
     }
 }
-pub fn RegisterDeviceEventEXT(device: Device, deviceEventInfo: DeviceEventInfoEXT, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{VK_UNDOCUMENTED_ERROR}!Fence {
+
+pub inline fn RegisterDeviceEventEXT(device: Device, deviceEventInfo: DeviceEventInfoEXT, pAllocator: ?*const AllocationCallbacks) error{VK_UNDOCUMENTED_ERROR}!Fence {
     var out_fence: Fence = undefined;
     const result = vkRegisterDeviceEventEXT(device, &deviceEventInfo, pAllocator, &out_fence);
     if (@bitCast(c_int, result) < 0) {
@@ -12547,7 +12837,8 @@ pub fn RegisterDeviceEventEXT(device: Device, deviceEventInfo: DeviceEventInfoEX
     }
     return out_fence;
 }
-pub fn RegisterDisplayEventEXT(device: Device, display: DisplayKHR, displayEventInfo: DisplayEventInfoEXT, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{VK_UNDOCUMENTED_ERROR}!Fence {
+
+pub inline fn RegisterDisplayEventEXT(device: Device, display: DisplayKHR, displayEventInfo: DisplayEventInfoEXT, pAllocator: ?*const AllocationCallbacks) error{VK_UNDOCUMENTED_ERROR}!Fence {
     var out_fence: Fence = undefined;
     const result = vkRegisterDisplayEventEXT(device, display, &displayEventInfo, pAllocator, &out_fence);
     if (@bitCast(c_int, result) < 0) {
@@ -12555,7 +12846,8 @@ pub fn RegisterDisplayEventEXT(device: Device, display: DisplayKHR, displayEvent
     }
     return out_fence;
 }
-pub fn GetSwapchainCounterEXT(device: Device, swapchain: SwapchainKHR, counter: SurfaceCounterFlagsEXT) callconv(.Inline) error{ VK_DEVICE_LOST, VK_OUT_OF_DATE_KHR, VK_UNDOCUMENTED_ERROR }!u64 {
+
+pub inline fn GetSwapchainCounterEXT(device: Device, swapchain: SwapchainKHR, counter: SurfaceCounterFlagsEXT) error{VK_DEVICE_LOST,VK_OUT_OF_DATE_KHR,VK_UNDOCUMENTED_ERROR}!u64 {
     var out_counterValue: u64 = undefined;
     const result = vkGetSwapchainCounterEXT(device, swapchain, counter.toInt(), &out_counterValue);
     if (@bitCast(c_int, result) < 0) {
@@ -12567,6 +12859,7 @@ pub fn GetSwapchainCounterEXT(device: Device, swapchain: SwapchainKHR, counter: 
     }
     return out_counterValue;
 }
+
 
 pub const GOOGLE_display_timing = 1;
 pub const GOOGLE_DISPLAY_TIMING_SPEC_VERSION = 1;
@@ -12591,7 +12884,7 @@ pub const PresentTimeGOOGLE = extern struct {
 
 pub const PresentTimesInfoGOOGLE = extern struct {
     sType: StructureType = .PRESENT_TIMES_INFO_GOOGLE,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     swapchainCount: u32,
     pTimes: ?[*]const PresentTimeGOOGLE = null,
 };
@@ -12608,7 +12901,8 @@ pub extern fn vkGetPastPresentationTimingGOOGLE(
     pPresentationTimingCount: *u32,
     pPresentationTimings: ?[*]PastPresentationTimingGOOGLE,
 ) callconv(CallConv) Result;
-pub fn GetRefreshCycleDurationGOOGLE(device: Device, swapchain: SwapchainKHR) callconv(.Inline) error{ VK_DEVICE_LOST, VK_SURFACE_LOST_KHR, VK_UNDOCUMENTED_ERROR }!RefreshCycleDurationGOOGLE {
+
+pub inline fn GetRefreshCycleDurationGOOGLE(device: Device, swapchain: SwapchainKHR) error{VK_DEVICE_LOST,VK_SURFACE_LOST_KHR,VK_UNDOCUMENTED_ERROR}!RefreshCycleDurationGOOGLE {
     var out_displayTimingProperties: RefreshCycleDurationGOOGLE = undefined;
     const result = vkGetRefreshCycleDurationGOOGLE(device, swapchain, &out_displayTimingProperties);
     if (@bitCast(c_int, result) < 0) {
@@ -12625,7 +12919,7 @@ pub const GetPastPresentationTimingGOOGLEResult = struct {
     result: Result,
     presentationTimings: []PastPresentationTimingGOOGLE,
 };
-pub fn GetPastPresentationTimingGOOGLE(device: Device, swapchain: SwapchainKHR, presentationTimings: []PastPresentationTimingGOOGLE) callconv(.Inline) error{ VK_DEVICE_LOST, VK_OUT_OF_DATE_KHR, VK_SURFACE_LOST_KHR, VK_UNDOCUMENTED_ERROR }!GetPastPresentationTimingGOOGLEResult {
+pub inline fn GetPastPresentationTimingGOOGLE(device: Device, swapchain: SwapchainKHR, presentationTimings: []PastPresentationTimingGOOGLE) error{VK_DEVICE_LOST,VK_OUT_OF_DATE_KHR,VK_SURFACE_LOST_KHR,VK_UNDOCUMENTED_ERROR}!GetPastPresentationTimingGOOGLEResult {
     var returnValues: GetPastPresentationTimingGOOGLEResult = undefined;
     var presentationTimingCount: u32 = @intCast(u32, presentationTimings.len);
     const result = vkGetPastPresentationTimingGOOGLE(device, swapchain, &presentationTimingCount, presentationTimings.ptr);
@@ -12641,7 +12935,7 @@ pub fn GetPastPresentationTimingGOOGLE(device: Device, swapchain: SwapchainKHR, 
     returnValues.result = result;
     return returnValues;
 }
-pub fn GetPastPresentationTimingCountGOOGLE(device: Device, swapchain: SwapchainKHR) callconv(.Inline) error{ VK_DEVICE_LOST, VK_OUT_OF_DATE_KHR, VK_SURFACE_LOST_KHR, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn GetPastPresentationTimingCountGOOGLE(device: Device, swapchain: SwapchainKHR) error{VK_DEVICE_LOST,VK_OUT_OF_DATE_KHR,VK_SURFACE_LOST_KHR,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_presentationTimingCount: u32 = undefined;
     const result = vkGetPastPresentationTimingGOOGLE(device, swapchain, &out_presentationTimingCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -12655,17 +12949,21 @@ pub fn GetPastPresentationTimingCountGOOGLE(device: Device, swapchain: Swapchain
     return out_presentationTimingCount;
 }
 
+
 pub const NV_sample_mask_override_coverage = 1;
 pub const NV_SAMPLE_MASK_OVERRIDE_COVERAGE_SPEC_VERSION = 1;
 pub const NV_SAMPLE_MASK_OVERRIDE_COVERAGE_EXTENSION_NAME = "VK_NV_sample_mask_override_coverage";
+
 
 pub const NV_geometry_shader_passthrough = 1;
 pub const NV_GEOMETRY_SHADER_PASSTHROUGH_SPEC_VERSION = 1;
 pub const NV_GEOMETRY_SHADER_PASSTHROUGH_EXTENSION_NAME = "VK_NV_geometry_shader_passthrough";
 
+
 pub const NV_viewport_array2 = 1;
 pub const NV_VIEWPORT_ARRAY2_SPEC_VERSION = 1;
 pub const NV_VIEWPORT_ARRAY2_EXTENSION_NAME = "VK_NV_viewport_array2";
+
 
 pub const NVX_multiview_per_view_attributes = 1;
 pub const NVX_MULTIVIEW_PER_VIEW_ATTRIBUTES_SPEC_VERSION = 1;
@@ -12673,15 +12971,16 @@ pub const NVX_MULTIVIEW_PER_VIEW_ATTRIBUTES_EXTENSION_NAME = "VK_NVX_multiview_p
 
 pub const PhysicalDeviceMultiviewPerViewAttributesPropertiesNVX = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_ATTRIBUTES_PROPERTIES_NVX,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     perViewPositionAllComponents: Bool32,
 };
+
 
 pub const NV_viewport_swizzle = 1;
 pub const NV_VIEWPORT_SWIZZLE_SPEC_VERSION = 1;
 pub const NV_VIEWPORT_SWIZZLE_EXTENSION_NAME = "VK_NV_viewport_swizzle";
 
-pub const ViewportCoordinateSwizzleNV = extern enum(i32) {
+pub const ViewportCoordinateSwizzleNV = enum(i32) {
     POSITIVE_X = 0,
     NEGATIVE_X = 1,
     POSITIVE_Y = 2,
@@ -12707,17 +13006,18 @@ pub const ViewportSwizzleNV = extern struct {
 
 pub const PipelineViewportSwizzleStateCreateInfoNV = extern struct {
     sType: StructureType = .PIPELINE_VIEWPORT_SWIZZLE_STATE_CREATE_INFO_NV,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: PipelineViewportSwizzleStateCreateFlagsNV align(4) = PipelineViewportSwizzleStateCreateFlagsNV{},
     viewportCount: u32,
     pViewportSwizzles: [*]const ViewportSwizzleNV,
 };
 
+
 pub const EXT_discard_rectangles = 1;
 pub const EXT_DISCARD_RECTANGLES_SPEC_VERSION = 1;
 pub const EXT_DISCARD_RECTANGLES_EXTENSION_NAME = "VK_EXT_discard_rectangles";
 
-pub const DiscardRectangleModeEXT = extern enum(i32) {
+pub const DiscardRectangleModeEXT = enum(i32) {
     INCLUSIVE = 0,
     EXCLUSIVE = 1,
     _,
@@ -12730,13 +13030,13 @@ pub const PipelineDiscardRectangleStateCreateFlagsEXT = packed struct {
 
 pub const PhysicalDeviceDiscardRectanglePropertiesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_DISCARD_RECTANGLE_PROPERTIES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     maxDiscardRectangles: u32,
 };
 
 pub const PipelineDiscardRectangleStateCreateInfoEXT = extern struct {
     sType: StructureType = .PIPELINE_DISCARD_RECTANGLE_STATE_CREATE_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: PipelineDiscardRectangleStateCreateFlagsEXT align(4) = PipelineDiscardRectangleStateCreateFlagsEXT{},
     discardRectangleMode: DiscardRectangleModeEXT,
     discardRectangleCount: u32 = 0,
@@ -12749,15 +13049,17 @@ pub extern fn vkCmdSetDiscardRectangleEXT(
     discardRectangleCount: u32,
     pDiscardRectangles: [*]const Rect2D,
 ) callconv(CallConv) void;
-pub fn CmdSetDiscardRectangleEXT(commandBuffer: CommandBuffer, firstDiscardRectangle: u32, discardRectangles: []const Rect2D) callconv(.Inline) void {
+
+pub inline fn CmdSetDiscardRectangleEXT(commandBuffer: CommandBuffer, firstDiscardRectangle: u32, discardRectangles: []const Rect2D) void {
     vkCmdSetDiscardRectangleEXT(commandBuffer, firstDiscardRectangle, @intCast(u32, discardRectangles.len), discardRectangles.ptr);
 }
+
 
 pub const EXT_conservative_rasterization = 1;
 pub const EXT_CONSERVATIVE_RASTERIZATION_SPEC_VERSION = 1;
 pub const EXT_CONSERVATIVE_RASTERIZATION_EXTENSION_NAME = "VK_EXT_conservative_rasterization";
 
-pub const ConservativeRasterizationModeEXT = extern enum(i32) {
+pub const ConservativeRasterizationModeEXT = enum(i32) {
     DISABLED = 0,
     OVERESTIMATE = 1,
     UNDERESTIMATE = 2,
@@ -12771,7 +13073,7 @@ pub const PipelineRasterizationConservativeStateCreateFlagsEXT = packed struct {
 
 pub const PhysicalDeviceConservativeRasterizationPropertiesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_CONSERVATIVE_RASTERIZATION_PROPERTIES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     primitiveOverestimationSize: f32,
     maxExtraPrimitiveOverestimationSize: f32,
     extraPrimitiveOverestimationSizeGranularity: f32,
@@ -12785,11 +13087,12 @@ pub const PhysicalDeviceConservativeRasterizationPropertiesEXT = extern struct {
 
 pub const PipelineRasterizationConservativeStateCreateInfoEXT = extern struct {
     sType: StructureType = .PIPELINE_RASTERIZATION_CONSERVATIVE_STATE_CREATE_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: PipelineRasterizationConservativeStateCreateFlagsEXT align(4) = PipelineRasterizationConservativeStateCreateFlagsEXT{},
     conservativeRasterizationMode: ConservativeRasterizationModeEXT,
     extraPrimitiveOverestimationSize: f32,
 };
+
 
 pub const EXT_depth_clip_enable = 1;
 pub const EXT_DEPTH_CLIP_ENABLE_SPEC_VERSION = 1;
@@ -12802,20 +13105,22 @@ pub const PipelineRasterizationDepthClipStateCreateFlagsEXT = packed struct {
 
 pub const PhysicalDeviceDepthClipEnableFeaturesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     depthClipEnable: Bool32,
 };
 
 pub const PipelineRasterizationDepthClipStateCreateInfoEXT = extern struct {
     sType: StructureType = .PIPELINE_RASTERIZATION_DEPTH_CLIP_STATE_CREATE_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: PipelineRasterizationDepthClipStateCreateFlagsEXT align(4) = PipelineRasterizationDepthClipStateCreateFlagsEXT{},
     depthClipEnable: Bool32,
 };
 
+
 pub const EXT_swapchain_colorspace = 1;
 pub const EXT_SWAPCHAIN_COLOR_SPACE_SPEC_VERSION = 4;
 pub const EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME = "VK_EXT_swapchain_colorspace";
+
 
 pub const EXT_hdr_metadata = 1;
 pub const EXT_HDR_METADATA_SPEC_VERSION = 2;
@@ -12828,7 +13133,7 @@ pub const XYColorEXT = extern struct {
 
 pub const HdrMetadataEXT = extern struct {
     sType: StructureType = .HDR_METADATA_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     displayPrimaryRed: XYColorEXT,
     displayPrimaryGreen: XYColorEXT,
     displayPrimaryBlue: XYColorEXT,
@@ -12845,22 +13150,26 @@ pub extern fn vkSetHdrMetadataEXT(
     pSwapchains: [*]const SwapchainKHR,
     pMetadata: [*]const HdrMetadataEXT,
 ) callconv(CallConv) void;
-pub fn SetHdrMetadataEXT(device: Device, swapchains: []const SwapchainKHR, metadata: []const HdrMetadataEXT) callconv(.Inline) void {
+
+pub inline fn SetHdrMetadataEXT(device: Device, swapchains: []const SwapchainKHR, metadata: []const HdrMetadataEXT) void {
     assert(metadata.len >= swapchains.len);
     vkSetHdrMetadataEXT(device, @intCast(u32, swapchains.len), swapchains.ptr, metadata.ptr);
 }
+
 
 pub const EXT_external_memory_dma_buf = 1;
 pub const EXT_EXTERNAL_MEMORY_DMA_BUF_SPEC_VERSION = 1;
 pub const EXT_EXTERNAL_MEMORY_DMA_BUF_EXTENSION_NAME = "VK_EXT_external_memory_dma_buf";
 
+
 pub const EXT_queue_family_foreign = 1;
 pub const EXT_QUEUE_FAMILY_FOREIGN_SPEC_VERSION = 1;
 pub const EXT_QUEUE_FAMILY_FOREIGN_EXTENSION_NAME = "VK_EXT_queue_family_foreign";
-pub const QUEUE_FAMILY_FOREIGN_EXT = (~@as(u32, 0) - 2);
+pub const QUEUE_FAMILY_FOREIGN_EXT = (~@as(u32, 0)-2);
+
 
 pub const EXT_debug_utils = 1;
-pub const DebugUtilsMessengerEXT = *opaque {};
+pub const DebugUtilsMessengerEXT = enum(u64) { Null = 0, _ };
 
 pub const EXT_DEBUG_UTILS_SPEC_VERSION = 1;
 pub const EXT_DEBUG_UTILS_EXTENSION_NAME = "VK_EXT_debug_utils";
@@ -12951,7 +13260,7 @@ pub const DebugUtilsMessageTypeFlagsEXT = packed struct {
 
 pub const DebugUtilsObjectNameInfoEXT = extern struct {
     sType: StructureType = .DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     objectType: ObjectType,
     objectHandle: u64,
     pObjectName: ?CString = null,
@@ -12959,24 +13268,24 @@ pub const DebugUtilsObjectNameInfoEXT = extern struct {
 
 pub const DebugUtilsObjectTagInfoEXT = extern struct {
     sType: StructureType = .DEBUG_UTILS_OBJECT_TAG_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     objectType: ObjectType,
     objectHandle: u64,
     tagName: u64,
     tagSize: usize,
-    pTag: ?*const c_void,
+    pTag: ?*const anyopaque,
 };
 
 pub const DebugUtilsLabelEXT = extern struct {
     sType: StructureType = .DEBUG_UTILS_LABEL_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     pLabelName: CString,
     color: [4]f32 = 0,
 };
 
 pub const DebugUtilsMessengerCallbackDataEXT = extern struct {
     sType: StructureType = .DEBUG_UTILS_MESSENGER_CALLBACK_DATA_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: DebugUtilsMessengerCallbackDataFlagsEXT align(4) = DebugUtilsMessengerCallbackDataFlagsEXT{},
     pMessageIdName: ?CString = null,
     messageIdNumber: i32 = 0,
@@ -12993,17 +13302,17 @@ pub const PFN_DebugUtilsMessengerCallbackEXT = fn (
     DebugUtilsMessageSeverityFlagsEXT.IntType,
     DebugUtilsMessageTypeFlagsEXT.IntType,
     ?[*]const DebugUtilsMessengerCallbackDataEXT,
-    ?*c_void,
+    ?*anyopaque,
 ) callconv(CallConv) Bool32;
 
 pub const DebugUtilsMessengerCreateInfoEXT = extern struct {
     sType: StructureType = .DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: DebugUtilsMessengerCreateFlagsEXT align(4) = DebugUtilsMessengerCreateFlagsEXT{},
     messageSeverity: DebugUtilsMessageSeverityFlagsEXT align(4),
     messageType: DebugUtilsMessageTypeFlagsEXT align(4),
     pfnUserCallback: PFN_DebugUtilsMessengerCallbackEXT,
-    pUserData: ?*c_void = null,
+    pUserData: ?*anyopaque = null,
 };
 
 pub extern fn vkSetDebugUtilsObjectNameEXT(
@@ -13059,7 +13368,8 @@ pub extern fn vkSubmitDebugUtilsMessageEXT(
     messageTypes: DebugUtilsMessageTypeFlagsEXT.IntType,
     pCallbackData: *const DebugUtilsMessengerCallbackDataEXT,
 ) callconv(CallConv) void;
-pub fn SetDebugUtilsObjectNameEXT(device: Device, nameInfo: DebugUtilsObjectNameInfoEXT) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn SetDebugUtilsObjectNameEXT(device: Device, nameInfo: DebugUtilsObjectNameInfoEXT) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkSetDebugUtilsObjectNameEXT(device, &nameInfo);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -13069,7 +13379,8 @@ pub fn SetDebugUtilsObjectNameEXT(device: Device, nameInfo: DebugUtilsObjectName
         };
     }
 }
-pub fn SetDebugUtilsObjectTagEXT(device: Device, tagInfo: DebugUtilsObjectTagInfoEXT) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn SetDebugUtilsObjectTagEXT(device: Device, tagInfo: DebugUtilsObjectTagInfoEXT) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkSetDebugUtilsObjectTagEXT(device, &tagInfo);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -13079,23 +13390,28 @@ pub fn SetDebugUtilsObjectTagEXT(device: Device, tagInfo: DebugUtilsObjectTagInf
         };
     }
 }
-pub fn QueueBeginDebugUtilsLabelEXT(queue: Queue, labelInfo: DebugUtilsLabelEXT) callconv(.Inline) void {
+
+pub inline fn QueueBeginDebugUtilsLabelEXT(queue: Queue, labelInfo: DebugUtilsLabelEXT) void {
     vkQueueBeginDebugUtilsLabelEXT(queue, &labelInfo);
 }
 
 pub const QueueEndDebugUtilsLabelEXT = vkQueueEndDebugUtilsLabelEXT;
-pub fn QueueInsertDebugUtilsLabelEXT(queue: Queue, labelInfo: DebugUtilsLabelEXT) callconv(.Inline) void {
+
+pub inline fn QueueInsertDebugUtilsLabelEXT(queue: Queue, labelInfo: DebugUtilsLabelEXT) void {
     vkQueueInsertDebugUtilsLabelEXT(queue, &labelInfo);
 }
-pub fn CmdBeginDebugUtilsLabelEXT(commandBuffer: CommandBuffer, labelInfo: DebugUtilsLabelEXT) callconv(.Inline) void {
+
+pub inline fn CmdBeginDebugUtilsLabelEXT(commandBuffer: CommandBuffer, labelInfo: DebugUtilsLabelEXT) void {
     vkCmdBeginDebugUtilsLabelEXT(commandBuffer, &labelInfo);
 }
 
 pub const CmdEndDebugUtilsLabelEXT = vkCmdEndDebugUtilsLabelEXT;
-pub fn CmdInsertDebugUtilsLabelEXT(commandBuffer: CommandBuffer, labelInfo: DebugUtilsLabelEXT) callconv(.Inline) void {
+
+pub inline fn CmdInsertDebugUtilsLabelEXT(commandBuffer: CommandBuffer, labelInfo: DebugUtilsLabelEXT) void {
     vkCmdInsertDebugUtilsLabelEXT(commandBuffer, &labelInfo);
 }
-pub fn CreateDebugUtilsMessengerEXT(instance: Instance, createInfo: DebugUtilsMessengerCreateInfoEXT, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_UNDOCUMENTED_ERROR }!DebugUtilsMessengerEXT {
+
+pub inline fn CreateDebugUtilsMessengerEXT(instance: Instance, createInfo: DebugUtilsMessengerCreateInfoEXT, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_UNDOCUMENTED_ERROR}!DebugUtilsMessengerEXT {
     var out_messenger: DebugUtilsMessengerEXT = undefined;
     const result = vkCreateDebugUtilsMessengerEXT(instance, &createInfo, pAllocator, &out_messenger);
     if (@bitCast(c_int, result) < 0) {
@@ -13108,9 +13424,11 @@ pub fn CreateDebugUtilsMessengerEXT(instance: Instance, createInfo: DebugUtilsMe
 }
 
 pub const DestroyDebugUtilsMessengerEXT = vkDestroyDebugUtilsMessengerEXT;
-pub fn SubmitDebugUtilsMessageEXT(instance: Instance, messageSeverity: DebugUtilsMessageSeverityFlagsEXT, messageTypes: DebugUtilsMessageTypeFlagsEXT, callbackData: DebugUtilsMessengerCallbackDataEXT) callconv(.Inline) void {
+
+pub inline fn SubmitDebugUtilsMessageEXT(instance: Instance, messageSeverity: DebugUtilsMessageSeverityFlagsEXT, messageTypes: DebugUtilsMessageTypeFlagsEXT, callbackData: DebugUtilsMessengerCallbackDataEXT) void {
     vkSubmitDebugUtilsMessageEXT(instance, messageSeverity.toInt(), messageTypes.toInt(), &callbackData);
 }
+
 
 pub const EXT_sampler_filter_minmax = 1;
 pub const EXT_SAMPLER_FILTER_MINMAX_SPEC_VERSION = 2;
@@ -13121,17 +13439,21 @@ pub const SamplerReductionModeEXT = SamplerReductionMode;
 pub const SamplerReductionModeCreateInfoEXT = SamplerReductionModeCreateInfo;
 pub const PhysicalDeviceSamplerFilterMinmaxPropertiesEXT = PhysicalDeviceSamplerFilterMinmaxProperties;
 
+
 pub const AMD_gpu_shader_int16 = 1;
 pub const AMD_GPU_SHADER_INT16_SPEC_VERSION = 2;
 pub const AMD_GPU_SHADER_INT16_EXTENSION_NAME = "VK_AMD_gpu_shader_int16";
+
 
 pub const AMD_mixed_attachment_samples = 1;
 pub const AMD_MIXED_ATTACHMENT_SAMPLES_SPEC_VERSION = 1;
 pub const AMD_MIXED_ATTACHMENT_SAMPLES_EXTENSION_NAME = "VK_AMD_mixed_attachment_samples";
 
+
 pub const AMD_shader_fragment_mask = 1;
 pub const AMD_SHADER_FRAGMENT_MASK_SPEC_VERSION = 1;
 pub const AMD_SHADER_FRAGMENT_MASK_EXTENSION_NAME = "VK_AMD_shader_fragment_mask";
+
 
 pub const EXT_inline_uniform_block = 1;
 pub const EXT_INLINE_UNIFORM_BLOCK_SPEC_VERSION = 1;
@@ -13139,14 +13461,14 @@ pub const EXT_INLINE_UNIFORM_BLOCK_EXTENSION_NAME = "VK_EXT_inline_uniform_block
 
 pub const PhysicalDeviceInlineUniformBlockFeaturesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_FEATURES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     inlineUniformBlock: Bool32,
     descriptorBindingInlineUniformBlockUpdateAfterBind: Bool32,
 };
 
 pub const PhysicalDeviceInlineUniformBlockPropertiesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_PROPERTIES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     maxInlineUniformBlockSize: u32,
     maxPerStageDescriptorInlineUniformBlocks: u32,
     maxPerStageDescriptorUpdateAfterBindInlineUniformBlocks: u32,
@@ -13156,20 +13478,22 @@ pub const PhysicalDeviceInlineUniformBlockPropertiesEXT = extern struct {
 
 pub const WriteDescriptorSetInlineUniformBlockEXT = extern struct {
     sType: StructureType = .WRITE_DESCRIPTOR_SET_INLINE_UNIFORM_BLOCK_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     dataSize: u32,
-    pData: ?*const c_void,
+    pData: ?*const anyopaque,
 };
 
 pub const DescriptorPoolInlineUniformBlockCreateInfoEXT = extern struct {
     sType: StructureType = .DESCRIPTOR_POOL_INLINE_UNIFORM_BLOCK_CREATE_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     maxInlineUniformBlockBindings: u32,
 };
+
 
 pub const EXT_shader_stencil_export = 1;
 pub const EXT_SHADER_STENCIL_EXPORT_SPEC_VERSION = 1;
 pub const EXT_SHADER_STENCIL_EXPORT_EXTENSION_NAME = "VK_EXT_shader_stencil_export";
+
 
 pub const EXT_sample_locations = 1;
 pub const EXT_SAMPLE_LOCATIONS_SPEC_VERSION = 1;
@@ -13182,7 +13506,7 @@ pub const SampleLocationEXT = extern struct {
 
 pub const SampleLocationsInfoEXT = extern struct {
     sType: StructureType = .SAMPLE_LOCATIONS_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     sampleLocationsPerPixel: SampleCountFlags align(4) = SampleCountFlags{},
     sampleLocationGridSize: Extent2D,
     sampleLocationsCount: u32 = 0,
@@ -13201,7 +13525,7 @@ pub const SubpassSampleLocationsEXT = extern struct {
 
 pub const RenderPassSampleLocationsBeginInfoEXT = extern struct {
     sType: StructureType = .RENDER_PASS_SAMPLE_LOCATIONS_BEGIN_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     attachmentInitialSampleLocationsCount: u32 = 0,
     pAttachmentInitialSampleLocations: [*]const AttachmentSampleLocationsEXT = undefined,
     postSubpassSampleLocationsCount: u32 = 0,
@@ -13210,14 +13534,14 @@ pub const RenderPassSampleLocationsBeginInfoEXT = extern struct {
 
 pub const PipelineSampleLocationsStateCreateInfoEXT = extern struct {
     sType: StructureType = .PIPELINE_SAMPLE_LOCATIONS_STATE_CREATE_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     sampleLocationsEnable: Bool32,
     sampleLocationsInfo: SampleLocationsInfoEXT,
 };
 
 pub const PhysicalDeviceSampleLocationsPropertiesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_SAMPLE_LOCATIONS_PROPERTIES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     sampleLocationSampleCounts: SampleCountFlags align(4),
     maxSampleLocationGridSize: Extent2D,
     sampleLocationCoordinateRange: [2]f32,
@@ -13227,7 +13551,7 @@ pub const PhysicalDeviceSampleLocationsPropertiesEXT = extern struct {
 
 pub const MultisamplePropertiesEXT = extern struct {
     sType: StructureType = .MULTISAMPLE_PROPERTIES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     maxSampleLocationGridSize: Extent2D,
 };
 
@@ -13241,20 +13565,23 @@ pub extern fn vkGetPhysicalDeviceMultisamplePropertiesEXT(
     samples: SampleCountFlags.IntType,
     pMultisampleProperties: *MultisamplePropertiesEXT,
 ) callconv(CallConv) void;
-pub fn CmdSetSampleLocationsEXT(commandBuffer: CommandBuffer, sampleLocationsInfo: SampleLocationsInfoEXT) callconv(.Inline) void {
+
+pub inline fn CmdSetSampleLocationsEXT(commandBuffer: CommandBuffer, sampleLocationsInfo: SampleLocationsInfoEXT) void {
     vkCmdSetSampleLocationsEXT(commandBuffer, &sampleLocationsInfo);
 }
-pub fn GetPhysicalDeviceMultisamplePropertiesEXT(physicalDevice: PhysicalDevice, samples: SampleCountFlags) callconv(.Inline) MultisamplePropertiesEXT {
+
+pub inline fn GetPhysicalDeviceMultisamplePropertiesEXT(physicalDevice: PhysicalDevice, samples: SampleCountFlags) MultisamplePropertiesEXT {
     var out_multisampleProperties: MultisamplePropertiesEXT = undefined;
     vkGetPhysicalDeviceMultisamplePropertiesEXT(physicalDevice, samples.toInt(), &out_multisampleProperties);
     return out_multisampleProperties;
 }
 
+
 pub const EXT_blend_operation_advanced = 1;
 pub const EXT_BLEND_OPERATION_ADVANCED_SPEC_VERSION = 2;
 pub const EXT_BLEND_OPERATION_ADVANCED_EXTENSION_NAME = "VK_EXT_blend_operation_advanced";
 
-pub const BlendOverlapEXT = extern enum(i32) {
+pub const BlendOverlapEXT = enum(i32) {
     UNCORRELATED = 0,
     DISJOINT = 1,
     CONJOINT = 2,
@@ -13263,13 +13590,13 @@ pub const BlendOverlapEXT = extern enum(i32) {
 
 pub const PhysicalDeviceBlendOperationAdvancedFeaturesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_FEATURES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     advancedBlendCoherentOperations: Bool32,
 };
 
 pub const PhysicalDeviceBlendOperationAdvancedPropertiesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_PROPERTIES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     advancedBlendMaxColorAttachments: u32,
     advancedBlendIndependentBlend: Bool32,
     advancedBlendNonPremultipliedSrcColor: Bool32,
@@ -13280,11 +13607,12 @@ pub const PhysicalDeviceBlendOperationAdvancedPropertiesEXT = extern struct {
 
 pub const PipelineColorBlendAdvancedStateCreateInfoEXT = extern struct {
     sType: StructureType = .PIPELINE_COLOR_BLEND_ADVANCED_STATE_CREATE_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     srcPremultiplied: Bool32,
     dstPremultiplied: Bool32,
     blendOverlap: BlendOverlapEXT,
 };
+
 
 pub const NV_fragment_coverage_to_color = 1;
 pub const NV_FRAGMENT_COVERAGE_TO_COLOR_SPEC_VERSION = 1;
@@ -13297,17 +13625,18 @@ pub const PipelineCoverageToColorStateCreateFlagsNV = packed struct {
 
 pub const PipelineCoverageToColorStateCreateInfoNV = extern struct {
     sType: StructureType = .PIPELINE_COVERAGE_TO_COLOR_STATE_CREATE_INFO_NV,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: PipelineCoverageToColorStateCreateFlagsNV align(4) = PipelineCoverageToColorStateCreateFlagsNV{},
     coverageToColorEnable: Bool32,
     coverageToColorLocation: u32 = 0,
 };
 
+
 pub const NV_framebuffer_mixed_samples = 1;
 pub const NV_FRAMEBUFFER_MIXED_SAMPLES_SPEC_VERSION = 1;
 pub const NV_FRAMEBUFFER_MIXED_SAMPLES_EXTENSION_NAME = "VK_NV_framebuffer_mixed_samples";
 
-pub const CoverageModulationModeNV = extern enum(i32) {
+pub const CoverageModulationModeNV = enum(i32) {
     NONE = 0,
     RGB = 1,
     ALPHA = 2,
@@ -13322,7 +13651,7 @@ pub const PipelineCoverageModulationStateCreateFlagsNV = packed struct {
 
 pub const PipelineCoverageModulationStateCreateInfoNV = extern struct {
     sType: StructureType = .PIPELINE_COVERAGE_MODULATION_STATE_CREATE_INFO_NV,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: PipelineCoverageModulationStateCreateFlagsNV align(4) = PipelineCoverageModulationStateCreateFlagsNV{},
     coverageModulationMode: CoverageModulationModeNV,
     coverageModulationTableEnable: Bool32,
@@ -13330,9 +13659,11 @@ pub const PipelineCoverageModulationStateCreateInfoNV = extern struct {
     pCoverageModulationTable: ?[*]const f32 = null,
 };
 
+
 pub const NV_fill_rectangle = 1;
 pub const NV_FILL_RECTANGLE_SPEC_VERSION = 1;
 pub const NV_FILL_RECTANGLE_EXTENSION_NAME = "VK_NV_fill_rectangle";
+
 
 pub const NV_shader_sm_builtins = 1;
 pub const NV_SHADER_SM_BUILTINS_SPEC_VERSION = 1;
@@ -13340,20 +13671,22 @@ pub const NV_SHADER_SM_BUILTINS_EXTENSION_NAME = "VK_NV_shader_sm_builtins";
 
 pub const PhysicalDeviceShaderSMBuiltinsPropertiesNV = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_SHADER_SM_BUILTINS_PROPERTIES_NV,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     shaderSMCount: u32,
     shaderWarpsPerSM: u32,
 };
 
 pub const PhysicalDeviceShaderSMBuiltinsFeaturesNV = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_SHADER_SM_BUILTINS_FEATURES_NV,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     shaderSMBuiltins: Bool32,
 };
+
 
 pub const EXT_post_depth_coverage = 1;
 pub const EXT_POST_DEPTH_COVERAGE_SPEC_VERSION = 1;
 pub const EXT_POST_DEPTH_COVERAGE_EXTENSION_NAME = "VK_EXT_post_depth_coverage";
+
 
 pub const EXT_image_drm_format_modifier = 1;
 pub const EXT_IMAGE_DRM_FORMAT_MODIFIER_SPEC_VERSION = 1;
@@ -13367,14 +13700,14 @@ pub const DrmFormatModifierPropertiesEXT = extern struct {
 
 pub const DrmFormatModifierPropertiesListEXT = extern struct {
     sType: StructureType = .DRM_FORMAT_MODIFIER_PROPERTIES_LIST_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     drmFormatModifierCount: u32 = 0,
     pDrmFormatModifierProperties: [*]DrmFormatModifierPropertiesEXT = undefined,
 };
 
 pub const PhysicalDeviceImageDrmFormatModifierInfoEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_IMAGE_DRM_FORMAT_MODIFIER_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     drmFormatModifier: u64,
     sharingMode: SharingMode,
     queueFamilyIndexCount: u32 = 0,
@@ -13383,14 +13716,14 @@ pub const PhysicalDeviceImageDrmFormatModifierInfoEXT = extern struct {
 
 pub const ImageDrmFormatModifierListCreateInfoEXT = extern struct {
     sType: StructureType = .IMAGE_DRM_FORMAT_MODIFIER_LIST_CREATE_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     drmFormatModifierCount: u32,
     pDrmFormatModifiers: [*]const u64,
 };
 
 pub const ImageDrmFormatModifierExplicitCreateInfoEXT = extern struct {
     sType: StructureType = .IMAGE_DRM_FORMAT_MODIFIER_EXPLICIT_CREATE_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     drmFormatModifier: u64,
     drmFormatModifierPlaneCount: u32,
     pPlaneLayouts: [*]const SubresourceLayout,
@@ -13398,7 +13731,7 @@ pub const ImageDrmFormatModifierExplicitCreateInfoEXT = extern struct {
 
 pub const ImageDrmFormatModifierPropertiesEXT = extern struct {
     sType: StructureType = .IMAGE_DRM_FORMAT_MODIFIER_PROPERTIES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     drmFormatModifier: u64,
 };
 
@@ -13407,7 +13740,8 @@ pub extern fn vkGetImageDrmFormatModifierPropertiesEXT(
     image: Image,
     pProperties: *ImageDrmFormatModifierPropertiesEXT,
 ) callconv(CallConv) Result;
-pub fn GetImageDrmFormatModifierPropertiesEXT(device: Device, image: Image) callconv(.Inline) error{VK_UNDOCUMENTED_ERROR}!ImageDrmFormatModifierPropertiesEXT {
+
+pub inline fn GetImageDrmFormatModifierPropertiesEXT(device: Device, image: Image) error{VK_UNDOCUMENTED_ERROR}!ImageDrmFormatModifierPropertiesEXT {
     var out_properties: ImageDrmFormatModifierPropertiesEXT = undefined;
     const result = vkGetImageDrmFormatModifierPropertiesEXT(device, image, &out_properties);
     if (@bitCast(c_int, result) < 0) {
@@ -13416,13 +13750,14 @@ pub fn GetImageDrmFormatModifierPropertiesEXT(device: Device, image: Image) call
     return out_properties;
 }
 
+
 pub const EXT_validation_cache = 1;
-pub const ValidationCacheEXT = *opaque {};
+pub const ValidationCacheEXT = enum(u64) { Null = 0, _ };
 
 pub const EXT_VALIDATION_CACHE_SPEC_VERSION = 1;
 pub const EXT_VALIDATION_CACHE_EXTENSION_NAME = "VK_EXT_validation_cache";
 
-pub const ValidationCacheHeaderVersionEXT = extern enum(i32) {
+pub const ValidationCacheHeaderVersionEXT = enum(i32) {
     ONE = 1,
     _,
 };
@@ -13434,15 +13769,15 @@ pub const ValidationCacheCreateFlagsEXT = packed struct {
 
 pub const ValidationCacheCreateInfoEXT = extern struct {
     sType: StructureType = .VALIDATION_CACHE_CREATE_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: ValidationCacheCreateFlagsEXT align(4) = ValidationCacheCreateFlagsEXT{},
     initialDataSize: usize = 0,
-    pInitialData: ?*const c_void = undefined,
+    pInitialData: ?*const anyopaque = undefined,
 };
 
 pub const ShaderModuleValidationCacheCreateInfoEXT = extern struct {
     sType: StructureType = .SHADER_MODULE_VALIDATION_CACHE_CREATE_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     validationCache: ValidationCacheEXT,
 };
 
@@ -13455,7 +13790,7 @@ pub extern fn vkCreateValidationCacheEXT(
 
 pub extern fn vkDestroyValidationCacheEXT(
     device: Device,
-    validationCache: ?ValidationCacheEXT,
+    validationCache: ValidationCacheEXT,
     pAllocator: ?*const AllocationCallbacks,
 ) callconv(CallConv) void;
 
@@ -13470,9 +13805,10 @@ pub extern fn vkGetValidationCacheDataEXT(
     device: Device,
     validationCache: ValidationCacheEXT,
     pDataSize: *usize,
-    pData: ?*c_void,
+    pData: ?*anyopaque,
 ) callconv(CallConv) Result;
-pub fn CreateValidationCacheEXT(device: Device, createInfo: ValidationCacheCreateInfoEXT, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_UNDOCUMENTED_ERROR }!ValidationCacheEXT {
+
+pub inline fn CreateValidationCacheEXT(device: Device, createInfo: ValidationCacheCreateInfoEXT, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_UNDOCUMENTED_ERROR}!ValidationCacheEXT {
     var out_validationCache: ValidationCacheEXT = undefined;
     const result = vkCreateValidationCacheEXT(device, &createInfo, pAllocator, &out_validationCache);
     if (@bitCast(c_int, result) < 0) {
@@ -13485,7 +13821,8 @@ pub fn CreateValidationCacheEXT(device: Device, createInfo: ValidationCacheCreat
 }
 
 pub const DestroyValidationCacheEXT = vkDestroyValidationCacheEXT;
-pub fn MergeValidationCachesEXT(device: Device, dstCache: ValidationCacheEXT, srcCaches: []const ValidationCacheEXT) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn MergeValidationCachesEXT(device: Device, dstCache: ValidationCacheEXT, srcCaches: []const ValidationCacheEXT) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkMergeValidationCachesEXT(device, dstCache, @intCast(u32, srcCaches.len), srcCaches.ptr);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -13500,7 +13837,7 @@ pub const GetValidationCacheDataEXTResult = struct {
     result: Result,
     data: []u8,
 };
-pub fn GetValidationCacheDataEXT(device: Device, validationCache: ValidationCacheEXT, data: []u8) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!GetValidationCacheDataEXTResult {
+pub inline fn GetValidationCacheDataEXT(device: Device, validationCache: ValidationCacheEXT, data: []u8) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!GetValidationCacheDataEXTResult {
     var returnValues: GetValidationCacheDataEXTResult = undefined;
     var dataSize: usize = @intCast(usize, data.len);
     const result = vkGetValidationCacheDataEXT(device, validationCache, &dataSize, data.ptr);
@@ -13515,7 +13852,7 @@ pub fn GetValidationCacheDataEXT(device: Device, validationCache: ValidationCach
     returnValues.result = result;
     return returnValues;
 }
-pub fn GetValidationCacheDataCountEXT(device: Device, validationCache: ValidationCacheEXT) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!usize {
+pub inline fn GetValidationCacheDataCountEXT(device: Device, validationCache: ValidationCacheEXT) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!usize {
     var out_dataSize: usize = undefined;
     const result = vkGetValidationCacheDataEXT(device, validationCache, &out_dataSize, null);
     if (@bitCast(c_int, result) < 0) {
@@ -13527,6 +13864,7 @@ pub fn GetValidationCacheDataCountEXT(device: Device, validationCache: Validatio
     }
     return out_dataSize;
 }
+
 
 pub const EXT_descriptor_indexing = 1;
 pub const EXT_DESCRIPTOR_INDEXING_SPEC_VERSION = 2;
@@ -13540,15 +13878,17 @@ pub const PhysicalDeviceDescriptorIndexingPropertiesEXT = PhysicalDeviceDescript
 pub const DescriptorSetVariableDescriptorCountAllocateInfoEXT = DescriptorSetVariableDescriptorCountAllocateInfo;
 pub const DescriptorSetVariableDescriptorCountLayoutSupportEXT = DescriptorSetVariableDescriptorCountLayoutSupport;
 
+
 pub const EXT_shader_viewport_index_layer = 1;
 pub const EXT_SHADER_VIEWPORT_INDEX_LAYER_SPEC_VERSION = 1;
 pub const EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME = "VK_EXT_shader_viewport_index_layer";
+
 
 pub const NV_shading_rate_image = 1;
 pub const NV_SHADING_RATE_IMAGE_SPEC_VERSION = 3;
 pub const NV_SHADING_RATE_IMAGE_EXTENSION_NAME = "VK_NV_shading_rate_image";
 
-pub const ShadingRatePaletteEntryNV = extern enum(i32) {
+pub const ShadingRatePaletteEntryNV = enum(i32) {
     NO_INVOCATIONS = 0,
     T_16_INVOCATIONS_PER_PIXEL = 1,
     T_8_INVOCATIONS_PER_PIXEL = 2,
@@ -13564,7 +13904,7 @@ pub const ShadingRatePaletteEntryNV = extern enum(i32) {
     _,
 };
 
-pub const CoarseSampleOrderTypeNV = extern enum(i32) {
+pub const CoarseSampleOrderTypeNV = enum(i32) {
     DEFAULT = 0,
     CUSTOM = 1,
     PIXEL_MAJOR = 2,
@@ -13579,7 +13919,7 @@ pub const ShadingRatePaletteNV = extern struct {
 
 pub const PipelineViewportShadingRateImageStateCreateInfoNV = extern struct {
     sType: StructureType = .PIPELINE_VIEWPORT_SHADING_RATE_IMAGE_STATE_CREATE_INFO_NV,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     shadingRateImageEnable: Bool32,
     viewportCount: u32 = 0,
     pShadingRatePalettes: ?[*]const ShadingRatePaletteNV = null,
@@ -13587,14 +13927,14 @@ pub const PipelineViewportShadingRateImageStateCreateInfoNV = extern struct {
 
 pub const PhysicalDeviceShadingRateImageFeaturesNV = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_SHADING_RATE_IMAGE_FEATURES_NV,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     shadingRateImage: Bool32,
     shadingRateCoarseSampleOrder: Bool32,
 };
 
 pub const PhysicalDeviceShadingRateImagePropertiesNV = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_SHADING_RATE_IMAGE_PROPERTIES_NV,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     shadingRateTexelSize: Extent2D,
     shadingRatePaletteSize: u32,
     shadingRateMaxCoarseSamples: u32,
@@ -13615,7 +13955,7 @@ pub const CoarseSampleOrderCustomNV = extern struct {
 
 pub const PipelineViewportCoarseSampleOrderStateCreateInfoNV = extern struct {
     sType: StructureType = .PIPELINE_VIEWPORT_COARSE_SAMPLE_ORDER_STATE_CREATE_INFO_NV,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     sampleOrderType: CoarseSampleOrderTypeNV,
     customSampleOrderCount: u32 = 0,
     pCustomSampleOrders: [*]const CoarseSampleOrderCustomNV = undefined,
@@ -13623,7 +13963,7 @@ pub const PipelineViewportCoarseSampleOrderStateCreateInfoNV = extern struct {
 
 pub extern fn vkCmdBindShadingRateImageNV(
     commandBuffer: CommandBuffer,
-    imageView: ?ImageView,
+    imageView: ImageView,
     imageLayout: ImageLayout,
 ) callconv(CallConv) void;
 
@@ -13642,46 +13982,49 @@ pub extern fn vkCmdSetCoarseSampleOrderNV(
 ) callconv(CallConv) void;
 
 pub const CmdBindShadingRateImageNV = vkCmdBindShadingRateImageNV;
-pub fn CmdSetViewportShadingRatePaletteNV(commandBuffer: CommandBuffer, firstViewport: u32, shadingRatePalettes: []const ShadingRatePaletteNV) callconv(.Inline) void {
+
+pub inline fn CmdSetViewportShadingRatePaletteNV(commandBuffer: CommandBuffer, firstViewport: u32, shadingRatePalettes: []const ShadingRatePaletteNV) void {
     vkCmdSetViewportShadingRatePaletteNV(commandBuffer, firstViewport, @intCast(u32, shadingRatePalettes.len), shadingRatePalettes.ptr);
 }
-pub fn CmdSetCoarseSampleOrderNV(commandBuffer: CommandBuffer, sampleOrderType: CoarseSampleOrderTypeNV, customSampleOrders: []const CoarseSampleOrderCustomNV) callconv(.Inline) void {
+
+pub inline fn CmdSetCoarseSampleOrderNV(commandBuffer: CommandBuffer, sampleOrderType: CoarseSampleOrderTypeNV, customSampleOrders: []const CoarseSampleOrderCustomNV) void {
     vkCmdSetCoarseSampleOrderNV(commandBuffer, sampleOrderType, @intCast(u32, customSampleOrders.len), customSampleOrders.ptr);
 }
 
+
 pub const NV_ray_tracing = 1;
-pub const AccelerationStructureNV = *opaque {};
+pub const AccelerationStructureNV = enum(u64) { Null = 0, _ };
 
 pub const NV_RAY_TRACING_SPEC_VERSION = 3;
 pub const NV_RAY_TRACING_EXTENSION_NAME = "VK_NV_ray_tracing";
 pub const SHADER_UNUSED_NV = (~@as(u32, 0));
 
-pub const AccelerationStructureTypeNV = extern enum(i32) {
+pub const AccelerationStructureTypeNV = enum(i32) {
     TOP_LEVEL = 0,
     BOTTOM_LEVEL = 1,
     _,
 };
 
-pub const RayTracingShaderGroupTypeNV = extern enum(i32) {
+pub const RayTracingShaderGroupTypeNV = enum(i32) {
     GENERAL = 0,
     TRIANGLES_HIT_GROUP = 1,
     PROCEDURAL_HIT_GROUP = 2,
     _,
 };
 
-pub const GeometryTypeNV = extern enum(i32) {
+pub const GeometryTypeNV = enum(i32) {
     TRIANGLES = 0,
     AABBS = 1,
     _,
 };
 
-pub const CopyAccelerationStructureModeNV = extern enum(i32) {
+pub const CopyAccelerationStructureModeNV = enum(i32) {
     CLONE = 0,
     COMPACT = 1,
     _,
 };
 
-pub const AccelerationStructureMemoryRequirementsTypeNV = extern enum(i32) {
+pub const AccelerationStructureMemoryRequirementsTypeNV = enum(i32) {
     OBJECT = 0,
     BUILD_SCRATCH = 1,
     UPDATE_SCRATCH = 2,
@@ -13689,7 +14032,7 @@ pub const AccelerationStructureMemoryRequirementsTypeNV = extern enum(i32) {
 };
 
 pub const GeometryFlagsNV = packed struct {
-    opaqueBit: bool = false,
+    @"opaque": bool = false,
     noDuplicateAnyHitInvocation: bool = false,
     __reserved_bit_02: bool = false,
     __reserved_bit_03: bool = false,
@@ -13801,7 +14144,7 @@ pub const BuildAccelerationStructureFlagsNV = packed struct {
 
 pub const RayTracingShaderGroupCreateInfoNV = extern struct {
     sType: StructureType = .RAY_TRACING_SHADER_GROUP_CREATE_INFO_NV,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     inType: RayTracingShaderGroupTypeNV,
     generalShader: u32,
     closestHitShader: u32,
@@ -13811,7 +14154,7 @@ pub const RayTracingShaderGroupCreateInfoNV = extern struct {
 
 pub const RayTracingPipelineCreateInfoNV = extern struct {
     sType: StructureType = .RAY_TRACING_PIPELINE_CREATE_INFO_NV,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: PipelineCreateFlags align(4) = PipelineCreateFlags{},
     stageCount: u32,
     pStages: [*]const PipelineShaderStageCreateInfo,
@@ -13819,30 +14162,30 @@ pub const RayTracingPipelineCreateInfoNV = extern struct {
     pGroups: [*]const RayTracingShaderGroupCreateInfoNV,
     maxRecursionDepth: u32,
     layout: PipelineLayout,
-    basePipelineHandle: ?Pipeline = null,
+    basePipelineHandle: Pipeline = Pipeline.Null,
     basePipelineIndex: i32,
 };
 
 pub const GeometryTrianglesNV = extern struct {
     sType: StructureType = .GEOMETRY_TRIANGLES_NV,
-    pNext: ?*const c_void = null,
-    vertexData: ?Buffer = null,
+    pNext: ?*const anyopaque = null,
+    vertexData: Buffer = Buffer.Null,
     vertexOffset: DeviceSize,
     vertexCount: u32,
     vertexStride: DeviceSize,
     vertexFormat: Format,
-    indexData: ?Buffer = null,
+    indexData: Buffer = Buffer.Null,
     indexOffset: DeviceSize,
     indexCount: u32,
     indexType: IndexType,
-    transformData: ?Buffer = null,
+    transformData: Buffer = Buffer.Null,
     transformOffset: DeviceSize,
 };
 
 pub const GeometryAABBNV = extern struct {
     sType: StructureType = .GEOMETRY_AABB_NV,
-    pNext: ?*const c_void = null,
-    aabbData: ?Buffer = null,
+    pNext: ?*const anyopaque = null,
+    aabbData: Buffer = Buffer.Null,
     numAABBs: u32,
     stride: u32,
     offset: DeviceSize,
@@ -13855,7 +14198,7 @@ pub const GeometryDataNV = extern struct {
 
 pub const GeometryNV = extern struct {
     sType: StructureType = .GEOMETRY_NV,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     geometryType: GeometryTypeNV,
     geometry: GeometryDataNV,
     flags: GeometryFlagsNV align(4) = GeometryFlagsNV{},
@@ -13863,7 +14206,7 @@ pub const GeometryNV = extern struct {
 
 pub const AccelerationStructureInfoNV = extern struct {
     sType: StructureType = .ACCELERATION_STRUCTURE_INFO_NV,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     inType: AccelerationStructureTypeNV,
     flags: BuildAccelerationStructureFlagsNV align(4) = BuildAccelerationStructureFlagsNV{},
     instanceCount: u32 = 0,
@@ -13873,14 +14216,14 @@ pub const AccelerationStructureInfoNV = extern struct {
 
 pub const AccelerationStructureCreateInfoNV = extern struct {
     sType: StructureType = .ACCELERATION_STRUCTURE_CREATE_INFO_NV,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     compactedSize: DeviceSize,
     info: AccelerationStructureInfoNV,
 };
 
 pub const BindAccelerationStructureMemoryInfoNV = extern struct {
     sType: StructureType = .BIND_ACCELERATION_STRUCTURE_MEMORY_INFO_NV,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     accelerationStructure: AccelerationStructureNV,
     memory: DeviceMemory,
     memoryOffset: DeviceSize,
@@ -13890,21 +14233,21 @@ pub const BindAccelerationStructureMemoryInfoNV = extern struct {
 
 pub const WriteDescriptorSetAccelerationStructureNV = extern struct {
     sType: StructureType = .WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_NV,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     accelerationStructureCount: u32,
     pAccelerationStructures: [*]const AccelerationStructureNV,
 };
 
 pub const AccelerationStructureMemoryRequirementsInfoNV = extern struct {
     sType: StructureType = .ACCELERATION_STRUCTURE_MEMORY_REQUIREMENTS_INFO_NV,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     inType: AccelerationStructureMemoryRequirementsTypeNV,
     accelerationStructure: AccelerationStructureNV,
 };
 
 pub const PhysicalDeviceRayTracingPropertiesNV = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_RAY_TRACING_PROPERTIES_NV,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     shaderGroupHandleSize: u32,
     maxRecursionDepth: u32,
     maxShaderGroupStride: u32,
@@ -13943,11 +14286,11 @@ pub extern fn vkBindAccelerationStructureMemoryNV(
 pub extern fn vkCmdBuildAccelerationStructureNV(
     commandBuffer: CommandBuffer,
     pInfo: *const AccelerationStructureInfoNV,
-    instanceData: ?Buffer,
+    instanceData: Buffer,
     instanceOffset: DeviceSize,
     update: Bool32,
     dst: AccelerationStructureNV,
-    src: ?AccelerationStructureNV,
+    src: AccelerationStructureNV,
     scratch: Buffer,
     scratchOffset: DeviceSize,
 ) callconv(CallConv) void;
@@ -13963,13 +14306,13 @@ pub extern fn vkCmdTraceRaysNV(
     commandBuffer: CommandBuffer,
     raygenShaderBindingTableBuffer: Buffer,
     raygenShaderBindingOffset: DeviceSize,
-    missShaderBindingTableBuffer: ?Buffer,
+    missShaderBindingTableBuffer: Buffer,
     missShaderBindingOffset: DeviceSize,
     missShaderBindingStride: DeviceSize,
-    hitShaderBindingTableBuffer: ?Buffer,
+    hitShaderBindingTableBuffer: Buffer,
     hitShaderBindingOffset: DeviceSize,
     hitShaderBindingStride: DeviceSize,
-    callableShaderBindingTableBuffer: ?Buffer,
+    callableShaderBindingTableBuffer: Buffer,
     callableShaderBindingOffset: DeviceSize,
     callableShaderBindingStride: DeviceSize,
     width: u32,
@@ -13979,7 +14322,7 @@ pub extern fn vkCmdTraceRaysNV(
 
 pub extern fn vkCreateRayTracingPipelinesNV(
     device: Device,
-    pipelineCache: ?PipelineCache,
+    pipelineCache: PipelineCache,
     createInfoCount: u32,
     pCreateInfos: [*]const RayTracingPipelineCreateInfoNV,
     pAllocator: ?*const AllocationCallbacks,
@@ -13992,14 +14335,14 @@ pub extern fn vkGetRayTracingShaderGroupHandlesNV(
     firstGroup: u32,
     groupCount: u32,
     dataSize: usize,
-    pData: ?*c_void,
+    pData: ?*anyopaque,
 ) callconv(CallConv) Result;
 
 pub extern fn vkGetAccelerationStructureHandleNV(
     device: Device,
     accelerationStructure: AccelerationStructureNV,
     dataSize: usize,
-    pData: ?*c_void,
+    pData: ?*anyopaque,
 ) callconv(CallConv) Result;
 
 pub extern fn vkCmdWriteAccelerationStructuresPropertiesNV(
@@ -14016,7 +14359,8 @@ pub extern fn vkCompileDeferredNV(
     pipeline: Pipeline,
     shader: u32,
 ) callconv(CallConv) Result;
-pub fn CreateAccelerationStructureNV(device: Device, createInfo: AccelerationStructureCreateInfoNV, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_UNDOCUMENTED_ERROR }!AccelerationStructureNV {
+
+pub inline fn CreateAccelerationStructureNV(device: Device, createInfo: AccelerationStructureCreateInfoNV, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_UNDOCUMENTED_ERROR}!AccelerationStructureNV {
     var out_accelerationStructure: AccelerationStructureNV = undefined;
     const result = vkCreateAccelerationStructureNV(device, &createInfo, pAllocator, &out_accelerationStructure);
     if (@bitCast(c_int, result) < 0) {
@@ -14029,12 +14373,14 @@ pub fn CreateAccelerationStructureNV(device: Device, createInfo: AccelerationStr
 }
 
 pub const DestroyAccelerationStructureNV = vkDestroyAccelerationStructureNV;
-pub fn GetAccelerationStructureMemoryRequirementsNV(device: Device, info: AccelerationStructureMemoryRequirementsInfoNV) callconv(.Inline) MemoryRequirements2KHR {
+
+pub inline fn GetAccelerationStructureMemoryRequirementsNV(device: Device, info: AccelerationStructureMemoryRequirementsInfoNV) MemoryRequirements2KHR {
     var out_memoryRequirements: MemoryRequirements2KHR = undefined;
     vkGetAccelerationStructureMemoryRequirementsNV(device, &info, &out_memoryRequirements);
     return out_memoryRequirements;
 }
-pub fn BindAccelerationStructureMemoryNV(device: Device, bindInfos: []const BindAccelerationStructureMemoryInfoNV) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn BindAccelerationStructureMemoryNV(device: Device, bindInfos: []const BindAccelerationStructureMemoryInfoNV) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkBindAccelerationStructureMemoryNV(device, @intCast(u32, bindInfos.len), bindInfos.ptr);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -14044,13 +14390,15 @@ pub fn BindAccelerationStructureMemoryNV(device: Device, bindInfos: []const Bind
         };
     }
 }
-pub fn CmdBuildAccelerationStructureNV(commandBuffer: CommandBuffer, info: AccelerationStructureInfoNV, instanceData: ?Buffer, instanceOffset: DeviceSize, update: Bool32, dst: AccelerationStructureNV, src: ?AccelerationStructureNV, scratch: Buffer, scratchOffset: DeviceSize) callconv(.Inline) void {
+
+pub inline fn CmdBuildAccelerationStructureNV(commandBuffer: CommandBuffer, info: AccelerationStructureInfoNV, instanceData: Buffer, instanceOffset: DeviceSize, update: Bool32, dst: AccelerationStructureNV, src: AccelerationStructureNV, scratch: Buffer, scratchOffset: DeviceSize) void {
     vkCmdBuildAccelerationStructureNV(commandBuffer, &info, instanceData, instanceOffset, update, dst, src, scratch, scratchOffset);
 }
 
 pub const CmdCopyAccelerationStructureNV = vkCmdCopyAccelerationStructureNV;
 pub const CmdTraceRaysNV = vkCmdTraceRaysNV;
-pub fn CreateRayTracingPipelinesNV(device: Device, pipelineCache: ?PipelineCache, createInfos: []const RayTracingPipelineCreateInfoNV, pAllocator: ?*const AllocationCallbacks, pipelines: []Pipeline) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_INVALID_SHADER_NV, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn CreateRayTracingPipelinesNV(device: Device, pipelineCache: PipelineCache, createInfos: []const RayTracingPipelineCreateInfoNV, pAllocator: ?*const AllocationCallbacks, pipelines: []Pipeline) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_INVALID_SHADER_NV,VK_UNDOCUMENTED_ERROR}!void {
     assert(pipelines.len >= createInfos.len);
     const result = vkCreateRayTracingPipelinesNV(device, pipelineCache, @intCast(u32, createInfos.len), createInfos.ptr, pAllocator, pipelines.ptr);
     if (@bitCast(c_int, result) < 0) {
@@ -14062,7 +14410,8 @@ pub fn CreateRayTracingPipelinesNV(device: Device, pipelineCache: ?PipelineCache
         };
     }
 }
-pub fn GetRayTracingShaderGroupHandlesNV(device: Device, pipeline: Pipeline, firstGroup: u32, groupCount: u32, data: []u8) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn GetRayTracingShaderGroupHandlesNV(device: Device, pipeline: Pipeline, firstGroup: u32, groupCount: u32, data: []u8) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkGetRayTracingShaderGroupHandlesNV(device, pipeline, firstGroup, groupCount, @intCast(usize, data.len), data.ptr);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -14072,7 +14421,8 @@ pub fn GetRayTracingShaderGroupHandlesNV(device: Device, pipeline: Pipeline, fir
         };
     }
 }
-pub fn GetAccelerationStructureHandleNV(device: Device, accelerationStructure: AccelerationStructureNV, data: []u8) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn GetAccelerationStructureHandleNV(device: Device, accelerationStructure: AccelerationStructureNV, data: []u8) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkGetAccelerationStructureHandleNV(device, accelerationStructure, @intCast(usize, data.len), data.ptr);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -14082,10 +14432,12 @@ pub fn GetAccelerationStructureHandleNV(device: Device, accelerationStructure: A
         };
     }
 }
-pub fn CmdWriteAccelerationStructuresPropertiesNV(commandBuffer: CommandBuffer, accelerationStructures: []const AccelerationStructureNV, queryType: QueryType, queryPool: QueryPool, firstQuery: u32) callconv(.Inline) void {
+
+pub inline fn CmdWriteAccelerationStructuresPropertiesNV(commandBuffer: CommandBuffer, accelerationStructures: []const AccelerationStructureNV, queryType: QueryType, queryPool: QueryPool, firstQuery: u32) void {
     vkCmdWriteAccelerationStructuresPropertiesNV(commandBuffer, @intCast(u32, accelerationStructures.len), accelerationStructures.ptr, queryType, queryPool, firstQuery);
 }
-pub fn CompileDeferredNV(device: Device, pipeline: Pipeline, shader: u32) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn CompileDeferredNV(device: Device, pipeline: Pipeline, shader: u32) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkCompileDeferredNV(device, pipeline, shader);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -14096,21 +14448,23 @@ pub fn CompileDeferredNV(device: Device, pipeline: Pipeline, shader: u32) callco
     }
 }
 
+
 pub const NV_representative_fragment_test = 1;
 pub const NV_REPRESENTATIVE_FRAGMENT_TEST_SPEC_VERSION = 2;
 pub const NV_REPRESENTATIVE_FRAGMENT_TEST_EXTENSION_NAME = "VK_NV_representative_fragment_test";
 
 pub const PhysicalDeviceRepresentativeFragmentTestFeaturesNV = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_REPRESENTATIVE_FRAGMENT_TEST_FEATURES_NV,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     representativeFragmentTest: Bool32,
 };
 
 pub const PipelineRepresentativeFragmentTestStateCreateInfoNV = extern struct {
     sType: StructureType = .PIPELINE_REPRESENTATIVE_FRAGMENT_TEST_STATE_CREATE_INFO_NV,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     representativeFragmentTestEnable: Bool32,
 };
+
 
 pub const EXT_filter_cubic = 1;
 pub const EXT_FILTER_CUBIC_SPEC_VERSION = 3;
@@ -14118,22 +14472,23 @@ pub const EXT_FILTER_CUBIC_EXTENSION_NAME = "VK_EXT_filter_cubic";
 
 pub const PhysicalDeviceImageViewImageFormatInfoEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_IMAGE_VIEW_IMAGE_FORMAT_INFO_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     imageViewType: ImageViewType,
 };
 
 pub const FilterCubicImageViewImageFormatPropertiesEXT = extern struct {
     sType: StructureType = .FILTER_CUBIC_IMAGE_VIEW_IMAGE_FORMAT_PROPERTIES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     filterCubic: Bool32,
     filterCubicMinmax: Bool32,
 };
+
 
 pub const EXT_global_priority = 1;
 pub const EXT_GLOBAL_PRIORITY_SPEC_VERSION = 2;
 pub const EXT_GLOBAL_PRIORITY_EXTENSION_NAME = "VK_EXT_global_priority";
 
-pub const QueueGlobalPriorityEXT = extern enum(i32) {
+pub const QueueGlobalPriorityEXT = enum(i32) {
     LOW = 128,
     MEDIUM = 256,
     HIGH = 512,
@@ -14143,9 +14498,10 @@ pub const QueueGlobalPriorityEXT = extern enum(i32) {
 
 pub const DeviceQueueGlobalPriorityCreateInfoEXT = extern struct {
     sType: StructureType = .DEVICE_QUEUE_GLOBAL_PRIORITY_CREATE_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     globalPriority: QueueGlobalPriorityEXT,
 };
+
 
 pub const EXT_external_memory_host = 1;
 pub const EXT_EXTERNAL_MEMORY_HOST_SPEC_VERSION = 1;
@@ -14153,30 +14509,31 @@ pub const EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME = "VK_EXT_external_memory_host
 
 pub const ImportMemoryHostPointerInfoEXT = extern struct {
     sType: StructureType = .IMPORT_MEMORY_HOST_POINTER_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     handleType: ExternalMemoryHandleTypeFlags align(4),
-    pHostPointer: ?*c_void,
+    pHostPointer: ?*anyopaque,
 };
 
 pub const MemoryHostPointerPropertiesEXT = extern struct {
     sType: StructureType = .MEMORY_HOST_POINTER_PROPERTIES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     memoryTypeBits: u32,
 };
 
 pub const PhysicalDeviceExternalMemoryHostPropertiesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_EXTERNAL_MEMORY_HOST_PROPERTIES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     minImportedHostPointerAlignment: DeviceSize,
 };
 
 pub extern fn vkGetMemoryHostPointerPropertiesEXT(
     device: Device,
     handleType: ExternalMemoryHandleTypeFlags.IntType,
-    pHostPointer: ?*const c_void,
+    pHostPointer: ?*const anyopaque,
     pMemoryHostPointerProperties: *MemoryHostPointerPropertiesEXT,
 ) callconv(CallConv) Result;
-pub fn GetMemoryHostPointerPropertiesEXT(device: Device, handleType: ExternalMemoryHandleTypeFlags, pHostPointer: ?*const c_void) callconv(.Inline) error{ VK_INVALID_EXTERNAL_HANDLE, VK_UNDOCUMENTED_ERROR }!MemoryHostPointerPropertiesEXT {
+
+pub inline fn GetMemoryHostPointerPropertiesEXT(device: Device, handleType: ExternalMemoryHandleTypeFlags, pHostPointer: ?*const anyopaque) error{VK_INVALID_EXTERNAL_HANDLE,VK_UNDOCUMENTED_ERROR}!MemoryHostPointerPropertiesEXT {
     var out_memoryHostPointerProperties: MemoryHostPointerPropertiesEXT = undefined;
     const result = vkGetMemoryHostPointerPropertiesEXT(device, handleType.toInt(), pHostPointer, &out_memoryHostPointerProperties);
     if (@bitCast(c_int, result) < 0) {
@@ -14187,6 +14544,7 @@ pub fn GetMemoryHostPointerPropertiesEXT(device: Device, handleType: ExternalMem
     }
     return out_memoryHostPointerProperties;
 }
+
 
 pub const AMD_buffer_marker = 1;
 pub const AMD_BUFFER_MARKER_SPEC_VERSION = 1;
@@ -14199,9 +14557,11 @@ pub extern fn vkCmdWriteBufferMarkerAMD(
     dstOffset: DeviceSize,
     marker: u32,
 ) callconv(CallConv) void;
-pub fn CmdWriteBufferMarkerAMD(commandBuffer: CommandBuffer, pipelineStage: PipelineStageFlags, dstBuffer: Buffer, dstOffset: DeviceSize, marker: u32) callconv(.Inline) void {
+
+pub inline fn CmdWriteBufferMarkerAMD(commandBuffer: CommandBuffer, pipelineStage: PipelineStageFlags, dstBuffer: Buffer, dstOffset: DeviceSize, marker: u32) void {
     vkCmdWriteBufferMarkerAMD(commandBuffer, pipelineStage.toInt(), dstBuffer, dstOffset, marker);
 }
+
 
 pub const AMD_pipeline_compiler_control = 1;
 pub const AMD_PIPELINE_COMPILER_CONTROL_SPEC_VERSION = 1;
@@ -14246,15 +14606,16 @@ pub const PipelineCompilerControlFlagsAMD = packed struct {
 
 pub const PipelineCompilerControlCreateInfoAMD = extern struct {
     sType: StructureType = .PIPELINE_COMPILER_CONTROL_CREATE_INFO_AMD,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     compilerControlFlags: PipelineCompilerControlFlagsAMD align(4) = PipelineCompilerControlFlagsAMD{},
 };
+
 
 pub const EXT_calibrated_timestamps = 1;
 pub const EXT_CALIBRATED_TIMESTAMPS_SPEC_VERSION = 1;
 pub const EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME = "VK_EXT_calibrated_timestamps";
 
-pub const TimeDomainEXT = extern enum(i32) {
+pub const TimeDomainEXT = enum(i32) {
     DEVICE = 0,
     CLOCK_MONOTONIC = 1,
     CLOCK_MONOTONIC_RAW = 2,
@@ -14264,7 +14625,7 @@ pub const TimeDomainEXT = extern enum(i32) {
 
 pub const CalibratedTimestampInfoEXT = extern struct {
     sType: StructureType = .CALIBRATED_TIMESTAMP_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     timeDomain: TimeDomainEXT,
 };
 
@@ -14286,7 +14647,7 @@ pub const GetPhysicalDeviceCalibrateableTimeDomainsEXTResult = struct {
     result: Result,
     timeDomains: []TimeDomainEXT,
 };
-pub fn GetPhysicalDeviceCalibrateableTimeDomainsEXT(physicalDevice: PhysicalDevice, timeDomains: []TimeDomainEXT) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!GetPhysicalDeviceCalibrateableTimeDomainsEXTResult {
+pub inline fn GetPhysicalDeviceCalibrateableTimeDomainsEXT(physicalDevice: PhysicalDevice, timeDomains: []TimeDomainEXT) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!GetPhysicalDeviceCalibrateableTimeDomainsEXTResult {
     var returnValues: GetPhysicalDeviceCalibrateableTimeDomainsEXTResult = undefined;
     var timeDomainCount: u32 = @intCast(u32, timeDomains.len);
     const result = vkGetPhysicalDeviceCalibrateableTimeDomainsEXT(physicalDevice, &timeDomainCount, timeDomains.ptr);
@@ -14301,7 +14662,7 @@ pub fn GetPhysicalDeviceCalibrateableTimeDomainsEXT(physicalDevice: PhysicalDevi
     returnValues.result = result;
     return returnValues;
 }
-pub fn GetPhysicalDeviceCalibrateableTimeDomainsCountEXT(physicalDevice: PhysicalDevice) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn GetPhysicalDeviceCalibrateableTimeDomainsCountEXT(physicalDevice: PhysicalDevice) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_timeDomainCount: u32 = undefined;
     const result = vkGetPhysicalDeviceCalibrateableTimeDomainsEXT(physicalDevice, &out_timeDomainCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -14313,7 +14674,8 @@ pub fn GetPhysicalDeviceCalibrateableTimeDomainsCountEXT(physicalDevice: Physica
     }
     return out_timeDomainCount;
 }
-pub fn GetCalibratedTimestampsEXT(device: Device, timestampInfos: []const CalibratedTimestampInfoEXT, timestamps: []u64) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!u64 {
+
+pub inline fn GetCalibratedTimestampsEXT(device: Device, timestampInfos: []const CalibratedTimestampInfoEXT, timestamps: []u64) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!u64 {
     var out_maxDeviation: u64 = undefined;
     assert(timestamps.len >= timestampInfos.len);
     const result = vkGetCalibratedTimestampsEXT(device, @intCast(u32, timestampInfos.len), timestampInfos.ptr, timestamps.ptr, &out_maxDeviation);
@@ -14327,13 +14689,14 @@ pub fn GetCalibratedTimestampsEXT(device: Device, timestampInfos: []const Calibr
     return out_maxDeviation;
 }
 
+
 pub const AMD_shader_core_properties = 1;
 pub const AMD_SHADER_CORE_PROPERTIES_SPEC_VERSION = 2;
 pub const AMD_SHADER_CORE_PROPERTIES_EXTENSION_NAME = "VK_AMD_shader_core_properties";
 
 pub const PhysicalDeviceShaderCorePropertiesAMD = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_AMD,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     shaderEngineCount: u32,
     shaderArraysPerEngineCount: u32,
     computeUnitsPerShaderArray: u32,
@@ -14350,11 +14713,12 @@ pub const PhysicalDeviceShaderCorePropertiesAMD = extern struct {
     vgprAllocationGranularity: u32,
 };
 
+
 pub const AMD_memory_overallocation_behavior = 1;
 pub const AMD_MEMORY_OVERALLOCATION_BEHAVIOR_SPEC_VERSION = 1;
 pub const AMD_MEMORY_OVERALLOCATION_BEHAVIOR_EXTENSION_NAME = "VK_AMD_memory_overallocation_behavior";
 
-pub const MemoryOverallocationBehaviorAMD = extern enum(i32) {
+pub const MemoryOverallocationBehaviorAMD = enum(i32) {
     DEFAULT = 0,
     ALLOWED = 1,
     DISALLOWED = 2,
@@ -14363,9 +14727,10 @@ pub const MemoryOverallocationBehaviorAMD = extern enum(i32) {
 
 pub const DeviceMemoryOverallocationCreateInfoAMD = extern struct {
     sType: StructureType = .DEVICE_MEMORY_OVERALLOCATION_CREATE_INFO_AMD,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     overallocationBehavior: MemoryOverallocationBehaviorAMD,
 };
+
 
 pub const EXT_vertex_attribute_divisor = 1;
 pub const EXT_VERTEX_ATTRIBUTE_DIVISOR_SPEC_VERSION = 3;
@@ -14373,7 +14738,7 @@ pub const EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME = "VK_EXT_vertex_attribute
 
 pub const PhysicalDeviceVertexAttributeDivisorPropertiesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_PROPERTIES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     maxVertexAttribDivisor: u32,
 };
 
@@ -14384,17 +14749,18 @@ pub const VertexInputBindingDivisorDescriptionEXT = extern struct {
 
 pub const PipelineVertexInputDivisorStateCreateInfoEXT = extern struct {
     sType: StructureType = .PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     vertexBindingDivisorCount: u32,
     pVertexBindingDivisors: [*]const VertexInputBindingDivisorDescriptionEXT,
 };
 
 pub const PhysicalDeviceVertexAttributeDivisorFeaturesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_FEATURES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     vertexAttributeInstanceRateDivisor: Bool32,
     vertexAttributeInstanceRateZeroDivisor: Bool32,
 };
+
 
 pub const EXT_pipeline_creation_feedback = 1;
 pub const EXT_PIPELINE_CREATION_FEEDBACK_SPEC_VERSION = 1;
@@ -14444,15 +14810,17 @@ pub const PipelineCreationFeedbackEXT = extern struct {
 
 pub const PipelineCreationFeedbackCreateInfoEXT = extern struct {
     sType: StructureType = .PIPELINE_CREATION_FEEDBACK_CREATE_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     pPipelineCreationFeedback: *PipelineCreationFeedbackEXT,
     pipelineStageCreationFeedbackCount: u32,
     pPipelineStageCreationFeedbacks: [*]PipelineCreationFeedbackEXT,
 };
 
+
 pub const NV_shader_subgroup_partitioned = 1;
 pub const NV_SHADER_SUBGROUP_PARTITIONED_SPEC_VERSION = 1;
 pub const NV_SHADER_SUBGROUP_PARTITIONED_EXTENSION_NAME = "VK_NV_shader_subgroup_partitioned";
+
 
 pub const NV_compute_shader_derivatives = 1;
 pub const NV_COMPUTE_SHADER_DERIVATIVES_SPEC_VERSION = 1;
@@ -14460,10 +14828,11 @@ pub const NV_COMPUTE_SHADER_DERIVATIVES_EXTENSION_NAME = "VK_NV_compute_shader_d
 
 pub const PhysicalDeviceComputeShaderDerivativesFeaturesNV = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_COMPUTE_SHADER_DERIVATIVES_FEATURES_NV,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     computeDerivativeGroupQuads: Bool32,
     computeDerivativeGroupLinear: Bool32,
 };
+
 
 pub const NV_mesh_shader = 1;
 pub const NV_MESH_SHADER_SPEC_VERSION = 1;
@@ -14471,14 +14840,14 @@ pub const NV_MESH_SHADER_EXTENSION_NAME = "VK_NV_mesh_shader";
 
 pub const PhysicalDeviceMeshShaderFeaturesNV = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     taskShader: Bool32,
     meshShader: Bool32,
 };
 
 pub const PhysicalDeviceMeshShaderPropertiesNV = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_MESH_SHADER_PROPERTIES_NV,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     maxDrawMeshTasksCount: u32,
     maxTaskWorkGroupInvocations: u32,
     maxTaskWorkGroupSize: [3]u32,
@@ -14527,15 +14896,17 @@ pub const CmdDrawMeshTasksNV = vkCmdDrawMeshTasksNV;
 pub const CmdDrawMeshTasksIndirectNV = vkCmdDrawMeshTasksIndirectNV;
 pub const CmdDrawMeshTasksIndirectCountNV = vkCmdDrawMeshTasksIndirectCountNV;
 
+
 pub const NV_fragment_shader_barycentric = 1;
 pub const NV_FRAGMENT_SHADER_BARYCENTRIC_SPEC_VERSION = 1;
 pub const NV_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME = "VK_NV_fragment_shader_barycentric";
 
 pub const PhysicalDeviceFragmentShaderBarycentricFeaturesNV = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_NV,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     fragmentShaderBarycentric: Bool32,
 };
+
 
 pub const NV_shader_image_footprint = 1;
 pub const NV_SHADER_IMAGE_FOOTPRINT_SPEC_VERSION = 2;
@@ -14543,9 +14914,10 @@ pub const NV_SHADER_IMAGE_FOOTPRINT_EXTENSION_NAME = "VK_NV_shader_image_footpri
 
 pub const PhysicalDeviceShaderImageFootprintFeaturesNV = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_SHADER_IMAGE_FOOTPRINT_FEATURES_NV,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     imageFootprint: Bool32,
 };
+
 
 pub const NV_scissor_exclusive = 1;
 pub const NV_SCISSOR_EXCLUSIVE_SPEC_VERSION = 1;
@@ -14553,14 +14925,14 @@ pub const NV_SCISSOR_EXCLUSIVE_EXTENSION_NAME = "VK_NV_scissor_exclusive";
 
 pub const PipelineViewportExclusiveScissorStateCreateInfoNV = extern struct {
     sType: StructureType = .PIPELINE_VIEWPORT_EXCLUSIVE_SCISSOR_STATE_CREATE_INFO_NV,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     exclusiveScissorCount: u32 = 0,
     pExclusiveScissors: ?[*]const Rect2D = null,
 };
 
 pub const PhysicalDeviceExclusiveScissorFeaturesNV = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_EXCLUSIVE_SCISSOR_FEATURES_NV,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     exclusiveScissor: Bool32,
 };
 
@@ -14570,9 +14942,11 @@ pub extern fn vkCmdSetExclusiveScissorNV(
     exclusiveScissorCount: u32,
     pExclusiveScissors: [*]const Rect2D,
 ) callconv(CallConv) void;
-pub fn CmdSetExclusiveScissorNV(commandBuffer: CommandBuffer, firstExclusiveScissor: u32, exclusiveScissors: []const Rect2D) callconv(.Inline) void {
+
+pub inline fn CmdSetExclusiveScissorNV(commandBuffer: CommandBuffer, firstExclusiveScissor: u32, exclusiveScissors: []const Rect2D) void {
     vkCmdSetExclusiveScissorNV(commandBuffer, firstExclusiveScissor, @intCast(u32, exclusiveScissors.len), exclusiveScissors.ptr);
 }
+
 
 pub const NV_device_diagnostic_checkpoints = 1;
 pub const NV_DEVICE_DIAGNOSTIC_CHECKPOINTS_SPEC_VERSION = 2;
@@ -14580,20 +14954,20 @@ pub const NV_DEVICE_DIAGNOSTIC_CHECKPOINTS_EXTENSION_NAME = "VK_NV_device_diagno
 
 pub const QueueFamilyCheckpointPropertiesNV = extern struct {
     sType: StructureType = .QUEUE_FAMILY_CHECKPOINT_PROPERTIES_NV,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     checkpointExecutionStageMask: PipelineStageFlags align(4),
 };
 
 pub const CheckpointDataNV = extern struct {
     sType: StructureType = .CHECKPOINT_DATA_NV,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     stage: PipelineStageFlags align(4),
-    pCheckpointMarker: ?*c_void,
+    pCheckpointMarker: ?*anyopaque,
 };
 
 pub extern fn vkCmdSetCheckpointNV(
     commandBuffer: CommandBuffer,
-    pCheckpointMarker: ?*const c_void,
+    pCheckpointMarker: ?*const anyopaque,
 ) callconv(CallConv) void;
 
 pub extern fn vkGetQueueCheckpointDataNV(
@@ -14603,18 +14977,20 @@ pub extern fn vkGetQueueCheckpointDataNV(
 ) callconv(CallConv) void;
 
 pub const CmdSetCheckpointNV = vkCmdSetCheckpointNV;
-pub fn GetQueueCheckpointDataNV(queue: Queue, checkpointData: []CheckpointDataNV) callconv(.Inline) []CheckpointDataNV {
+
+pub inline fn GetQueueCheckpointDataNV(queue: Queue, checkpointData: []CheckpointDataNV) []CheckpointDataNV {
     var out_checkpointData: []CheckpointDataNV = undefined;
     var checkpointDataCount: u32 = @intCast(u32, checkpointData.len);
     vkGetQueueCheckpointDataNV(queue, &checkpointDataCount, checkpointData.ptr);
     out_checkpointData = checkpointData[0..checkpointDataCount];
     return out_checkpointData;
 }
-pub fn GetQueueCheckpointDataCountNV(queue: Queue) callconv(.Inline) u32 {
+pub inline fn GetQueueCheckpointDataCountNV(queue: Queue) u32 {
     var out_checkpointDataCount: u32 = undefined;
     vkGetQueueCheckpointDataNV(queue, &out_checkpointDataCount, null);
     return out_checkpointDataCount;
 }
+
 
 pub const INTEL_shader_integer_functions2 = 1;
 pub const INTEL_SHADER_INTEGER_FUNCTIONS_2_SPEC_VERSION = 1;
@@ -14622,39 +14998,40 @@ pub const INTEL_SHADER_INTEGER_FUNCTIONS_2_EXTENSION_NAME = "VK_INTEL_shader_int
 
 pub const PhysicalDeviceShaderIntegerFunctions2FeaturesINTEL = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_SHADER_INTEGER_FUNCTIONS_2_FEATURES_INTEL,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     shaderIntegerFunctions2: Bool32,
 };
 
+
 pub const INTEL_performance_query = 1;
-pub const PerformanceConfigurationINTEL = *opaque {};
+pub const PerformanceConfigurationINTEL = enum(u64) { Null = 0, _ };
 
 pub const INTEL_PERFORMANCE_QUERY_SPEC_VERSION = 1;
 pub const INTEL_PERFORMANCE_QUERY_EXTENSION_NAME = "VK_INTEL_performance_query";
 
-pub const PerformanceConfigurationTypeINTEL = extern enum(i32) {
+pub const PerformanceConfigurationTypeINTEL = enum(i32) {
     COMMAND_QUEUE_METRICS_DISCOVERY_ACTIVATED = 0,
     _,
 };
 
-pub const QueryPoolSamplingModeINTEL = extern enum(i32) {
+pub const QueryPoolSamplingModeINTEL = enum(i32) {
     MANUAL = 0,
     _,
 };
 
-pub const PerformanceOverrideTypeINTEL = extern enum(i32) {
+pub const PerformanceOverrideTypeINTEL = enum(i32) {
     NULL_HARDWARE = 0,
     FLUSH_GPU_CACHES = 1,
     _,
 };
 
-pub const PerformanceParameterTypeINTEL = extern enum(i32) {
+pub const PerformanceParameterTypeINTEL = enum(i32) {
     HW_COUNTERS_SUPPORTED = 0,
     STREAM_MARKER_VALID_BITS = 1,
     _,
 };
 
-pub const PerformanceValueTypeINTEL = extern enum(i32) {
+pub const PerformanceValueTypeINTEL = enum(i32) {
     UINT32 = 0,
     UINT64 = 1,
     FLOAT = 2,
@@ -14678,31 +15055,31 @@ pub const PerformanceValueINTEL = extern struct {
 
 pub const InitializePerformanceApiInfoINTEL = extern struct {
     sType: StructureType = .INITIALIZE_PERFORMANCE_API_INFO_INTEL,
-    pNext: ?*const c_void = null,
-    pUserData: ?*c_void,
+    pNext: ?*const anyopaque = null,
+    pUserData: ?*anyopaque,
 };
 
 pub const QueryPoolCreateInfoINTEL = extern struct {
     sType: StructureType = .QUERY_POOL_CREATE_INFO_INTEL,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     performanceCountersSampling: QueryPoolSamplingModeINTEL,
 };
 
 pub const PerformanceMarkerInfoINTEL = extern struct {
     sType: StructureType = .PERFORMANCE_MARKER_INFO_INTEL,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     marker: u64,
 };
 
 pub const PerformanceStreamMarkerInfoINTEL = extern struct {
     sType: StructureType = .PERFORMANCE_STREAM_MARKER_INFO_INTEL,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     marker: u32,
 };
 
 pub const PerformanceOverrideInfoINTEL = extern struct {
     sType: StructureType = .PERFORMANCE_OVERRIDE_INFO_INTEL,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     inType: PerformanceOverrideTypeINTEL,
     enable: Bool32,
     parameter: u64,
@@ -14710,7 +15087,7 @@ pub const PerformanceOverrideInfoINTEL = extern struct {
 
 pub const PerformanceConfigurationAcquireInfoINTEL = extern struct {
     sType: StructureType = .PERFORMANCE_CONFIGURATION_ACQUIRE_INFO_INTEL,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     inType: PerformanceConfigurationTypeINTEL,
 };
 
@@ -14757,7 +15134,8 @@ pub extern fn vkGetPerformanceParameterINTEL(
     parameter: PerformanceParameterTypeINTEL,
     pValue: *PerformanceValueINTEL,
 ) callconv(CallConv) Result;
-pub fn InitializePerformanceApiINTEL(device: Device, initializeInfo: InitializePerformanceApiInfoINTEL) callconv(.Inline) error{ VK_TOO_MANY_OBJECTS, VK_OUT_OF_HOST_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn InitializePerformanceApiINTEL(device: Device, initializeInfo: InitializePerformanceApiInfoINTEL) error{VK_TOO_MANY_OBJECTS,VK_OUT_OF_HOST_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkInitializePerformanceApiINTEL(device, &initializeInfo);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -14769,7 +15147,8 @@ pub fn InitializePerformanceApiINTEL(device: Device, initializeInfo: InitializeP
 }
 
 pub const UninitializePerformanceApiINTEL = vkUninitializePerformanceApiINTEL;
-pub fn CmdSetPerformanceMarkerINTEL(commandBuffer: CommandBuffer, markerInfo: PerformanceMarkerInfoINTEL) callconv(.Inline) error{ VK_TOO_MANY_OBJECTS, VK_OUT_OF_HOST_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn CmdSetPerformanceMarkerINTEL(commandBuffer: CommandBuffer, markerInfo: PerformanceMarkerInfoINTEL) error{VK_TOO_MANY_OBJECTS,VK_OUT_OF_HOST_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkCmdSetPerformanceMarkerINTEL(commandBuffer, &markerInfo);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -14779,7 +15158,8 @@ pub fn CmdSetPerformanceMarkerINTEL(commandBuffer: CommandBuffer, markerInfo: Pe
         };
     }
 }
-pub fn CmdSetPerformanceStreamMarkerINTEL(commandBuffer: CommandBuffer, markerInfo: PerformanceStreamMarkerInfoINTEL) callconv(.Inline) error{ VK_TOO_MANY_OBJECTS, VK_OUT_OF_HOST_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn CmdSetPerformanceStreamMarkerINTEL(commandBuffer: CommandBuffer, markerInfo: PerformanceStreamMarkerInfoINTEL) error{VK_TOO_MANY_OBJECTS,VK_OUT_OF_HOST_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkCmdSetPerformanceStreamMarkerINTEL(commandBuffer, &markerInfo);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -14789,7 +15169,8 @@ pub fn CmdSetPerformanceStreamMarkerINTEL(commandBuffer: CommandBuffer, markerIn
         };
     }
 }
-pub fn CmdSetPerformanceOverrideINTEL(commandBuffer: CommandBuffer, overrideInfo: PerformanceOverrideInfoINTEL) callconv(.Inline) error{ VK_TOO_MANY_OBJECTS, VK_OUT_OF_HOST_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn CmdSetPerformanceOverrideINTEL(commandBuffer: CommandBuffer, overrideInfo: PerformanceOverrideInfoINTEL) error{VK_TOO_MANY_OBJECTS,VK_OUT_OF_HOST_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkCmdSetPerformanceOverrideINTEL(commandBuffer, &overrideInfo);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -14799,7 +15180,8 @@ pub fn CmdSetPerformanceOverrideINTEL(commandBuffer: CommandBuffer, overrideInfo
         };
     }
 }
-pub fn AcquirePerformanceConfigurationINTEL(device: Device, acquireInfo: PerformanceConfigurationAcquireInfoINTEL) callconv(.Inline) error{ VK_TOO_MANY_OBJECTS, VK_OUT_OF_HOST_MEMORY, VK_UNDOCUMENTED_ERROR }!PerformanceConfigurationINTEL {
+
+pub inline fn AcquirePerformanceConfigurationINTEL(device: Device, acquireInfo: PerformanceConfigurationAcquireInfoINTEL) error{VK_TOO_MANY_OBJECTS,VK_OUT_OF_HOST_MEMORY,VK_UNDOCUMENTED_ERROR}!PerformanceConfigurationINTEL {
     var out_configuration: PerformanceConfigurationINTEL = undefined;
     const result = vkAcquirePerformanceConfigurationINTEL(device, &acquireInfo, &out_configuration);
     if (@bitCast(c_int, result) < 0) {
@@ -14811,7 +15193,8 @@ pub fn AcquirePerformanceConfigurationINTEL(device: Device, acquireInfo: Perform
     }
     return out_configuration;
 }
-pub fn ReleasePerformanceConfigurationINTEL(device: Device, configuration: PerformanceConfigurationINTEL) callconv(.Inline) error{ VK_TOO_MANY_OBJECTS, VK_OUT_OF_HOST_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn ReleasePerformanceConfigurationINTEL(device: Device, configuration: PerformanceConfigurationINTEL) error{VK_TOO_MANY_OBJECTS,VK_OUT_OF_HOST_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkReleasePerformanceConfigurationINTEL(device, configuration);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -14821,7 +15204,8 @@ pub fn ReleasePerformanceConfigurationINTEL(device: Device, configuration: Perfo
         };
     }
 }
-pub fn QueueSetPerformanceConfigurationINTEL(queue: Queue, configuration: PerformanceConfigurationINTEL) callconv(.Inline) error{ VK_TOO_MANY_OBJECTS, VK_OUT_OF_HOST_MEMORY, VK_UNDOCUMENTED_ERROR }!void {
+
+pub inline fn QueueSetPerformanceConfigurationINTEL(queue: Queue, configuration: PerformanceConfigurationINTEL) error{VK_TOO_MANY_OBJECTS,VK_OUT_OF_HOST_MEMORY,VK_UNDOCUMENTED_ERROR}!void {
     const result = vkQueueSetPerformanceConfigurationINTEL(queue, configuration);
     if (@bitCast(c_int, result) < 0) {
         return switch (result) {
@@ -14831,7 +15215,8 @@ pub fn QueueSetPerformanceConfigurationINTEL(queue: Queue, configuration: Perfor
         };
     }
 }
-pub fn GetPerformanceParameterINTEL(device: Device, parameter: PerformanceParameterTypeINTEL) callconv(.Inline) error{ VK_TOO_MANY_OBJECTS, VK_OUT_OF_HOST_MEMORY, VK_UNDOCUMENTED_ERROR }!PerformanceValueINTEL {
+
+pub inline fn GetPerformanceParameterINTEL(device: Device, parameter: PerformanceParameterTypeINTEL) error{VK_TOO_MANY_OBJECTS,VK_OUT_OF_HOST_MEMORY,VK_UNDOCUMENTED_ERROR}!PerformanceValueINTEL {
     var out_value: PerformanceValueINTEL = undefined;
     const result = vkGetPerformanceParameterINTEL(device, parameter, &out_value);
     if (@bitCast(c_int, result) < 0) {
@@ -14844,18 +15229,20 @@ pub fn GetPerformanceParameterINTEL(device: Device, parameter: PerformanceParame
     return out_value;
 }
 
+
 pub const EXT_pci_bus_info = 1;
 pub const EXT_PCI_BUS_INFO_SPEC_VERSION = 2;
 pub const EXT_PCI_BUS_INFO_EXTENSION_NAME = "VK_EXT_pci_bus_info";
 
 pub const PhysicalDevicePCIBusInfoPropertiesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_PCI_BUS_INFO_PROPERTIES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     pciDomain: u32,
     pciBus: u32,
     pciDevice: u32,
     pciFunction: u32,
 };
+
 
 pub const AMD_display_native_hdr = 1;
 pub const AMD_DISPLAY_NATIVE_HDR_SPEC_VERSION = 1;
@@ -14863,13 +15250,13 @@ pub const AMD_DISPLAY_NATIVE_HDR_EXTENSION_NAME = "VK_AMD_display_native_hdr";
 
 pub const DisplayNativeHdrSurfaceCapabilitiesAMD = extern struct {
     sType: StructureType = .DISPLAY_NATIVE_HDR_SURFACE_CAPABILITIES_AMD,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     localDimmingSupport: Bool32,
 };
 
 pub const SwapchainDisplayNativeHdrCreateInfoAMD = extern struct {
     sType: StructureType = .SWAPCHAIN_DISPLAY_NATIVE_HDR_CREATE_INFO_AMD,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     localDimmingEnable: Bool32,
 };
 
@@ -14881,13 +15268,14 @@ pub extern fn vkSetLocalDimmingAMD(
 
 pub const SetLocalDimmingAMD = vkSetLocalDimmingAMD;
 
+
 pub const EXT_fragment_density_map = 1;
 pub const EXT_FRAGMENT_DENSITY_MAP_SPEC_VERSION = 1;
 pub const EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME = "VK_EXT_fragment_density_map";
 
 pub const PhysicalDeviceFragmentDensityMapFeaturesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     fragmentDensityMap: Bool32,
     fragmentDensityMapDynamic: Bool32,
     fragmentDensityMapNonSubsampledImages: Bool32,
@@ -14895,7 +15283,7 @@ pub const PhysicalDeviceFragmentDensityMapFeaturesEXT = extern struct {
 
 pub const PhysicalDeviceFragmentDensityMapPropertiesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_PROPERTIES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     minFragmentDensityTexelSize: Extent2D,
     maxFragmentDensityTexelSize: Extent2D,
     fragmentDensityInvocations: Bool32,
@@ -14903,9 +15291,10 @@ pub const PhysicalDeviceFragmentDensityMapPropertiesEXT = extern struct {
 
 pub const RenderPassFragmentDensityMapCreateInfoEXT = extern struct {
     sType: StructureType = .RENDER_PASS_FRAGMENT_DENSITY_MAP_CREATE_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     fragmentDensityMapAttachment: AttachmentReference,
 };
+
 
 pub const EXT_scalar_block_layout = 1;
 pub const EXT_SCALAR_BLOCK_LAYOUT_SPEC_VERSION = 1;
@@ -14913,13 +15302,16 @@ pub const EXT_SCALAR_BLOCK_LAYOUT_EXTENSION_NAME = "VK_EXT_scalar_block_layout";
 
 pub const PhysicalDeviceScalarBlockLayoutFeaturesEXT = PhysicalDeviceScalarBlockLayoutFeatures;
 
+
 pub const GOOGLE_hlsl_functionality1 = 1;
 pub const GOOGLE_HLSL_FUNCTIONALITY1_SPEC_VERSION = 1;
 pub const GOOGLE_HLSL_FUNCTIONALITY1_EXTENSION_NAME = "VK_GOOGLE_hlsl_functionality1";
 
+
 pub const GOOGLE_decorate_string = 1;
 pub const GOOGLE_DECORATE_STRING_SPEC_VERSION = 1;
 pub const GOOGLE_DECORATE_STRING_EXTENSION_NAME = "VK_GOOGLE_decorate_string";
+
 
 pub const EXT_subgroup_size_control = 1;
 pub const EXT_SUBGROUP_SIZE_CONTROL_SPEC_VERSION = 2;
@@ -14927,14 +15319,14 @@ pub const EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME = "VK_EXT_subgroup_size_contr
 
 pub const PhysicalDeviceSubgroupSizeControlFeaturesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_FEATURES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     subgroupSizeControl: Bool32,
     computeFullSubgroups: Bool32,
 };
 
 pub const PhysicalDeviceSubgroupSizeControlPropertiesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_PROPERTIES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     minSubgroupSize: u32,
     maxSubgroupSize: u32,
     maxComputeWorkgroupSubgroups: u32,
@@ -14943,9 +15335,10 @@ pub const PhysicalDeviceSubgroupSizeControlPropertiesEXT = extern struct {
 
 pub const PipelineShaderStageRequiredSubgroupSizeCreateInfoEXT = extern struct {
     sType: StructureType = .PIPELINE_SHADER_STAGE_REQUIRED_SUBGROUP_SIZE_CREATE_INFO_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     requiredSubgroupSize: u32,
 };
+
 
 pub const AMD_shader_core_properties2 = 1;
 pub const AMD_SHADER_CORE_PROPERTIES_2_SPEC_VERSION = 1;
@@ -14990,10 +15383,11 @@ pub const ShaderCorePropertiesFlagsAMD = packed struct {
 
 pub const PhysicalDeviceShaderCoreProperties2AMD = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_2_AMD,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     shaderCoreFeatures: ShaderCorePropertiesFlagsAMD align(4),
     activeComputeUnitCount: u32,
 };
+
 
 pub const AMD_device_coherent_memory = 1;
 pub const AMD_DEVICE_COHERENT_MEMORY_SPEC_VERSION = 1;
@@ -15001,9 +15395,10 @@ pub const AMD_DEVICE_COHERENT_MEMORY_EXTENSION_NAME = "VK_AMD_device_coherent_me
 
 pub const PhysicalDeviceCoherentMemoryFeaturesAMD = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_COHERENT_MEMORY_FEATURES_AMD,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     deviceCoherentMemory: Bool32,
 };
+
 
 pub const EXT_memory_budget = 1;
 pub const EXT_MEMORY_BUDGET_SPEC_VERSION = 1;
@@ -15011,10 +15406,11 @@ pub const EXT_MEMORY_BUDGET_EXTENSION_NAME = "VK_EXT_memory_budget";
 
 pub const PhysicalDeviceMemoryBudgetPropertiesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_MEMORY_BUDGET_PROPERTIES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     heapBudget: [MAX_MEMORY_HEAPS]DeviceSize,
     heapUsage: [MAX_MEMORY_HEAPS]DeviceSize,
 };
+
 
 pub const EXT_memory_priority = 1;
 pub const EXT_MEMORY_PRIORITY_SPEC_VERSION = 1;
@@ -15022,15 +15418,16 @@ pub const EXT_MEMORY_PRIORITY_EXTENSION_NAME = "VK_EXT_memory_priority";
 
 pub const PhysicalDeviceMemoryPriorityFeaturesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_MEMORY_PRIORITY_FEATURES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     memoryPriority: Bool32,
 };
 
 pub const MemoryPriorityAllocateInfoEXT = extern struct {
     sType: StructureType = .MEMORY_PRIORITY_ALLOCATE_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     priority: f32,
 };
+
 
 pub const NV_dedicated_allocation_image_aliasing = 1;
 pub const NV_DEDICATED_ALLOCATION_IMAGE_ALIASING_SPEC_VERSION = 1;
@@ -15038,9 +15435,10 @@ pub const NV_DEDICATED_ALLOCATION_IMAGE_ALIASING_EXTENSION_NAME = "VK_NV_dedicat
 
 pub const PhysicalDeviceDedicatedAllocationImageAliasingFeaturesNV = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_DEDICATED_ALLOCATION_IMAGE_ALIASING_FEATURES_NV,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     dedicatedAllocationImageAliasing: Bool32,
 };
+
 
 pub const EXT_buffer_device_address = 1;
 pub const EXT_BUFFER_DEVICE_ADDRESS_SPEC_VERSION = 2;
@@ -15048,7 +15446,7 @@ pub const EXT_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME = "VK_EXT_buffer_device_addre
 
 pub const PhysicalDeviceBufferDeviceAddressFeaturesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     bufferDeviceAddress: Bool32,
     bufferDeviceAddressCaptureReplay: Bool32,
     bufferDeviceAddressMultiDevice: Bool32,
@@ -15059,7 +15457,7 @@ pub const BufferDeviceAddressInfoEXT = BufferDeviceAddressInfo;
 
 pub const BufferDeviceAddressCreateInfoEXT = extern struct {
     sType: StructureType = .BUFFER_DEVICE_ADDRESS_CREATE_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     deviceAddress: DeviceAddress,
 };
 
@@ -15067,10 +15465,12 @@ pub extern fn vkGetBufferDeviceAddressEXT(
     device: Device,
     pInfo: *const BufferDeviceAddressInfo,
 ) callconv(CallConv) DeviceAddress;
-pub fn GetBufferDeviceAddressEXT(device: Device, info: BufferDeviceAddressInfo) callconv(.Inline) DeviceAddress {
+
+pub inline fn GetBufferDeviceAddressEXT(device: Device, info: BufferDeviceAddressInfo) DeviceAddress {
     const result = vkGetBufferDeviceAddressEXT(device, &info);
     return result;
 }
+
 
 pub const EXT_tooling_info = 1;
 pub const EXT_TOOLING_INFO_SPEC_VERSION = 1;
@@ -15115,12 +15515,12 @@ pub const ToolPurposeFlagsEXT = packed struct {
 
 pub const PhysicalDeviceToolPropertiesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_TOOL_PROPERTIES_EXT,
-    pNext: ?*c_void = null,
-    name: [MAX_EXTENSION_NAME_SIZE - 1:0]u8,
-    version: [MAX_EXTENSION_NAME_SIZE - 1:0]u8,
+    pNext: ?*anyopaque = null,
+    name: [MAX_EXTENSION_NAME_SIZE-1:0]u8,
+    version: [MAX_EXTENSION_NAME_SIZE-1:0]u8,
     purposes: ToolPurposeFlagsEXT align(4),
-    description: [MAX_DESCRIPTION_SIZE - 1:0]u8,
-    layer: [MAX_EXTENSION_NAME_SIZE - 1:0]u8,
+    description: [MAX_DESCRIPTION_SIZE-1:0]u8,
+    layer: [MAX_EXTENSION_NAME_SIZE-1:0]u8,
 };
 
 pub extern fn vkGetPhysicalDeviceToolPropertiesEXT(
@@ -15133,7 +15533,7 @@ pub const GetPhysicalDeviceToolPropertiesEXTResult = struct {
     result: Result,
     toolProperties: []PhysicalDeviceToolPropertiesEXT,
 };
-pub fn GetPhysicalDeviceToolPropertiesEXT(physicalDevice: PhysicalDevice, toolProperties: []PhysicalDeviceToolPropertiesEXT) callconv(.Inline) error{VK_UNDOCUMENTED_ERROR}!GetPhysicalDeviceToolPropertiesEXTResult {
+pub inline fn GetPhysicalDeviceToolPropertiesEXT(physicalDevice: PhysicalDevice, toolProperties: []PhysicalDeviceToolPropertiesEXT) error{VK_UNDOCUMENTED_ERROR}!GetPhysicalDeviceToolPropertiesEXTResult {
     var returnValues: GetPhysicalDeviceToolPropertiesEXTResult = undefined;
     var toolCount: u32 = @intCast(u32, toolProperties.len);
     const result = vkGetPhysicalDeviceToolPropertiesEXT(physicalDevice, &toolCount, toolProperties.ptr);
@@ -15144,7 +15544,7 @@ pub fn GetPhysicalDeviceToolPropertiesEXT(physicalDevice: PhysicalDevice, toolPr
     returnValues.result = result;
     return returnValues;
 }
-pub fn GetPhysicalDeviceToolPropertiesCountEXT(physicalDevice: PhysicalDevice) callconv(.Inline) error{VK_UNDOCUMENTED_ERROR}!u32 {
+pub inline fn GetPhysicalDeviceToolPropertiesCountEXT(physicalDevice: PhysicalDevice) error{VK_UNDOCUMENTED_ERROR}!u32 {
     var out_toolCount: u32 = undefined;
     const result = vkGetPhysicalDeviceToolPropertiesEXT(physicalDevice, &out_toolCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -15153,24 +15553,26 @@ pub fn GetPhysicalDeviceToolPropertiesCountEXT(physicalDevice: PhysicalDevice) c
     return out_toolCount;
 }
 
+
 pub const EXT_separate_stencil_usage = 1;
 pub const EXT_SEPARATE_STENCIL_USAGE_SPEC_VERSION = 1;
 pub const EXT_SEPARATE_STENCIL_USAGE_EXTENSION_NAME = "VK_EXT_separate_stencil_usage";
 
 pub const ImageStencilUsageCreateInfoEXT = ImageStencilUsageCreateInfo;
 
+
 pub const EXT_validation_features = 1;
 pub const EXT_VALIDATION_FEATURES_SPEC_VERSION = 2;
 pub const EXT_VALIDATION_FEATURES_EXTENSION_NAME = "VK_EXT_validation_features";
 
-pub const ValidationFeatureEnableEXT = extern enum(i32) {
+pub const ValidationFeatureEnableEXT = enum(i32) {
     GPU_ASSISTED = 0,
     GPU_ASSISTED_RESERVE_BINDING_SLOT = 1,
     BEST_PRACTICES = 2,
     _,
 };
 
-pub const ValidationFeatureDisableEXT = extern enum(i32) {
+pub const ValidationFeatureDisableEXT = enum(i32) {
     ALL = 0,
     SHADERS = 1,
     THREAD_SAFETY = 2,
@@ -15183,18 +15585,19 @@ pub const ValidationFeatureDisableEXT = extern enum(i32) {
 
 pub const ValidationFeaturesEXT = extern struct {
     sType: StructureType = .VALIDATION_FEATURES_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     enabledValidationFeatureCount: u32 = 0,
     pEnabledValidationFeatures: [*]const ValidationFeatureEnableEXT = undefined,
     disabledValidationFeatureCount: u32 = 0,
     pDisabledValidationFeatures: [*]const ValidationFeatureDisableEXT = undefined,
 };
 
+
 pub const NV_cooperative_matrix = 1;
 pub const NV_COOPERATIVE_MATRIX_SPEC_VERSION = 1;
 pub const NV_COOPERATIVE_MATRIX_EXTENSION_NAME = "VK_NV_cooperative_matrix";
 
-pub const ComponentTypeNV = extern enum(i32) {
+pub const ComponentTypeNV = enum(i32) {
     FLOAT16 = 0,
     FLOAT32 = 1,
     FLOAT64 = 2,
@@ -15209,7 +15612,7 @@ pub const ComponentTypeNV = extern enum(i32) {
     _,
 };
 
-pub const ScopeNV = extern enum(i32) {
+pub const ScopeNV = enum(i32) {
     DEVICE = 1,
     WORKGROUP = 2,
     SUBGROUP = 3,
@@ -15219,7 +15622,7 @@ pub const ScopeNV = extern enum(i32) {
 
 pub const CooperativeMatrixPropertiesNV = extern struct {
     sType: StructureType = .COOPERATIVE_MATRIX_PROPERTIES_NV,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     MSize: u32,
     NSize: u32,
     KSize: u32,
@@ -15232,14 +15635,14 @@ pub const CooperativeMatrixPropertiesNV = extern struct {
 
 pub const PhysicalDeviceCooperativeMatrixFeaturesNV = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_NV,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     cooperativeMatrix: Bool32,
     cooperativeMatrixRobustBufferAccess: Bool32,
 };
 
 pub const PhysicalDeviceCooperativeMatrixPropertiesNV = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_COOPERATIVE_MATRIX_PROPERTIES_NV,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     cooperativeMatrixSupportedStages: ShaderStageFlags align(4),
 };
 
@@ -15253,7 +15656,7 @@ pub const GetPhysicalDeviceCooperativeMatrixPropertiesNVResult = struct {
     result: Result,
     properties: []CooperativeMatrixPropertiesNV,
 };
-pub fn GetPhysicalDeviceCooperativeMatrixPropertiesNV(physicalDevice: PhysicalDevice, properties: []CooperativeMatrixPropertiesNV) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!GetPhysicalDeviceCooperativeMatrixPropertiesNVResult {
+pub inline fn GetPhysicalDeviceCooperativeMatrixPropertiesNV(physicalDevice: PhysicalDevice, properties: []CooperativeMatrixPropertiesNV) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!GetPhysicalDeviceCooperativeMatrixPropertiesNVResult {
     var returnValues: GetPhysicalDeviceCooperativeMatrixPropertiesNVResult = undefined;
     var propertyCount: u32 = @intCast(u32, properties.len);
     const result = vkGetPhysicalDeviceCooperativeMatrixPropertiesNV(physicalDevice, &propertyCount, properties.ptr);
@@ -15268,7 +15671,7 @@ pub fn GetPhysicalDeviceCooperativeMatrixPropertiesNV(physicalDevice: PhysicalDe
     returnValues.result = result;
     return returnValues;
 }
-pub fn GetPhysicalDeviceCooperativeMatrixPropertiesCountNV(physicalDevice: PhysicalDevice) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn GetPhysicalDeviceCooperativeMatrixPropertiesCountNV(physicalDevice: PhysicalDevice) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_propertyCount: u32 = undefined;
     const result = vkGetPhysicalDeviceCooperativeMatrixPropertiesNV(physicalDevice, &out_propertyCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -15281,11 +15684,12 @@ pub fn GetPhysicalDeviceCooperativeMatrixPropertiesCountNV(physicalDevice: Physi
     return out_propertyCount;
 }
 
+
 pub const NV_coverage_reduction_mode = 1;
 pub const NV_COVERAGE_REDUCTION_MODE_SPEC_VERSION = 1;
 pub const NV_COVERAGE_REDUCTION_MODE_EXTENSION_NAME = "VK_NV_coverage_reduction_mode";
 
-pub const CoverageReductionModeNV = extern enum(i32) {
+pub const CoverageReductionModeNV = enum(i32) {
     MERGE = 0,
     TRUNCATE = 1,
     _,
@@ -15298,20 +15702,20 @@ pub const PipelineCoverageReductionStateCreateFlagsNV = packed struct {
 
 pub const PhysicalDeviceCoverageReductionModeFeaturesNV = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_COVERAGE_REDUCTION_MODE_FEATURES_NV,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     coverageReductionMode: Bool32,
 };
 
 pub const PipelineCoverageReductionStateCreateInfoNV = extern struct {
     sType: StructureType = .PIPELINE_COVERAGE_REDUCTION_STATE_CREATE_INFO_NV,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: PipelineCoverageReductionStateCreateFlagsNV align(4) = PipelineCoverageReductionStateCreateFlagsNV{},
     coverageReductionMode: CoverageReductionModeNV,
 };
 
 pub const FramebufferMixedSamplesCombinationNV = extern struct {
     sType: StructureType = .FRAMEBUFFER_MIXED_SAMPLES_COMBINATION_NV,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     coverageReductionMode: CoverageReductionModeNV,
     rasterizationSamples: SampleCountFlags align(4),
     depthStencilSamples: SampleCountFlags align(4),
@@ -15328,7 +15732,7 @@ pub const GetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNVResult 
     result: Result,
     combinations: []FramebufferMixedSamplesCombinationNV,
 };
-pub fn GetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV(physicalDevice: PhysicalDevice, combinations: []FramebufferMixedSamplesCombinationNV) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!GetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNVResult {
+pub inline fn GetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV(physicalDevice: PhysicalDevice, combinations: []FramebufferMixedSamplesCombinationNV) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!GetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNVResult {
     var returnValues: GetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNVResult = undefined;
     var combinationCount: u32 = @intCast(u32, combinations.len);
     const result = vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV(physicalDevice, &combinationCount, combinations.ptr);
@@ -15343,7 +15747,7 @@ pub fn GetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV(physicalD
     returnValues.result = result;
     return returnValues;
 }
-pub fn GetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsCountNV(physicalDevice: PhysicalDevice) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!u32 {
+pub inline fn GetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsCountNV(physicalDevice: PhysicalDevice) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!u32 {
     var out_combinationCount: u32 = undefined;
     const result = vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV(physicalDevice, &out_combinationCount, null);
     if (@bitCast(c_int, result) < 0) {
@@ -15356,17 +15760,19 @@ pub fn GetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsCountNV(phys
     return out_combinationCount;
 }
 
+
 pub const EXT_fragment_shader_interlock = 1;
 pub const EXT_FRAGMENT_SHADER_INTERLOCK_SPEC_VERSION = 1;
 pub const EXT_FRAGMENT_SHADER_INTERLOCK_EXTENSION_NAME = "VK_EXT_fragment_shader_interlock";
 
 pub const PhysicalDeviceFragmentShaderInterlockFeaturesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     fragmentShaderSampleInterlock: Bool32,
     fragmentShaderPixelInterlock: Bool32,
     fragmentShaderShadingRateInterlock: Bool32,
 };
+
 
 pub const EXT_ycbcr_image_arrays = 1;
 pub const EXT_YCBCR_IMAGE_ARRAYS_SPEC_VERSION = 1;
@@ -15374,9 +15780,10 @@ pub const EXT_YCBCR_IMAGE_ARRAYS_EXTENSION_NAME = "VK_EXT_ycbcr_image_arrays";
 
 pub const PhysicalDeviceYcbcrImageArraysFeaturesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_YCBCR_IMAGE_ARRAYS_FEATURES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     ycbcrImageArrays: Bool32,
 };
+
 
 pub const EXT_headless_surface = 1;
 pub const EXT_HEADLESS_SURFACE_SPEC_VERSION = 1;
@@ -15389,7 +15796,7 @@ pub const HeadlessSurfaceCreateFlagsEXT = packed struct {
 
 pub const HeadlessSurfaceCreateInfoEXT = extern struct {
     sType: StructureType = .HEADLESS_SURFACE_CREATE_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     flags: HeadlessSurfaceCreateFlagsEXT align(4) = HeadlessSurfaceCreateFlagsEXT{},
 };
 
@@ -15399,7 +15806,8 @@ pub extern fn vkCreateHeadlessSurfaceEXT(
     pAllocator: ?*const AllocationCallbacks,
     pSurface: *SurfaceKHR,
 ) callconv(CallConv) Result;
-pub fn CreateHeadlessSurfaceEXT(instance: Instance, createInfo: HeadlessSurfaceCreateInfoEXT, pAllocator: ?*const AllocationCallbacks) callconv(.Inline) error{ VK_OUT_OF_HOST_MEMORY, VK_OUT_OF_DEVICE_MEMORY, VK_UNDOCUMENTED_ERROR }!SurfaceKHR {
+
+pub inline fn CreateHeadlessSurfaceEXT(instance: Instance, createInfo: HeadlessSurfaceCreateInfoEXT, pAllocator: ?*const AllocationCallbacks) error{VK_OUT_OF_HOST_MEMORY,VK_OUT_OF_DEVICE_MEMORY,VK_UNDOCUMENTED_ERROR}!SurfaceKHR {
     var out_surface: SurfaceKHR = undefined;
     const result = vkCreateHeadlessSurfaceEXT(instance, &createInfo, pAllocator, &out_surface);
     if (@bitCast(c_int, result) < 0) {
@@ -15412,11 +15820,12 @@ pub fn CreateHeadlessSurfaceEXT(instance: Instance, createInfo: HeadlessSurfaceC
     return out_surface;
 }
 
+
 pub const EXT_line_rasterization = 1;
 pub const EXT_LINE_RASTERIZATION_SPEC_VERSION = 1;
 pub const EXT_LINE_RASTERIZATION_EXTENSION_NAME = "VK_EXT_line_rasterization";
 
-pub const LineRasterizationModeEXT = extern enum(i32) {
+pub const LineRasterizationModeEXT = enum(i32) {
     DEFAULT = 0,
     RECTANGULAR = 1,
     BRESENHAM = 2,
@@ -15426,7 +15835,7 @@ pub const LineRasterizationModeEXT = extern enum(i32) {
 
 pub const PhysicalDeviceLineRasterizationFeaturesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     rectangularLines: Bool32,
     bresenhamLines: Bool32,
     smoothLines: Bool32,
@@ -15437,13 +15846,13 @@ pub const PhysicalDeviceLineRasterizationFeaturesEXT = extern struct {
 
 pub const PhysicalDeviceLineRasterizationPropertiesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_LINE_RASTERIZATION_PROPERTIES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     lineSubPixelPrecisionBits: u32,
 };
 
 pub const PipelineRasterizationLineStateCreateInfoEXT = extern struct {
     sType: StructureType = .PIPELINE_RASTERIZATION_LINE_STATE_CREATE_INFO_EXT,
-    pNext: ?*const c_void = null,
+    pNext: ?*const anyopaque = null,
     lineRasterizationMode: LineRasterizationModeEXT,
     stippledLineEnable: Bool32,
     lineStippleFactor: u32 = 0,
@@ -15457,6 +15866,7 @@ pub extern fn vkCmdSetLineStippleEXT(
 ) callconv(CallConv) void;
 
 pub const CmdSetLineStippleEXT = vkCmdSetLineStippleEXT;
+
 
 pub const EXT_host_query_reset = 1;
 pub const EXT_HOST_QUERY_RESET_SPEC_VERSION = 1;
@@ -15473,15 +15883,17 @@ pub extern fn vkResetQueryPoolEXT(
 
 pub const ResetQueryPoolEXT = vkResetQueryPoolEXT;
 
+
 pub const EXT_index_type_uint8 = 1;
 pub const EXT_INDEX_TYPE_UINT8_SPEC_VERSION = 1;
 pub const EXT_INDEX_TYPE_UINT8_EXTENSION_NAME = "VK_EXT_index_type_uint8";
 
 pub const PhysicalDeviceIndexTypeUint8FeaturesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_INDEX_TYPE_UINT8_FEATURES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     indexTypeUint8: Bool32,
 };
+
 
 pub const EXT_shader_demote_to_helper_invocation = 1;
 pub const EXT_SHADER_DEMOTE_TO_HELPER_INVOCATION_SPEC_VERSION = 1;
@@ -15489,9 +15901,10 @@ pub const EXT_SHADER_DEMOTE_TO_HELPER_INVOCATION_EXTENSION_NAME = "VK_EXT_shader
 
 pub const PhysicalDeviceShaderDemoteToHelperInvocationFeaturesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_SHADER_DEMOTE_TO_HELPER_INVOCATION_FEATURES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     shaderDemoteToHelperInvocation: Bool32,
 };
+
 
 pub const EXT_texel_buffer_alignment = 1;
 pub const EXT_TEXEL_BUFFER_ALIGNMENT_SPEC_VERSION = 1;
@@ -15499,19 +15912,21 @@ pub const EXT_TEXEL_BUFFER_ALIGNMENT_EXTENSION_NAME = "VK_EXT_texel_buffer_align
 
 pub const PhysicalDeviceTexelBufferAlignmentFeaturesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_TEXEL_BUFFER_ALIGNMENT_FEATURES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     texelBufferAlignment: Bool32,
 };
 
 pub const PhysicalDeviceTexelBufferAlignmentPropertiesEXT = extern struct {
     sType: StructureType = .PHYSICAL_DEVICE_TEXEL_BUFFER_ALIGNMENT_PROPERTIES_EXT,
-    pNext: ?*c_void = null,
+    pNext: ?*anyopaque = null,
     storageTexelBufferOffsetAlignmentBytes: DeviceSize,
     storageTexelBufferOffsetSingleTexelAlignment: Bool32,
     uniformTexelBufferOffsetAlignmentBytes: DeviceSize,
     uniformTexelBufferOffsetSingleTexelAlignment: Bool32,
 };
 
+
 pub const GOOGLE_user_type = 1;
 pub const GOOGLE_USER_TYPE_SPEC_VERSION = 1;
 pub const GOOGLE_USER_TYPE_EXTENSION_NAME = "VK_GOOGLE_user_type";
+

@@ -175,13 +175,13 @@ pub const Data = struct {
     renderingDataInitialized: bool = false,
 };
 
-pub fn wrap(rawData: *cgltf.Data, parentAllocator: *std.mem.Allocator) !*Data {
+pub fn wrap(rawData: *cgltf.Data, parentAllocator: std.mem.Allocator) !*Data {
     var data = try parentAllocator.create(Data);
     errdefer parentAllocator.destroy(data);
 
     data.raw = rawData;
     data.allocator = std.heap.ArenaAllocator.init(parentAllocator);
-    const allocator = &data.allocator.allocator;
+    const allocator = data.allocator.allocator();
     errdefer data.allocator.deinit();
 
     data.meshes = try allocator.alloc(Mesh, rawData.meshes_count);
@@ -420,11 +420,11 @@ pub fn wrap(rawData: *cgltf.Data, parentAllocator: *std.mem.Allocator) !*Data {
 const unnamed: [:0]const u8 = "<null>";
 
 fn cstr(dataOpt: ?[*:0]const u8) [:0]const u8 {
-    return if (dataOpt) |data| std.mem.spanZ(data) else unnamed;
+    return if (dataOpt) |data| std.mem.span(data) else unnamed;
 }
 
 fn copyAttributes(data: *Data, rawData: *cgltf.Data, rawAttributes: [*]cgltf.Attribute, rawCount: usize) ![]Attribute {
-    const attributes = try data.allocator.allocator.alloc(Attribute, rawCount);
+    const attributes = try data.allocator.allocator().alloc(Attribute, rawCount);
     for (attributes) |*attr, i| {
         const rawAttr = &rawAttributes[i];
         attr.* = Attribute{
