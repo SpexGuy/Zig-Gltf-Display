@@ -27,14 +27,14 @@ pub const Result = enum (u32) {
 };
 
 pub const MemoryOptions = extern struct {
-    alloc: ?fn (?*anyopaque, usize) callconv(.C) ?*anyopaque = null,
-    free: ?fn (?*anyopaque, ?*anyopaque) callconv(.C) void = null,
+    alloc: ?*const fn (?*anyopaque, usize) callconv(.C) ?*anyopaque = null,
+    free: ?*const fn (?*anyopaque, ?*anyopaque) callconv(.C) void = null,
     user_data: ?*anyopaque = null,
 };
 
 pub const FileOptions = extern struct {
-    read: ?fn (*const MemoryOptions, *const FileOptions, CString, *usize, *(?*anyopaque)) callconv(.C) Result = null,
-    release: ?fn (*const MemoryOptions, *const FileOptions, ?*anyopaque) callconv(.C) void = null,
+    read: ?*const fn (*const MemoryOptions, *const FileOptions, CString, *usize, *(?*anyopaque)) callconv(.C) Result = null,
+    release: ?*const fn (*const MemoryOptions, *const FileOptions, ?*anyopaque) callconv(.C) void = null,
     user_data: ?*anyopaque = null,
 };
 

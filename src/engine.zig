@@ -66,6 +66,6 @@ pub fn endFrame() void {}
 
 // ----------------------- Internal functions -------------------------
 
-fn glfw_error_callback(err: c_int, description: ?[*:0]const u8) callconv(.C) void {
+fn glfw_error_callback(err: c_int, description: [*c]const u8) callconv(.C) void {
     std.debug.print("Glfw Error {}: {s}\n", .{ err, std.mem.span(description.?) });
 }
