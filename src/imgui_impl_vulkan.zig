@@ -46,7 +46,7 @@
 
 const imgui = @import("imgui");
 const std = @import("std");
-const vk = @import("../include/vk.zig");
+const vk = @import("vk");
 const assert = std.debug.assert;
 
 const zig_allocator = std.heap.c_allocator;

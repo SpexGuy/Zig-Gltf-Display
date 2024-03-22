@@ -1,7 +1,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const imgui = @import("imgui");
-const glfw = @import("../include/glfw.zig");
+const glfw = @import("glfw");
 const assert = std.debug.assert;
 
 const GLFW_HAS_WINDOW_TOPMOST = (glfw.GLFW_VERSION_MAJOR * 1000 + glfw.GLFW_VERSION_MINOR * 100 >= 3200); // 3.2+ GLFW_FLOATING

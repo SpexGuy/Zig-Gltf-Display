@@ -1,4 +1,4 @@
-const vk = @import("vk.zig");
+const vk = @import("vk");
 
 pub const GLFWmonitor = opaque {};
 pub const GLFWwindow = opaque {};

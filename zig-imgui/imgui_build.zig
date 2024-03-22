@@ -1,14 +1,15 @@
 const std = @import("std");
 
 // @src() is only allowed inside of a function, so we need this wrapper
-fn srcFile() []const u8 { return @src().file; }
+fn srcFile() []const u8 {
+    return @src().file;
+}
 const sep = std.fs.path.sep_str;
 
 const zig_imgui_path = std.fs.path.dirname(srcFile()).?;
-pub const pkg = std.build.Pkg{
-    .name = "imgui",
-    .source = .{ .path = zig_imgui_path ++ sep ++ "imgui.zig" },
-};
+//pub const pkg = std.build.Module{
+//    .source = .{ .path = zig_imgui_path ++ sep ++ "imgui.zig" },
+//};
 
 pub fn link(exe: *std.build.LibExeObjStep, dear_imgui_path: []const u8) void {
     if (!std.mem.eql(u8, std.fs.path.basename(dear_imgui_path), "imgui")) {
@@ -18,12 +19,14 @@ pub fn link(exe: *std.build.LibExeObjStep, dear_imgui_path: []const u8) void {
     const dir_containing_imgui = std.fs.path.dirname(dear_imgui_path) orelse ".";
     const imgui_cpp_file = zig_imgui_path ++ sep ++ "cimgui_unity.cpp";
 
-    exe.addPackage(pkg);
+    exe.addAnonymousModule("imgui", .{
+        .source_file = .{ .path = zig_imgui_path ++ sep ++ "imgui.zig" },
+    });
     exe.linkLibCpp();
-    exe.addIncludePath(dir_containing_imgui);
-    exe.addCSourceFile(imgui_cpp_file, &[_][]const u8 {
-        "-fno-sanitize=undefined",
-        "-ffunction-sections",
+    exe.addIncludePath(.{ .path = dir_containing_imgui });
+    exe.addCSourceFile(.{
+        .file = .{ .path = imgui_cpp_file },
+        .flags = &[_][]const u8{ "-fno-sanitize=undefined", "-ffunction-sections" },
     });
 }
 
@@ -34,10 +37,14 @@ pub fn addTestStep(
     mode: std.builtin.Mode,
     target: std.zig.CrossTarget,
 ) void {
-    const test_exe = b.addTest(zig_imgui_path ++ std.fs.path.sep_str ++ "tests.zig");
-    test_exe.setBuildMode(mode);
-    test_exe.setTarget(target);
-    
+    const test_exe = b.addTest(.{
+        .target = target,
+        .optimize = mode,
+        .root_source_file = .{
+            .path = zig_imgui_path ++ std.fs.path.sep_str ++ "tests.zig",
+        },
+    });
+
     link(test_exe, dear_imgui_path);
 
     const test_step = b.step(step_name, "Run zig-imgui tests");
