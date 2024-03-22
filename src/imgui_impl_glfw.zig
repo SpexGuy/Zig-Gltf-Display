@@ -16,7 +16,7 @@ const GLFW_HAS_GET_KEY_NAME = (glfw.GLFW_VERSION_MAJOR * 1000 + glfw.GLFW_VERSIO
 const IS_EMSCRIPTEN = false;
 
 // GLFW data
-const GlfwClientApi = enum (u32) {
+const GlfwClientApi = enum(u32) {
     Unknown,
     OpenGL,
     Vulkan,
@@ -28,7 +28,7 @@ const Data = extern struct {
     ClientApi: GlfwClientApi = .Unknown,
     Time: f64 = 0,
     MouseWindow: ?*glfw.GLFWwindow = null,
-    MouseCursors: [imgui.MouseCursor.COUNT]?*glfw.GLFWcursor = [_]?*glfw.GLFWcursor{ null } ** imgui.MouseCursor.COUNT,
+    MouseCursors: [imgui.MouseCursor.COUNT]?*glfw.GLFWcursor = [_]?*glfw.GLFWcursor{null} ** imgui.MouseCursor.COUNT,
     LastValidMousePos: imgui.Vec2 = .{ .x = 0, .y = 0 },
     InstalledCallbacks: bool = false,
 
@@ -51,16 +51,21 @@ const Data = extern struct {
 // - Otherwise we may need to store a GLFWWindow* -> ImGuiContext* map and handle this in the backend, adding a little bit of extra complexity to it.
 // FIXME: some shared resources (mouse cursor shape, gamepad) are mishandled when using multi-context.
 fn GetBackendData() ?*Data {
-    return if (imgui.GetCurrentContext() != null) @ptrCast(?*Data, @alignCast(@alignOf(Data), imgui.GetIO().BackendPlatformUserData)) else null;
+    if (imgui.GetCurrentContext() != null) {
+        const result: ?*Data = @ptrCast(@alignCast(imgui.GetIO().BackendPlatformUserData));
+        return result;
+    } else {
+        return null;
+    }
 }
 
 // Functions
 fn GetClipboardText(user_data: ?*anyopaque) callconv(.C) ?[*:0]const u8 {
-    return glfw.glfwGetClipboardString(@ptrCast(?*glfw.GLFWwindow, user_data));
+    return glfw.glfwGetClipboardString(@as(?*glfw.GLFWwindow, @ptrCast(user_data)));
 }
 
 fn SetClipboardText(user_data: ?*anyopaque, text: ?[*:0]const u8) callconv(.C) void {
-    glfw.glfwSetClipboardString(@ptrCast(?*glfw.GLFWwindow, user_data), text);
+    glfw.glfwSetClipboardString(@as(?*glfw.GLFWwindow, @ptrCast(user_data)), text);
 }
 
 fn KeyToImGuiKey(key: i32) imgui.Key {
@@ -212,7 +217,7 @@ pub fn ScrollCallback(window: ?*glfw.GLFWwindow, xoffset: f64, yoffset: f64) cal
         bd.PrevUserCallbackScroll.?(window, xoffset, yoffset);
 
     const io = imgui.GetIO();
-    io.AddMouseWheelEvent(@floatCast(f32, xoffset), @floatCast(f32, yoffset));
+    io.AddMouseWheelEvent(@as(f32, @floatCast(xoffset)), @as(f32, @floatCast(yoffset)));
 }
 
 fn TranslateUntranslatedKey(raw_key: i32, scancode: i32) i32 {
@@ -229,10 +234,15 @@ fn TranslateUntranslatedKey(raw_key: i32, scancode: i32) i32 {
                 const char_names = "`-=[]\\,;\'./";
                 const char_keys = [_]u8{ glfw.GLFW_KEY_GRAVE_ACCENT, glfw.GLFW_KEY_MINUS, glfw.GLFW_KEY_EQUAL, glfw.GLFW_KEY_LEFT_BRACKET, glfw.GLFW_KEY_RIGHT_BRACKET, glfw.GLFW_KEY_BACKSLASH, glfw.GLFW_KEY_COMMA, glfw.GLFW_KEY_SEMICOLON, glfw.GLFW_KEY_APOSTROPHE, glfw.GLFW_KEY_PERIOD, glfw.GLFW_KEY_SLASH };
                 comptime assert(char_names.len == char_keys.len);
-                if (key_name[0] >= '0' and key_name[0] <= '9')      { return glfw.GLFW_KEY_0 + (key_name[0] - '0'); }
-                else if (key_name[0] >= 'A' and key_name[0] <= 'Z') { return glfw.GLFW_KEY_A + (key_name[0] - 'A'); }
-                else if (key_name[0] >= 'a' and key_name[0] <= 'z') { return glfw.GLFW_KEY_A + (key_name[0] - 'a'); }
-                else if (std.mem.indexOfScalar(u8, char_names, key_name[0])) |idx| { return char_keys[idx]; }
+                if (key_name[0] >= '0' and key_name[0] <= '9') {
+                    return glfw.GLFW_KEY_0 + (key_name[0] - '0');
+                } else if (key_name[0] >= 'A' and key_name[0] <= 'Z') {
+                    return glfw.GLFW_KEY_A + (key_name[0] - 'A');
+                } else if (key_name[0] >= 'a' and key_name[0] <= 'z') {
+                    return glfw.GLFW_KEY_A + (key_name[0] - 'a');
+                } else if (std.mem.indexOfScalar(u8, char_names, key_name[0])) |idx| {
+                    return char_keys[idx];
+                }
             }
         }
         // if (action == GLFW_PRESS) std.debug.print("key {} scancode {} name '{s}'\n", .{ key, scancode, key_name });
@@ -277,8 +287,8 @@ pub fn CursorPosCallback(window: ?*glfw.GLFWwindow, x: f64, y: f64) callconv(.C)
         bd.PrevUserCallbackCursorPos.?(window, x, y);
 
     const io = imgui.GetIO();
-    io.AddMousePosEvent(@floatCast(f32, x), @floatCast(f32, y));
-    bd.LastValidMousePos = .{ .x = @floatCast(f32, x), .y = @floatCast(f32, y) };
+    io.AddMousePosEvent(@as(f32, @floatCast(x)), @as(f32, @floatCast(y)));
+    bd.LastValidMousePos = .{ .x = @as(f32, @floatCast(x)), .y = @as(f32, @floatCast(y)) };
 }
 
 // Workaround: X11 seems to send spurious Leave/Enter events which would make us lose our position,
@@ -357,11 +367,12 @@ pub fn RestoreCallbacks(window: ?*glfw.GLFWwindow) void {
 }
 
 fn Init(window: ?*glfw.GLFWwindow, install_callbacks: bool, client_api: GlfwClientApi) bool {
+    std.debug.print("imgui: GLFW backend\n", .{});
     const io = imgui.GetIO();
     assert(io.BackendPlatformUserData == null); // Already initialized a platform backend!
 
     // Setup backend capabilities flags
-    const bd = @ptrCast(*Data, @alignCast(@alignOf(Data), imgui.MemAlloc(@sizeOf(Data))));
+    const bd = @as(*Data, @ptrCast(@alignCast(imgui.MemAlloc(@sizeOf(Data)))));
     bd.* = .{
         .Window = window,
         .Time = 0,
@@ -370,8 +381,8 @@ fn Init(window: ?*glfw.GLFWwindow, install_callbacks: bool, client_api: GlfwClie
 
     io.BackendPlatformUserData = bd;
     io.BackendPlatformName = "imgui_impl_glfw";
-    io.BackendFlags.HasMouseCursors = true;         // We can honor GetMouseCursor() values (optional)
-    io.BackendFlags.HasSetMousePos = true;          // We can honor io.WantSetMousePos requests (optional, rarely used)
+    io.BackendFlags.HasMouseCursors = true; // We can honor GetMouseCursor() values (optional)
+    io.BackendFlags.HasSetMousePos = true; // We can honor io.WantSetMousePos requests (optional, rarely used)
 
     io.SetClipboardTextFn = SetClipboardText;
     io.GetClipboardTextFn = GetClipboardText;
@@ -387,21 +398,21 @@ fn Init(window: ?*glfw.GLFWwindow, install_callbacks: bool, client_api: GlfwClie
     // GLFW will emit an error which will often be printed by the app, so we temporarily disable error reporting.
     // Missing cursors will return NULL and our _UpdateMouseCursor() function will use the Arrow cursor instead.)
     const prev_error_callback = glfw.glfwSetErrorCallback(null);
-    bd.MouseCursors[@enumToInt(imgui.MouseCursor.Arrow)] = glfw.glfwCreateStandardCursor(glfw.GLFW_ARROW_CURSOR);
-    bd.MouseCursors[@enumToInt(imgui.MouseCursor.TextInput)] = glfw.glfwCreateStandardCursor(glfw.GLFW_IBEAM_CURSOR);
-    bd.MouseCursors[@enumToInt(imgui.MouseCursor.ResizeNS)] = glfw.glfwCreateStandardCursor(glfw.GLFW_VRESIZE_CURSOR);
-    bd.MouseCursors[@enumToInt(imgui.MouseCursor.ResizeEW)] = glfw.glfwCreateStandardCursor(glfw.GLFW_HRESIZE_CURSOR);
-    bd.MouseCursors[@enumToInt(imgui.MouseCursor.Hand)] = glfw.glfwCreateStandardCursor(glfw.GLFW_HAND_CURSOR);
+    bd.MouseCursors[@intFromEnum(imgui.MouseCursor.Arrow)] = glfw.glfwCreateStandardCursor(glfw.GLFW_ARROW_CURSOR);
+    bd.MouseCursors[@intFromEnum(imgui.MouseCursor.TextInput)] = glfw.glfwCreateStandardCursor(glfw.GLFW_IBEAM_CURSOR);
+    bd.MouseCursors[@intFromEnum(imgui.MouseCursor.ResizeNS)] = glfw.glfwCreateStandardCursor(glfw.GLFW_VRESIZE_CURSOR);
+    bd.MouseCursors[@intFromEnum(imgui.MouseCursor.ResizeEW)] = glfw.glfwCreateStandardCursor(glfw.GLFW_HRESIZE_CURSOR);
+    bd.MouseCursors[@intFromEnum(imgui.MouseCursor.Hand)] = glfw.glfwCreateStandardCursor(glfw.GLFW_HAND_CURSOR);
     if (GLFW_HAS_NEW_CURSORS) {
-        bd.MouseCursors[@enumToInt(imgui.MouseCursor.ResizeAll)] = glfw.glfwCreateStandardCursor(glfw.GLFW_RESIZE_ALL_CURSOR);
-        bd.MouseCursors[@enumToInt(imgui.MouseCursor.ResizeNESW)] = glfw.glfwCreateStandardCursor(glfw.GLFW_RESIZE_NESW_CURSOR);
-        bd.MouseCursors[@enumToInt(imgui.MouseCursor.ResizeNWSE)] = glfw.glfwCreateStandardCursor(glfw.GLFW_RESIZE_NWSE_CURSOR);
-        bd.MouseCursors[@enumToInt(imgui.MouseCursor.NotAllowed)] = glfw.glfwCreateStandardCursor(glfw.GLFW_NOT_ALLOWED_CURSOR);
+        bd.MouseCursors[@intFromEnum(imgui.MouseCursor.ResizeAll)] = glfw.glfwCreateStandardCursor(glfw.GLFW_RESIZE_ALL_CURSOR);
+        bd.MouseCursors[@intFromEnum(imgui.MouseCursor.ResizeNESW)] = glfw.glfwCreateStandardCursor(glfw.GLFW_RESIZE_NESW_CURSOR);
+        bd.MouseCursors[@intFromEnum(imgui.MouseCursor.ResizeNWSE)] = glfw.glfwCreateStandardCursor(glfw.GLFW_RESIZE_NWSE_CURSOR);
+        bd.MouseCursors[@intFromEnum(imgui.MouseCursor.NotAllowed)] = glfw.glfwCreateStandardCursor(glfw.GLFW_NOT_ALLOWED_CURSOR);
     } else {
-        bd.MouseCursors[@enumToInt(imgui.MouseCursor.ResizeAll)] = glfw.glfwCreateStandardCursor(glfw.GLFW_ARROW_CURSOR);
-        bd.MouseCursors[@enumToInt(imgui.MouseCursor.ResizeNESW)] = glfw.glfwCreateStandardCursor(glfw.GLFW_ARROW_CURSOR);
-        bd.MouseCursors[@enumToInt(imgui.MouseCursor.ResizeNWSE)] = glfw.glfwCreateStandardCursor(glfw.GLFW_ARROW_CURSOR);
-        bd.MouseCursors[@enumToInt(imgui.MouseCursor.NotAllowed)] = glfw.glfwCreateStandardCursor(glfw.GLFW_ARROW_CURSOR);
+        bd.MouseCursors[@intFromEnum(imgui.MouseCursor.ResizeAll)] = glfw.glfwCreateStandardCursor(glfw.GLFW_ARROW_CURSOR);
+        bd.MouseCursors[@intFromEnum(imgui.MouseCursor.ResizeNESW)] = glfw.glfwCreateStandardCursor(glfw.GLFW_ARROW_CURSOR);
+        bd.MouseCursors[@intFromEnum(imgui.MouseCursor.ResizeNWSE)] = glfw.glfwCreateStandardCursor(glfw.GLFW_ARROW_CURSOR);
+        bd.MouseCursors[@intFromEnum(imgui.MouseCursor.NotAllowed)] = glfw.glfwCreateStandardCursor(glfw.GLFW_ARROW_CURSOR);
     }
     _ = glfw.glfwSetErrorCallback(prev_error_callback);
 
@@ -444,8 +455,7 @@ fn UpdateMouseData() void {
     const bd = GetBackendData().?;
     const io = imgui.GetIO();
 
-    const is_app_focused = if (IS_EMSCRIPTEN) true
-        else (glfw.glfwGetWindowAttrib(bd.Window, glfw.GLFW_FOCUSED) != 0);
+    const is_app_focused = if (IS_EMSCRIPTEN) true else (glfw.glfwGetWindowAttrib(bd.Window, glfw.GLFW_FOCUSED) != 0);
     if (is_app_focused) {
         // (Optional) Set OS mouse position from Dear ImGui if requested (rarely used, only when ImGuiConfigFlags_NavEnableSetMousePos is enabled by user)
         if (io.WantSetMousePos)
@@ -456,8 +466,8 @@ fn UpdateMouseData() void {
             var mouse_x: f64 = 0;
             var mouse_y: f64 = 0;
             glfw.glfwGetCursorPos(bd.Window, &mouse_x, &mouse_y);
-            io.AddMousePosEvent(@floatCast(f32, mouse_x), @floatCast(f32, mouse_y));
-            bd.LastValidMousePos = .{ .x = @floatCast(f32, mouse_x), .y = @floatCast(f32, mouse_y) };
+            io.AddMousePosEvent(@as(f32, @floatCast(mouse_x)), @as(f32, @floatCast(mouse_y)));
+            bd.LastValidMousePos = .{ .x = @as(f32, @floatCast(mouse_x)), .y = @as(f32, @floatCast(mouse_y)) };
         }
     }
 }
@@ -475,13 +485,15 @@ fn UpdateMouseCursor() void {
     } else {
         // Show OS mouse cursor
         // FIXME-PLATFORM: Unfocused windows seems to fail changing the mouse cursor with GLFW 3.2, but 3.3 works here.
-        glfw.glfwSetCursor(bd.Window, bd.MouseCursors[@intCast(usize, @enumToInt(imgui_cursor))] orelse bd.MouseCursors[@intCast(usize, @enumToInt(imgui.MouseCursor.Arrow))]);
+        glfw.glfwSetCursor(bd.Window, bd.MouseCursors[@as(usize, @intCast(@intFromEnum(imgui_cursor)))] orelse bd.MouseCursors[@as(usize, @intCast(@intFromEnum(imgui.MouseCursor.Arrow)))]);
         glfw.glfwSetInputMode(bd.Window, glfw.GLFW_CURSOR, glfw.GLFW_CURSOR_NORMAL);
     }
 }
 
 // Update gamepad inputs
-inline fn Saturate(v: f32) f32 { return if (v < 0) 0 else if (v > 1) 1 else v; }
+inline fn Saturate(v: f32) f32 {
+    return if (v < 0) 0 else if (v > 1) 1 else v;
+}
 
 fn UpdateGamepads() void {
     const io = imgui.GetIO();
@@ -491,30 +503,30 @@ fn UpdateGamepads() void {
     const InputKind = enum { Button, Analog };
     const Mapping = struct { kind: InputKind, key: imgui.Key, btn: u32, low: f32 = 0, high: f32 = 0 };
     const mappings = [_]Mapping{
-        .{ .kind = .Button, .key = .GamepadStart,       .btn = glfw.GLFW_GAMEPAD_BUTTON_START },
-        .{ .kind = .Button, .key = .GamepadBack,        .btn = glfw.GLFW_GAMEPAD_BUTTON_BACK },
-        .{ .kind = .Button, .key = .GamepadFaceDown,    .btn = glfw.GLFW_GAMEPAD_BUTTON_A },     // Xbox A, PS Cross
-        .{ .kind = .Button, .key = .GamepadFaceRight,   .btn = glfw.GLFW_GAMEPAD_BUTTON_B },     // Xbox B, PS Circle
-        .{ .kind = .Button, .key = .GamepadFaceLeft,    .btn = glfw.GLFW_GAMEPAD_BUTTON_X },     // Xbox X, PS Square
-        .{ .kind = .Button, .key = .GamepadFaceUp,      .btn = glfw.GLFW_GAMEPAD_BUTTON_Y },     // Xbox Y, PS Triangle
-        .{ .kind = .Button, .key = .GamepadDpadLeft,    .btn = glfw.GLFW_GAMEPAD_BUTTON_DPAD_LEFT },
-        .{ .kind = .Button, .key = .GamepadDpadRight,   .btn = glfw.GLFW_GAMEPAD_BUTTON_DPAD_RIGHT },
-        .{ .kind = .Button, .key = .GamepadDpadUp,      .btn = glfw.GLFW_GAMEPAD_BUTTON_DPAD_UP },
-        .{ .kind = .Button, .key = .GamepadDpadDown,    .btn = glfw.GLFW_GAMEPAD_BUTTON_DPAD_DOWN },
-        .{ .kind = .Button, .key = .GamepadL1,          .btn = glfw.GLFW_GAMEPAD_BUTTON_LEFT_BUMPER },
-        .{ .kind = .Button, .key = .GamepadR1,          .btn = glfw.GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER },
-        .{ .kind = .Analog, .key = .GamepadL2,          .btn = glfw.GLFW_GAMEPAD_AXIS_LEFT_TRIGGER,  .low = -0.75, .high =  1.0 },
-        .{ .kind = .Analog, .key = .GamepadR2,          .btn = glfw.GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER, .low = -0.75, .high =  1.0 },
-        .{ .kind = .Button, .key = .GamepadL3,          .btn = glfw.GLFW_GAMEPAD_BUTTON_LEFT_THUMB },
-        .{ .kind = .Button, .key = .GamepadR3,          .btn = glfw.GLFW_GAMEPAD_BUTTON_RIGHT_THUMB },
-        .{ .kind = .Analog, .key = .GamepadLStickLeft,  .btn = glfw.GLFW_GAMEPAD_AXIS_LEFT_X,        .low = -0.25, .high = -1.0 },
-        .{ .kind = .Analog, .key = .GamepadLStickRight, .btn = glfw.GLFW_GAMEPAD_AXIS_LEFT_X,        .low =  0.25, .high =  1.0 },
-        .{ .kind = .Analog, .key = .GamepadLStickUp,    .btn = glfw.GLFW_GAMEPAD_AXIS_LEFT_Y,        .low = -0.25, .high = -1.0 },
-        .{ .kind = .Analog, .key = .GamepadLStickDown,  .btn = glfw.GLFW_GAMEPAD_AXIS_LEFT_Y,        .low =  0.25, .high =  1.0 },
-        .{ .kind = .Analog, .key = .GamepadRStickLeft,  .btn = glfw.GLFW_GAMEPAD_AXIS_RIGHT_X,       .low = -0.25, .high = -1.0 },
-        .{ .kind = .Analog, .key = .GamepadRStickRight, .btn = glfw.GLFW_GAMEPAD_AXIS_RIGHT_X,       .low =  0.25, .high =  1.0 },
-        .{ .kind = .Analog, .key = .GamepadRStickUp,    .btn = glfw.GLFW_GAMEPAD_AXIS_RIGHT_Y,       .low = -0.25, .high = -1.0 },
-        .{ .kind = .Analog, .key = .GamepadRStickDown,  .btn = glfw.GLFW_GAMEPAD_AXIS_RIGHT_Y,       .low =  0.25, .high =  1.0 },
+        .{ .kind = .Button, .key = .GamepadStart, .btn = glfw.GLFW_GAMEPAD_BUTTON_START },
+        .{ .kind = .Button, .key = .GamepadBack, .btn = glfw.GLFW_GAMEPAD_BUTTON_BACK },
+        .{ .kind = .Button, .key = .GamepadFaceDown, .btn = glfw.GLFW_GAMEPAD_BUTTON_A }, // Xbox A, PS Cross
+        .{ .kind = .Button, .key = .GamepadFaceRight, .btn = glfw.GLFW_GAMEPAD_BUTTON_B }, // Xbox B, PS Circle
+        .{ .kind = .Button, .key = .GamepadFaceLeft, .btn = glfw.GLFW_GAMEPAD_BUTTON_X }, // Xbox X, PS Square
+        .{ .kind = .Button, .key = .GamepadFaceUp, .btn = glfw.GLFW_GAMEPAD_BUTTON_Y }, // Xbox Y, PS Triangle
+        .{ .kind = .Button, .key = .GamepadDpadLeft, .btn = glfw.GLFW_GAMEPAD_BUTTON_DPAD_LEFT },
+        .{ .kind = .Button, .key = .GamepadDpadRight, .btn = glfw.GLFW_GAMEPAD_BUTTON_DPAD_RIGHT },
+        .{ .kind = .Button, .key = .GamepadDpadUp, .btn = glfw.GLFW_GAMEPAD_BUTTON_DPAD_UP },
+        .{ .kind = .Button, .key = .GamepadDpadDown, .btn = glfw.GLFW_GAMEPAD_BUTTON_DPAD_DOWN },
+        .{ .kind = .Button, .key = .GamepadL1, .btn = glfw.GLFW_GAMEPAD_BUTTON_LEFT_BUMPER },
+        .{ .kind = .Button, .key = .GamepadR1, .btn = glfw.GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER },
+        .{ .kind = .Analog, .key = .GamepadL2, .btn = glfw.GLFW_GAMEPAD_AXIS_LEFT_TRIGGER, .low = -0.75, .high = 1.0 },
+        .{ .kind = .Analog, .key = .GamepadR2, .btn = glfw.GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER, .low = -0.75, .high = 1.0 },
+        .{ .kind = .Button, .key = .GamepadL3, .btn = glfw.GLFW_GAMEPAD_BUTTON_LEFT_THUMB },
+        .{ .kind = .Button, .key = .GamepadR3, .btn = glfw.GLFW_GAMEPAD_BUTTON_RIGHT_THUMB },
+        .{ .kind = .Analog, .key = .GamepadLStickLeft, .btn = glfw.GLFW_GAMEPAD_AXIS_LEFT_X, .low = -0.25, .high = -1.0 },
+        .{ .kind = .Analog, .key = .GamepadLStickRight, .btn = glfw.GLFW_GAMEPAD_AXIS_LEFT_X, .low = 0.25, .high = 1.0 },
+        .{ .kind = .Analog, .key = .GamepadLStickUp, .btn = glfw.GLFW_GAMEPAD_AXIS_LEFT_Y, .low = -0.25, .high = -1.0 },
+        .{ .kind = .Analog, .key = .GamepadLStickDown, .btn = glfw.GLFW_GAMEPAD_AXIS_LEFT_Y, .low = 0.25, .high = 1.0 },
+        .{ .kind = .Analog, .key = .GamepadRStickLeft, .btn = glfw.GLFW_GAMEPAD_AXIS_RIGHT_X, .low = -0.25, .high = -1.0 },
+        .{ .kind = .Analog, .key = .GamepadRStickRight, .btn = glfw.GLFW_GAMEPAD_AXIS_RIGHT_X, .low = 0.25, .high = 1.0 },
+        .{ .kind = .Analog, .key = .GamepadRStickUp, .btn = glfw.GLFW_GAMEPAD_AXIS_RIGHT_Y, .low = -0.25, .high = -1.0 },
+        .{ .kind = .Analog, .key = .GamepadRStickDown, .btn = glfw.GLFW_GAMEPAD_AXIS_RIGHT_Y, .low = 0.25, .high = 1.0 },
     };
 
     io.BackendFlags.HasGamepad = false;
@@ -537,7 +549,7 @@ fn UpdateGamepads() void {
         const buttons = glfw.glfwGetJoystickButtons(glfw.GLFW_JOYSTICK_1, &buttons_count);
         if (axes_count == 0 or buttons_count == 0)
             return;
-        
+
         inline for (mappings) |m| switch (m.kind) {
             .Button => io.AddKeyEvent(m.key, m.btn > buttons_count and buttons.?[m.btn] != 0),
             .Analog => {
@@ -561,17 +573,17 @@ pub fn NewFrame() void {
     var display_h: c_int = 0;
     glfw.glfwGetWindowSize(bd.Window, &w, &h);
     glfw.glfwGetFramebufferSize(bd.Window, &display_w, &display_h);
-    io.DisplaySize = .{ .x = @intToFloat(f32, w), .y = @intToFloat(f32, h) };
+    io.DisplaySize = .{ .x = @as(f32, @floatFromInt(w)), .y = @as(f32, @floatFromInt(h)) };
     if (w > 0 and h > 0) {
         io.DisplayFramebufferScale = .{
-            .x = @intToFloat(f32, display_w) / @intToFloat(f32, w),
-            .y = @intToFloat(f32, display_h) / @intToFloat(f32, h),
+            .x = @as(f32, @floatFromInt(display_w)) / @as(f32, @floatFromInt(w)),
+            .y = @as(f32, @floatFromInt(display_h)) / @as(f32, @floatFromInt(h)),
         };
     }
 
     // Setup time step
     const current_time = glfw.glfwGetTime();
-    io.DeltaTime = if (bd.Time > 0) @floatCast(f32, current_time - bd.Time) else (1.0 / 60.0);
+    io.DeltaTime = if (bd.Time > 0) @as(f32, @floatCast(current_time - bd.Time)) else (1.0 / 60.0);
     bd.Time = current_time;
 
     UpdateMouseData();
