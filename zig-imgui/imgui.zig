@@ -91,7 +91,10 @@ pub fn Vector(comptime T: type) type {
             var cloned = @This(){};
             if (self.Size != 0) {
                 cloned.resize_undefined(self.Size);
-                @memcpy(@ptrCast([*]u8, cloned.Data.?), @ptrCast([*]const u8, self.Data.?), self.Size * @sizeOf(T));
+                var dst = @as([*]u8, @ptrCast(cloned.Data.?));
+                var src = @as([*]const u8, @ptrCast(self.Data.?));
+                comptime assert(@sizeOf(@TypeOf(src[0])) == 1);
+                @memcpy(dst, src[0..(self.Size * @sizeOf(T))]);
             }
             return cloned;
         }
@@ -100,15 +103,21 @@ pub fn Vector(comptime T: type) type {
             self.Size = 0;
             if (other.Size != 0) {
                 self.resize_undefined(other.Size);
-                @memcpy(@ptrCast([*]u8, self.Data.?), @ptrCast([*]const u8, other.Data.?), other.Size * @sizeOf(T));
+                const dst = @as([*]u8, @ptrCast(self.Data.?));
+                const src = @as([*]const u8, @ptrCast(other.Data.?));
+                comptime assert(@sizeOf(@TypeOf(src[0])) == 1);
+                @memcpy(dst, src[0..(other.Size * @sizeOf(T))]);
             }
         }
 
         pub fn from_slice(slice: []const T) @This() {
             var result = @This(){};
             if (slice.len != 0) {
-                result.resize_undefined(@intCast(u32, slice.len));
-                @memcpy(@ptrCast([*]u8, result.Data.?), @ptrCast([*]const u8, slice.ptr), slice.len * @sizeOf(T));
+                result.resize_undefined(@as(u32, @intCast(slice.len)));
+                const dst = @as([*]u8, @ptrCast(result.Data.?));
+                const src = @as([*]const u8, @ptrCast(slice.ptr));
+                comptime assert(@sizeOf(@TypeOf(src[0])) == 1);
+                @memcpy(dst, src[0..(slice.len * @sizeOf(T))]);
             }
             return result;
         }
@@ -202,7 +211,10 @@ pub fn Vector(comptime T: type) type {
             const new_data = @ptrCast(?[*]T, @alignCast(@alignOf(T), raw.igMemAlloc(new_capacity * @sizeOf(T))));
             if (self.Data) |sd| {
                 if (self.Size != 0) {
-                    @memcpy(@ptrCast([*]u8, new_data.?), @ptrCast([*]const u8, sd), self.Size * @sizeOf(T));
+                    const dst = @as([*]u8, @ptrCast(new_data.?));
+                    const src = @as([*]const u8, @ptrCast(sd));
+                    comptime assert(@sizeOf(@TypeOf(src[0])) == 1);
+                    @memcpy(dst, src[0..(self.Size * @sizeOf(T))]);
                 }
                 raw.igMemFree(@ptrCast(*anyopaque, sd));
             }

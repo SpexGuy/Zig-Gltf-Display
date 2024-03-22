@@ -80,7 +80,8 @@ fn uploadBuffers(data: *gltf.Data, frame: *engine.render.Frame) !void {
 
     for (data.buffers) |*buffer| {
         buffer.gpuBuffer = try engine.render.createGpuBuffer(buffer.raw.size, buffer.usageFlags);
-        const bufferData = @ptrCast([*]u8, buffer.raw.data.?)[0..buffer.raw.size];
+        const castData: [*]u8 = @ptrCast(buffer.raw.data.?);
+        const bufferData = castData[0..buffer.raw.size];
         try upload.setBufferData(&buffer.gpuBuffer.?, 0, bufferData);
     }
 

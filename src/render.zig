@@ -48,12 +48,14 @@ pub const MappedRange = struct {
 
     fn get(self: *Self, comptime T: type) []T {
         const count = self.data.len / @sizeOf(T);
-        return @intToPtr([*]T, @ptrToInt(self.data.ptr))[0..count];
+        const temp: [*]T = @ptrFromInt(@intFromPtr(self.data.ptr));
+        return temp[0..count];
     }
 
     fn getPart(self: *Self, comptime T: type, byteOffset: usize, count: usize) []T {
         assert(byteOffset + count * @sizeOf(T) < self.data.len);
-        return @intToPtr([*]T, @ptrToInt(self.data.ptr) + byteOffset)[0..count];
+        const temp: [*]T = @ptrFromInt(@intFromPtr(self.data.ptr) + byteOffset);
+        return temp[0..count];
     }
 
     fn end(self: *Self) void {
@@ -114,7 +116,8 @@ pub const Upload = struct {
         {
             var map = try stagingBuffer.beginMap();
             defer map.end();
-            @memcpy(map.data.ptr, data.ptr, data.len);
+            comptime assert(@sizeOf(@TypeOf(data.ptr[0])) == 1);
+            @memcpy(map.data.ptr, data.ptr[0..data.len]);
             try map.flush();
         }
         self.copyBufferPart(stagingBuffer, 0, buffer, offset, data.len);
