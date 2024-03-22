@@ -646,11 +646,11 @@ fn ArrayPtrType(comptime ptrType: type) type {
         assert(info.Pointer.sentinel == null);
 
         // Create the new value type, [1]T
-        const arrayInfo = std.builtin.TypeInfo{
+        const arrayInfo = std.builtin.Type{
             .Array = .{
                 .len = 1,
                 .child = info.Pointer.child,
-                .sentinel = @as(?info.Pointer.child, null),
+                .sentinel = @as(?*const anyopaque, null),
             },
         };
 
@@ -659,7 +659,7 @@ fn ArrayPtrType(comptime ptrType: type) type {
         info.Pointer.child = singleArrayType;
         // also need to change the type of the sentinel
         // we checked that this is null above so no work needs to be done here.
-        info.Pointer.sentinel = @as(?singleArrayType, null);
+        info.Pointer.sentinel = @as(?*const anyopaque, null);
         return @Type(info);
     }
 }

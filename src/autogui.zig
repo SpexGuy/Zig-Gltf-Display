@@ -42,7 +42,7 @@ pub fn drawStructUI(comptime DataType: type, dataPtr: *const DataType, arena: Al
                 dataPtr.drawUI(context);
             } else {
                 inline for (info.fields) |field| {
-                    drawFieldUI(field.field_type, &@field(dataPtr, field.name), nullTerm(field.name), arena);
+                    drawFieldUI(field.type, &@field(dataPtr, field.name), nullTerm(field.name), arena);
                 }
             }
         },
@@ -82,9 +82,9 @@ pub fn drawFieldUI(comptime FieldType: type, fieldPtr: anytype, name: [:0]const 
             ig.NextColumn();
             ig.AlignTextToFramePadding();
             if (info.signedness == .signed) {
-                ig.Text("%lld (%s)", @intCast(isize, fieldPtr.*), @typeName(FieldType));
+                ig.Text("%lld (%s)", @as(isize, @intCast(fieldPtr.*)), @typeName(FieldType));
             } else {
-                ig.Text("%llu (%s)", @intCast(usize, fieldPtr.*), @typeName(FieldType));
+                ig.Text("%llu (%s)", @as(usize, @intCast(fieldPtr.*)), @typeName(FieldType));
             }
             ig.NextColumn();
         },
@@ -192,7 +192,7 @@ pub fn drawSliceFieldUI(comptime DataType: type, slice: []const DataType, name: 
             if (@typeInfo(NextDisplayType) == .Struct and slice.len == 1) {
                 drawStructUI(DataType, &slice[0], arena);
             } else {
-                for (slice) |*item, i| {
+                for (slice, 0..) |*item, i| {
                     // TODO: Put null-terminated printing into
                     const itemName: [:0]const u8 = if (allocPrintZ(arena, "[{}]", .{i})) |str| str else |_| "<out of memory>";
                     drawFieldUI(DataType, item, itemName, arena);
