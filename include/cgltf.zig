@@ -5,14 +5,14 @@ pub const MutCString = [*:0]u8;
 
 pub const Bool32 = i32;
 
-pub const FileType = enum (u32) {
+pub const FileType = enum(u32) {
     invalid,
     gltf,
     glb,
     _,
 };
 
-pub const Result = enum (u32) {
+pub const Result = enum(u32) {
     success,
     data_too_short,
     unknown_format,
@@ -27,14 +27,14 @@ pub const Result = enum (u32) {
 };
 
 pub const MemoryOptions = extern struct {
-    alloc: ?fn (?*anyopaque, usize) callconv(.C) ?*anyopaque = null,
-    free: ?fn (?*anyopaque, ?*anyopaque) callconv(.C) void = null,
+    alloc: ?*const fn (?*anyopaque, usize) callconv(.C) ?*anyopaque = null,
+    free: ?*const fn (?*anyopaque, ?*anyopaque) callconv(.C) void = null,
     user_data: ?*anyopaque = null,
 };
 
 pub const FileOptions = extern struct {
-    read: ?fn (*const MemoryOptions, *const FileOptions, CString, *usize, *(?*anyopaque)) callconv(.C) Result = null,
-    release: ?fn (*const MemoryOptions, *const FileOptions, ?*anyopaque) callconv(.C) void = null,
+    read: ?*const fn (*const MemoryOptions, *const FileOptions, CString, *usize, *(?*anyopaque)) callconv(.C) Result = null,
+    release: ?*const fn (*const MemoryOptions, *const FileOptions, ?*anyopaque) callconv(.C) void = null,
     user_data: ?*anyopaque = null,
 };
 
@@ -45,14 +45,14 @@ pub const Options = extern struct {
     file: FileOptions = FileOptions{},
 };
 
-pub const BufferViewType = enum (u32) {
+pub const BufferViewType = enum(u32) {
     invalid,
     indices,
     vertices,
     _,
 };
 
-pub const AttributeType = enum (u32) {
+pub const AttributeType = enum(u32) {
     invalid,
     position,
     normal,
@@ -64,7 +64,7 @@ pub const AttributeType = enum (u32) {
     _,
 };
 
-pub const ComponentType = enum (u32) {
+pub const ComponentType = enum(u32) {
     invalid,
     r_8,
     r_8u,
@@ -75,7 +75,7 @@ pub const ComponentType = enum (u32) {
     _,
 };
 
-pub const Type = enum (u32) {
+pub const Type = enum(u32) {
     invalid,
     scalar,
     vec2,
@@ -87,7 +87,7 @@ pub const Type = enum (u32) {
     _,
 };
 
-pub const PrimitiveType = enum (u32) {
+pub const PrimitiveType = enum(u32) {
     points,
     lines,
     line_loop,
@@ -98,14 +98,14 @@ pub const PrimitiveType = enum (u32) {
     _,
 };
 
-pub const AlphaMode = enum (u32) {
+pub const AlphaMode = enum(u32) {
     opaqueMode,
     mask,
     blend,
     _,
 };
 
-pub const AnimationPathType = enum (u32) {
+pub const AnimationPathType = enum(u32) {
     invalid,
     translation,
     rotation,
@@ -114,21 +114,21 @@ pub const AnimationPathType = enum (u32) {
     _,
 };
 
-pub const InterpolationType = enum (u32) {
+pub const InterpolationType = enum(u32) {
     linear,
     step,
     cubic_spline,
     _,
 };
 
-pub const CameraType = enum (u32) {
+pub const CameraType = enum(u32) {
     invalid,
     perspective,
     orthographic,
     _,
 };
 
-pub const LightType = enum (u32) {
+pub const LightType = enum(u32) {
     invalid,
     directional,
     point,
@@ -184,24 +184,24 @@ pub const Accessor = extern struct {
     is_sparse: Bool32,
     sparse: AccessorSparse, // valid only if is_sparse != 0
     extras: Extras,
-    pub fn unpackFloatsCount(self: *const Accessor) callconv(.Inline) usize {
+    pub inline fn unpackFloatsCount(self: *const Accessor) usize {
         return cgltf_accessor_unpack_floats(self, null, 0);
     }
-    pub fn unpackFloats(self: *const Accessor, outBuffer: []f32) callconv(.Inline) []f32 {
+    pub inline fn unpackFloats(self: *const Accessor, outBuffer: []f32) []f32 {
         const actualCount = cgltf_accessor_unpack_floats(self, outBuffer.ptr, outBuffer.len);
         return outBuffer[0..actualCount];
     }
-    pub fn readFloat(self: *const Accessor, index: usize, outFloats: []f32) callconv(.Inline) bool {
+    pub inline fn readFloat(self: *const Accessor, index: usize, outFloats: []f32) bool {
         assert(outFloats.len == numComponents(self.type));
         const result = cgltf_accessor_read_float(self, index, outFloats.ptr, outFloats.len);
         return result != 0;
     }
-    pub fn readUint(self: *const Accessor, index: usize, outInts: []u32) callconv(.Inline) bool {
+    pub inline fn readUint(self: *const Accessor, index: usize, outInts: []u32) bool {
         assert(outInts.len == numComponents(self.type));
         const result = cgltf_accessor_read_uint(self, index, outInts.ptr, outInts.len);
         return result != 0;
     }
-    pub fn readIndex(self: *const Accessor, index: usize) callconv(.Inline) usize {
+    pub inline fn readIndex(self: *const Accessor, index: usize) usize {
         return cgltf_accessor_read_index(self, index);
     }
 };
@@ -378,12 +378,12 @@ pub const Node = extern struct {
     scale: [3]f32,
     matrix: [16]f32,
     extras: Extras,
-    pub fn transformLocal(self: *const Node) callconv(.Inline) [16]f32 {
+    pub inline fn transformLocal(self: *const Node) [16]f32 {
         var transform: [16]f32 = undefined;
         cgltf_node_transform_local(self, &transform);
         return transform;
     }
-    pub fn transformWorld(self: *const Node) callconv(.Inline) [16]f32 {
+    pub inline fn transformWorld(self: *const Node) [16]f32 {
         var transform: [16]f32 = undefined;
         cgltf_node_transform_world(self, &transform);
         return transform;
@@ -473,7 +473,7 @@ pub const Data = extern struct {
     memory: MemoryOptions,
     file: FileOptions,
 };
-pub fn parse(options: *const Options, data: []const u8) callconv(.Inline) !*Data {
+pub inline fn parse(options: *const Options, data: []const u8) !*Data {
     var out_data: ?*Data = undefined;
     const result = cgltf_parse(options, data.ptr, data.len, &out_data);
     if (result == .success) return out_data.?;
@@ -490,7 +490,7 @@ pub fn parse(options: *const Options, data: []const u8) callconv(.Inline) !*Data
         else => unreachable,
     }
 }
-pub fn parseFile(options: Options, path: CString) callconv(.Inline) !*Data {
+pub inline fn parseFile(options: Options, path: CString) !*Data {
     var out_data: ?*Data = undefined;
     const result = cgltf_parse_file(&options, path, &out_data);
     if (result == .success) return out_data.?;
@@ -507,7 +507,7 @@ pub fn parseFile(options: Options, path: CString) callconv(.Inline) !*Data {
         else => unreachable,
     }
 }
-pub fn loadBuffers(options: Options, data: *Data, gltf_path: CString) callconv(.Inline) !void {
+pub inline fn loadBuffers(options: Options, data: *Data, gltf_path: CString) !void {
     const result = cgltf_load_buffers(&options, data, gltf_path);
     if (result == .success) return;
     switch (result) {
@@ -523,22 +523,24 @@ pub fn loadBuffers(options: Options, data: *Data, gltf_path: CString) callconv(.
         else => unreachable,
     }
 }
-pub fn loadBufferBase64(options: Options, size: usize, base64: []const u8) callconv(.Inline) ![]u8 {
+pub inline fn loadBufferBase64(options: Options, size: usize, base64: []const u8) ![]u8 {
     assert(base64.len >= (size * 4 + 2) / 3);
     var out: ?*anyopaque = null;
     const result = cgltf_load_buffer_base64(&options, size, base64.ptr, &out);
-    if (result == .success)
-        return @ptrCast([*]u8, out.?)[0..size];
+    if (result == .success) {
+        const temp: [*]u8 = @ptrCast(out.?);
+        return temp[0..size];
+    }
     switch (result) {
         .io_error => return error.CgltfIOError,
         .out_of_memory => return error.OutOfMemory,
         else => unreachable,
     }
 }
-pub fn validate(data: *Data) callconv(.Inline) Result {
+pub inline fn validate(data: *Data) Result {
     return cgltf_validate(data);
 }
-pub fn free(data: *Data) callconv(.Inline) void {
+pub inline fn free(data: *Data) void {
     cgltf_free(data);
 }
 
@@ -554,13 +556,13 @@ pub fn numComponents(inType: Type) usize {
         else => 1,
     };
 }
-pub fn copyExtrasJsonCount(data: *const Data, extras: *const Extras) callconv(.Inline) usize {
+pub inline fn copyExtrasJsonCount(data: *const Data, extras: *const Extras) usize {
     var size: usize = 0;
     var result = cgltf_copy_extras_json(data, extras, null, &size);
     assert(result == .success); // can only fail on invalid size ptr
     return size;
 }
-pub fn copyExtrasJson(data: *const Data, extras: *const Extras, outBuffer: []u8) callconv(.Inline) []u8 {
+pub inline fn copyExtrasJson(data: *const Data, extras: *const Extras, outBuffer: []u8) []u8 {
     var size: usize = outBuffer.len;
     var result = cgltf_copy_extras_json(data, extras, outBuffer.ptr, &size);
     assert(result == .success); // can only fail on invalid size ptr

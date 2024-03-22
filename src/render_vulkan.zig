@@ -76,13 +76,13 @@ pub fn init(allocator: std.mem.Allocator, inWindow: *glfw.GLFWwindow) !void {
     // Create Vulkan Instance
     {
         var create_info = vk.InstanceCreateInfo{
-            .enabledExtensionCount = @intCast(u32, extensions.len),
+            .enabledExtensionCount = @as(u32, @intCast(extensions.len)),
             .ppEnabledExtensionNames = extensions.ptr,
         };
 
         if (USE_VULKAN_DEBUG_REPORT) {
             const layers = [_][*:0]const u8{"VK_LAYER_KHRONOS_validation"};
-            create_info.enabledLayerCount = @intCast(u32, layers.len);
+            create_info.enabledLayerCount = @as(u32, @intCast(layers.len));
             create_info.ppEnabledLayerNames = &layers;
 
             // Enable debug report extension (we need additional storage, so we duplicate the user array to add our new extension to it)
@@ -91,7 +91,7 @@ pub fn init(allocator: std.mem.Allocator, inWindow: *glfw.GLFWwindow) !void {
             std.mem.copy([*:0]const u8, extensions_ext[0..extensions.len], extensions);
             extensions_ext[extensions.len] = "VK_EXT_debug_report";
 
-            create_info.enabledExtensionCount = @intCast(u32, extensions_ext.len);
+            create_info.enabledExtensionCount = @as(u32, @intCast(extensions_ext.len));
             create_info.ppEnabledExtensionNames = extensions_ext.ptr;
 
             // Create Vulkan Instance
@@ -106,7 +106,7 @@ pub fn init(allocator: std.mem.Allocator, inWindow: *glfw.GLFWwindow) !void {
     // Register debug callback
     if (USE_VULKAN_DEBUG_REPORT) {
         // Get the function pointer (required for any extensions)
-        var vkCreateDebugReportCallbackEXT = @ptrCast(?@TypeOf(vk.vkCreateDebugReportCallbackEXT), vk.GetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT")).?;
+        var vkCreateDebugReportCallbackEXT = @as(?@TypeOf(vk.vkCreateDebugReportCallbackEXT), @ptrCast(vk.GetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT"))).?;
 
         // Setup the debug report callback
         var debug_report_ci = vk.DebugReportCallbackCreateInfoEXT{
@@ -115,13 +115,13 @@ pub fn init(allocator: std.mem.Allocator, inWindow: *glfw.GLFWwindow) !void {
             .pUserData = null,
         };
         var err = vkCreateDebugReportCallbackEXT(instance, &debug_report_ci, vkAllocator, &debugReport);
-        if (@enumToInt(err) < 0) {
+        if (@intFromEnum(err) < 0) {
             return error.CreateDebugCallbackFailed;
         }
     }
     errdefer if (USE_VULKAN_DEBUG_REPORT) {
         // Remove the debug report callback
-        const vkDestroyDebugReportCallbackEXT = @ptrCast(?@TypeOf(vk.vkDestroyDebugReportCallbackEXT), vk.GetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT"));
+        const vkDestroyDebugReportCallbackEXT = @as(?@TypeOf(vk.vkDestroyDebugReportCallbackEXT), @ptrCast(vk.GetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT")));
         assert(vkDestroyDebugReportCallbackEXT != null);
         vkDestroyDebugReportCallbackEXT.?(instance, debugReport, vkAllocator);
     };
@@ -152,9 +152,9 @@ pub fn init(allocator: std.mem.Allocator, inWindow: *glfw.GLFWwindow) !void {
         var queues = try allocator.alloc(vk.QueueFamilyProperties, count);
         defer allocator.free(queues);
         _ = vk.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, queues);
-        for (queues) |queueProps, i| {
+        for (queues, 0..) |queueProps, i| {
             if (queueProps.queueFlags.graphics) {
-                break :SelectQueueFamily @intCast(u32, i);
+                break :SelectQueueFamily @as(u32, @intCast(i));
             }
         }
         return error.FailedToFindGraphicsQueue;
@@ -172,9 +172,9 @@ pub fn init(allocator: std.mem.Allocator, inWindow: *glfw.GLFWwindow) !void {
             },
         };
         var create_info = vk.DeviceCreateInfo{
-            .queueCreateInfoCount = @intCast(u32, queue_info.len),
+            .queueCreateInfoCount = @as(u32, @intCast(queue_info.len)),
             .pQueueCreateInfos = &queue_info,
-            .enabledExtensionCount = @intCast(u32, device_extensions.len),
+            .enabledExtensionCount = @as(u32, @intCast(device_extensions.len)),
             .ppEnabledExtensionNames = &device_extensions,
         };
         device = try vk.CreateDevice(physicalDevice, create_info, vkAllocator);
@@ -200,8 +200,8 @@ pub fn init(allocator: std.mem.Allocator, inWindow: *glfw.GLFWwindow) !void {
         };
         var pool_info = vk.DescriptorPoolCreateInfo{
             .flags = .{ .freeDescriptorSet = true },
-            .maxSets = 1000 * @intCast(u32, pool_sizes.len),
-            .poolSizeCount = @intCast(u32, pool_sizes.len),
+            .maxSets = 1000 * @as(u32, @intCast(pool_sizes.len)),
+            .poolSizeCount = @as(u32, @intCast(pool_sizes.len)),
             .pPoolSizes = &pool_sizes,
         };
         descriptorPool = try vk.CreateDescriptorPool(device, pool_info, vkAllocator);
@@ -210,7 +210,7 @@ pub fn init(allocator: std.mem.Allocator, inWindow: *glfw.GLFWwindow) !void {
 
     // Create Window Surface
     const err = glfw.glfwCreateWindowSurface(instance, window, vkAllocator, &surface);
-    if (@enumToInt(err) < 0)
+    if (@intFromEnum(err) < 0)
         return error.CouldntCreateSurface;
     // GLFW says this call is necessary to clean up, but it crashes the program
     // so leaving it commented out for now.  If deinit/reinit is a thing we
@@ -248,7 +248,7 @@ pub fn init(allocator: std.mem.Allocator, inWindow: *glfw.GLFWwindow) !void {
 
         // Create SwapChain, RenderPass, Framebuffer, etc.
         assert(g_MinImageCount >= 2);
-        try impl_vulkan.CreateOrResizeWindow(instance, physicalDevice, device, wd, queueFamily, vkAllocator, @intCast(u32, w), @intCast(u32, h), g_MinImageCount);
+        try impl_vulkan.CreateOrResizeWindow(instance, physicalDevice, device, wd, queueFamily, vkAllocator, @as(u32, @intCast(w)), @as(u32, @intCast(h)), g_MinImageCount);
     }
     errdefer impl_vulkan.DestroyWindow(instance, device, &g_MainWindowData, vkAllocator) catch {};
 }
@@ -265,7 +265,8 @@ pub fn deinit() void {
 
     if (USE_VULKAN_DEBUG_REPORT) {
         // Remove the debug report callback
-        const vkDestroyDebugReportCallbackEXT = @ptrCast(?@TypeOf(vk.vkDestroyDebugReportCallbackEXT), vk.GetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT"));
+        const vkDestroyDebugReportCallbackEXT: ?@TypeOf(vk.vkDestroyDebugReportCallbackEXT) =
+            @ptrCast(vk.GetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT"));
         assert(vkDestroyDebugReportCallbackEXT != null);
         vkDestroyDebugReportCallbackEXT.?(instance, debugReport, vkAllocator);
     }
@@ -409,7 +410,7 @@ pub fn beginColorPass(frame: *RenderFrame, clearColor: imgui.Vec4) !RenderPass {
                 .extent = vk.Extent2D{ .width = wd.Width, .height = wd.Height },
             },
             .clearValueCount = 1,
-            .pClearValues = @ptrCast([*]const vk.ClearValue, &clearColor),
+            .pClearValues = @as([*]const vk.ClearValue, @ptrCast(&clearColor)),
         };
         vk.CmdBeginRenderPass(fd.CommandBuffer, info, .INLINE);
     }
@@ -501,7 +502,7 @@ pub fn destroyBuffer(buffer: *Buffer) void {
 
 pub fn mapBuffer(buffer: *Buffer, offset: usize, length: usize) ![*]u8 {
     var result: [*]u8 = undefined;
-    try vk.MapMemory(device, buffer.memory, offset, length, .{}, @ptrCast(**anyopaque, &result));
+    try vk.MapMemory(device, buffer.memory, offset, length, .{}, @as(**anyopaque, @ptrCast(&result)));
     return result;
 }
 
@@ -516,7 +517,9 @@ pub fn flushMappedRange(buffer: *Buffer, mappedPtr: [*]u8, offset: usize, length
 }
 
 pub fn unmapBuffer(buffer: *Buffer, mappedPtr: [*]u8, offset: usize, length: usize) void {
-    _ = mappedPtr; _ = offset; _ = length;
+    _ = mappedPtr;
+    _ = offset;
+    _ = length;
     vk.UnmapMemory(device, buffer.memory);
 }
 
@@ -604,8 +607,8 @@ fn checkDeviceExtensionSupport(allocator: std.mem.Allocator, inDevice: vk.Physic
 fn glfw_resize_callback(inWindow: ?*glfw.GLFWwindow, w: c_int, h: c_int) callconv(.C) void {
     _ = inWindow;
     g_SwapChainRebuild = true;
-    g_SwapChainResizeWidth = @intCast(u32, w);
-    g_SwapChainResizeHeight = @intCast(u32, h);
+    g_SwapChainResizeWidth = @as(u32, @intCast(w));
+    g_SwapChainResizeHeight = @as(u32, @intCast(h));
 }
 
 fn debug_report(flags: vk.DebugReportFlagsEXT.IntType, objectType: vk.DebugReportObjectTypeEXT, object: u64, location: usize, messageCode: i32, pLayerPrefix: ?[*:0]const u8, pMessage: ?[*:0]const u8, pUserData: ?*anyopaque) callconv(vk.CallConv) vk.Bool32 {
@@ -646,11 +649,11 @@ fn ArrayPtrType(comptime ptrType: type) type {
         assert(info.Pointer.sentinel == null);
 
         // Create the new value type, [1]T
-        const arrayInfo = std.builtin.TypeInfo{
+        const arrayInfo = std.builtin.Type{
             .Array = .{
                 .len = 1,
                 .child = info.Pointer.child,
-                .sentinel = @as(?info.Pointer.child, null),
+                .sentinel = @as(?*const anyopaque, null),
             },
         };
 
@@ -659,7 +662,7 @@ fn ArrayPtrType(comptime ptrType: type) type {
         info.Pointer.child = singleArrayType;
         // also need to change the type of the sentinel
         // we checked that this is null above so no work needs to be done here.
-        info.Pointer.sentinel = @as(?singleArrayType, null);
+        info.Pointer.sentinel = @as(?*const anyopaque, null);
         return @Type(info);
     }
 }
