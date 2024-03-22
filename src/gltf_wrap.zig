@@ -199,17 +199,17 @@ pub fn wrap(rawData: *cgltf.Data, parentAllocator: std.mem.Allocator) !*Data {
     data.scenes = try allocator.alloc(Scene, rawData.scenes_count);
     data.animations = try allocator.alloc(Animation, rawData.animations_count);
 
-    for (data.meshes) |*mesh, i| {
+    for (data.meshes, 0..) |*mesh, i| {
         const rawMesh = &rawData.meshes[i];
 
         const primitives = try allocator.alloc(Primitive, rawMesh.primitives_count);
-        for (primitives) |*prim, j| {
+        for (primitives, 0..) |*prim, j| {
             const rawPrim = &rawMesh.primitives[j];
 
             const attributes = try copyAttributes(data, rawData, rawPrim.attributes, rawPrim.attributes_count);
 
             const targets = try allocator.alloc(MorphTarget, rawPrim.targets_count);
-            for (targets) |*target, k| {
+            for (targets, 0..) |*target, k| {
                 const rawTarget = &rawPrim.targets[k];
                 const targetAttributes = try copyAttributes(data, rawData, rawTarget.attributes, rawTarget.attributes_count);
                 target.* = MorphTarget{
@@ -228,7 +228,7 @@ pub fn wrap(rawData: *cgltf.Data, parentAllocator: std.mem.Allocator) !*Data {
         }
 
         const names = try allocator.alloc([:0]const u8, rawMesh.target_names_count);
-        for (names) |*name, j| name.* = cstr(rawMesh.target_names[j]);
+        for (names, 0..) |*name, j| name.* = cstr(rawMesh.target_names[j]);
 
         mesh.* = Mesh{
             .raw = rawMesh,
@@ -239,7 +239,7 @@ pub fn wrap(rawData: *cgltf.Data, parentAllocator: std.mem.Allocator) !*Data {
         };
     }
 
-    for (data.materials) |*material, i| {
+    for (data.materials, 0..) |*material, i| {
         const rawMat = &rawData.materials[i];
 
         material.* = Material{
@@ -264,7 +264,7 @@ pub fn wrap(rawData: *cgltf.Data, parentAllocator: std.mem.Allocator) !*Data {
         }
     }
 
-    for (data.accessors) |*accessor, i| {
+    for (data.accessors, 0..) |*accessor, i| {
         const rawAcc = &rawData.accessors[i];
 
         accessor.* = Accessor{
@@ -280,7 +280,7 @@ pub fn wrap(rawData: *cgltf.Data, parentAllocator: std.mem.Allocator) !*Data {
         }
     }
 
-    for (data.buffer_views) |*view, i| {
+    for (data.buffer_views, 0..) |*view, i| {
         const rawView = &rawData.buffer_views[i];
         view.* = BufferView{
             .raw = rawView,
@@ -288,14 +288,14 @@ pub fn wrap(rawData: *cgltf.Data, parentAllocator: std.mem.Allocator) !*Data {
         };
     }
 
-    for (data.buffers) |*buffer, i| {
+    for (data.buffers, 0..) |*buffer, i| {
         const rawBuf = &rawData.buffers[i];
         buffer.* = Buffer{
             .raw = rawBuf,
         };
     }
 
-    for (data.images) |*image, i| {
+    for (data.images, 0..) |*image, i| {
         const rawImage = &rawData.images[i];
         image.* = Image{
             .raw = rawImage,
@@ -304,7 +304,7 @@ pub fn wrap(rawData: *cgltf.Data, parentAllocator: std.mem.Allocator) !*Data {
         };
     }
 
-    for (data.textures) |*tex, i| {
+    for (data.textures, 0..) |*tex, i| {
         const rawTex = &rawData.textures[i];
         tex.* = Texture{
             .raw = rawTex,
@@ -314,15 +314,15 @@ pub fn wrap(rawData: *cgltf.Data, parentAllocator: std.mem.Allocator) !*Data {
         };
     }
 
-    for (data.samplers) |*sampler, i| {
+    for (data.samplers, 0..) |*sampler, i| {
         sampler.* = Sampler{ .raw = &rawData.samplers[i] };
     }
 
-    for (data.skins) |*skin, i| {
+    for (data.skins, 0..) |*skin, i| {
         const rawSkin = &rawData.skins[i];
 
         const joints = try allocator.alloc(*Node, rawSkin.joints_count);
-        for (joints) |*joint, j| joint.* = fixNonnull(rawSkin.joints[j], rawData.nodes, data.nodes);
+        for (joints, 0..) |*joint, j| joint.* = fixNonnull(rawSkin.joints[j], rawData.nodes, data.nodes);
 
         skin.* = Skin{
             .raw = rawSkin,
@@ -333,7 +333,7 @@ pub fn wrap(rawData: *cgltf.Data, parentAllocator: std.mem.Allocator) !*Data {
         };
     }
 
-    for (data.cameras) |*cam, i| {
+    for (data.cameras, 0..) |*cam, i| {
         const rawCam = &rawData.cameras[i];
         cam.* = Camera{
             .raw = rawCam,
@@ -341,7 +341,7 @@ pub fn wrap(rawData: *cgltf.Data, parentAllocator: std.mem.Allocator) !*Data {
         };
     }
 
-    for (data.lights) |*light, i| {
+    for (data.lights, 0..) |*light, i| {
         const rawLight = &rawData.lights[i];
         light.* = Light{
             .raw = rawLight,
@@ -349,11 +349,11 @@ pub fn wrap(rawData: *cgltf.Data, parentAllocator: std.mem.Allocator) !*Data {
         };
     }
 
-    for (data.nodes) |*node, i| {
+    for (data.nodes, 0..) |*node, i| {
         const rawNode = &rawData.nodes[i];
 
         const children = try allocator.alloc(*Node, rawNode.children_count);
-        for (children) |*child, j| child.* = fixNonnull(rawNode.children[j], rawData.nodes, data.nodes);
+        for (children, 0..) |*child, j| child.* = fixNonnull(rawNode.children[j], rawData.nodes, data.nodes);
 
         node.* = Node{
             .raw = rawNode,
@@ -367,11 +367,11 @@ pub fn wrap(rawData: *cgltf.Data, parentAllocator: std.mem.Allocator) !*Data {
         };
     }
 
-    for (data.scenes) |*scene, i| {
+    for (data.scenes, 0..) |*scene, i| {
         const rawScene = &rawData.scenes[i];
 
         const nodes = try allocator.alloc(*Node, rawScene.nodes_count);
-        for (nodes) |*node, j| node.* = fixNonnull(rawScene.nodes[j], rawData.nodes, data.nodes);
+        for (nodes, 0..) |*node, j| node.* = fixNonnull(rawScene.nodes[j], rawData.nodes, data.nodes);
 
         scene.* = Scene{
             .raw = rawScene,
@@ -382,13 +382,13 @@ pub fn wrap(rawData: *cgltf.Data, parentAllocator: std.mem.Allocator) !*Data {
 
     data.scene = fixOptional(rawData.scene, rawData.scenes, data.scenes);
 
-    for (data.animations) |*anim, i| {
+    for (data.animations, 0..) |*anim, i| {
         const rawAnim = &rawData.animations[i];
 
         const samplers = try allocator.alloc(AnimationSampler, rawAnim.samplers_count);
         const channels = try allocator.alloc(AnimationChannel, rawAnim.channels_count);
 
-        for (samplers) |*sampler, j| {
+        for (samplers, 0..) |*sampler, j| {
             const rawSampler = &rawAnim.samplers[j];
             sampler.* = AnimationSampler{
                 .raw = rawSampler,
@@ -397,7 +397,7 @@ pub fn wrap(rawData: *cgltf.Data, parentAllocator: std.mem.Allocator) !*Data {
             };
         }
 
-        for (channels) |*channel, j| {
+        for (channels, 0..) |*channel, j| {
             const rawChannel = &rawAnim.channels[j];
             channel.* = AnimationChannel{
                 .raw = rawChannel,
@@ -425,7 +425,7 @@ fn cstr(dataOpt: ?[*:0]const u8) [:0]const u8 {
 
 fn copyAttributes(data: *Data, rawData: *cgltf.Data, rawAttributes: [*]cgltf.Attribute, rawCount: usize) ![]Attribute {
     const attributes = try data.allocator.allocator().alloc(Attribute, rawCount);
-    for (attributes) |*attr, i| {
+    for (attributes, 0..) |*attr, i| {
         const rawAttr = &rawAttributes[i];
         attr.* = Attribute{
             .raw = rawAttr,
@@ -451,6 +451,6 @@ fn fixOptional(pointer: anytype, rawArray: anytype, wrapArray: anytype) ?*Child(
 }
 
 fn fixNonnull(pointer: anytype, rawArray: anytype, wrapArray: anytype) *Child(@TypeOf(wrapArray.ptr)) {
-    const diff = @divExact(@ptrToInt(pointer) - @ptrToInt(rawArray), @sizeOf(Child(@TypeOf(rawArray))));
+    const diff = @divExact(@intFromPtr(pointer) - @intFromPtr(rawArray), @sizeOf(Child(@TypeOf(rawArray))));
     return &wrapArray[diff];
 }
